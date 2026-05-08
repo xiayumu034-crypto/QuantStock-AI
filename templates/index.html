@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantStock-AI v2.2</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        
+        /* 顶部导航 */
+        .top-bar { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 0.8rem 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .top-bar h4 { margin: 0; font-size: 1.1rem; }
+        .top-bar .status { font-size: 0.8rem; opacity: 0.8; }
+        
+        /* 搜索栏 */
+        .search-bar { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .search-bar input { border-radius: 20px; border: 2px solid #e0e0e0; padding: 0.5rem 1rem; }
+        .search-bar input:focus { border-color: #1a1a2e; outline: none; }
+        .search-results { position: absolute; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 50; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        
+        /* 核心指标卡 */
+        .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .metric-card { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+        .metric-card .label { font-size: 0.8rem; color: #888; margin-bottom: 0.3rem; }
+        .metric-card .value { font-size: 1.8rem; font-weight: 700; }
+        .metric-card .sub { font-size: 0.75rem; color: #999; margin-top: 0.3rem; }
+        
+        /* ML信号卡 */
+        .ml-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; padding: 1.5rem; color: white; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(102,126,234,0.4); }
+        .ml-card .title { font-size: 0.9rem; opacity: 0.9; margin-bottom: 1rem; }
+        .ml-stock { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 1rem; text-align: center; backdrop-filter: blur(10px); }
+        .ml-stock .name { font-size: 0.9rem; font-weight: 600; }
+        .ml-stock .pred { font-size: 1.6rem; font-weight: 700; margin: 0.3rem 0; }
+        .ml-stock .meta { font-size: 0.7rem; opacity: 0.8; }
+        .ml-stock .badge { font-size: 0.7rem; }
+        
+        /* 技术面评估 */
+        .tech-card { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .tech-card .title { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; color: #333; }
+        .signal-tag { display: inline-block; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; margin: 3px; }
+        .signal-bullish { background: #ffe0e0; color: #c62828; }
+        .signal-bearish { background: #d4edda; color: #1b5e20; }
+        .signal-neutral { background: #e9ecef; color: #555; }
+        .indicator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .indicator-item { background: #f8f9fa; border-radius: 8px; padding: 8px; text-align: center; }
+        .indicator-item .name { font-size: 0.7rem; color: #888; }
+        .indicator-item .value { font-size: 1rem; font-weight: 600; }
+        .indicator-item .desc { font-size: 0.65rem; color: #999; }
+        
+        /* 新闻卡 */
+        .news-card { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .news-item { padding: 0.6rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid #ddd; background: #fafafa; }
+        .news-item.positive { border-left-color: #28a745; }
+        .news-item.negative { border-left-color: #dc3545; }
+        
+        /* 图表区 */
+        .chart-card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .chart-card .title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #555; }
+        
+        /* 底部设置 */
+        .settings-card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .stock-chip { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; margin: 3px; cursor: pointer; transition: all 0.2s; }
+        .stock-chip:hover { transform: scale(1.05); }
+        .stock-chip.active { background: #1a1a2e; color: white; }
+        .stock-chip:not(.active) { background: #e9ecef; color: #333; }
+        
+        .positive { color: #ff4b4b; }
+        .negative { color: #00d56b; }
+        .refresh-btn { background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.85rem; }
+        
+        /* 进度条 */
+        .prob-bar { height: 24px; border-radius: 12px; overflow: hidden; display: flex; background: #e9ecef; }
+        .prob-bar .up { background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+        .prob-bar .down { background: linear-gradient(90deg, #00d56b, #00b894); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+        
+        /* 自选监控面板 */
+        #watchlistPanel { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
+        #watchlistPanel .card-header { background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-bottom: 1px solid #dee2e6; }
+        #watchlistTable tr:hover { background-color: #f5f5f5; }
+        .watchlist-price { font-weight: 600; }
+        .watchlist-pred { font-weight: 700; }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="top-bar">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4>📊 QuantStock-AI v2.2</h4>
+                    <div class="status">v16c集成模型 · 42特征 · 实时技术分析</div>
+                </div>
+                <div class="text-end">
+                    <div class="status">
+                        <span style="color:#00d56b">●</span> 
+                        更新: <span id="lastUpdate">--:--:--</span>
+                    </div>
+                    <button class="refresh-btn mt-1" onclick="refreshAll()">🔄 刷新</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid px-4 mt-3">
+        <!-- 第一行：搜索 + 核心指标 -->
+        <div class="row">
+            <!-- 搜索栏 -->
+            <div class="col-md-4">
+                <div class="search-bar">
+                    <div class="d-flex gap-2">
+                        <input type="text" class="form-control" id="searchInput" placeholder="🔍 搜索股票代码/名称" onkeyup="handleSearchKey(event)">
+                        <button class="btn btn-dark" onclick="searchStock()" style="border-radius:20px">搜索</button>
+                    </div>
+                    <div id="searchResults" class="search-results mt-2" style="display:none"></div>
+                </div>
+            </div>
+            
+            <!-- 核心指标 -->
+            <div class="col-md-8">
+                <div class="metric-row">
+                    <div class="metric-card">
+                        <div class="label">当前价格</div>
+                        <div class="value" id="m-price">--</div>
+                        <div class="sub" id="m-name">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">涨跌幅</div>
+                        <div class="value" id="m-change">--</div>
+                        <div class="sub" id="m-change-val">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">成交量</div>
+                        <div class="value" id="m-volume">--</div>
+                        <div class="sub">万手</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">成交额</div>
+                        <div class="value" id="m-amount">--</div>
+                        <div class="sub">亿元</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二行：ML预测信号 (突出显示) -->
+        <div class="ml-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="title">🤖 v16c 集成学习信号 · 20日预测 · 42特征</div>
+                <span class="badge bg-light text-dark" id="mlModelInfo">加载中...</span>
+            </div>
+            <div class="row" id="mlSignalContent">
+                <div class="col text-center py-3">
+                    <div class="spinner-border spinner-border-sm text-light"></div>
+                    <span class="ms-2">正在计算信号...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三行：自选监控面板 -->
+        <div class="card mb-3" id="watchlistPanel" style="display:none">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>📋 自选监控</strong>
+                    <span class="badge bg-primary ms-2" id="watchlistCount">0</span>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="refreshWatchlist()">刷新</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleWatchlistPanel()">收起</button>
+                </div>
+            </div>
+            <div class="card-body p-0" id="watchlistBody">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>代码</th>
+                                <th>名称</th>
+                                <th>当前价</th>
+                                <th>涨跌幅</th>
+                                <th>成交量</th>
+                                <th>20日预测</th>
+                                <th>信号</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="watchlistTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三行：技术面评估 + 新闻 -->
+        <div class="row">
+            <!-- 技术面评估 -->
+            <div class="col-md-8">
+                <div class="tech-card">
+                    <div class="title">📊 技术面评估 <small class="text-muted">参考信号 · 非交易建议</small></div>
+                    <div class="row">
+                        <!-- 信号强度 -->
+                        <div class="col-md-4 text-center mb-3">
+                            <div id="pred-action" style="font-size:2.5rem;font-weight:700">--</div>
+                            <div class="text-muted" id="pred-time">--</div>
+                            <div class="prob-bar mt-2">
+                                <div class="up" id="prob-up" style="width:50%">涨 50%</div>
+                                <div class="down" id="prob-down" style="width:50%">跌 50%</div>
+                            </div>
+                        </div>
+                        <!-- 信号标签 -->
+                        <div class="col-md-4">
+                            <div class="mb-2"><strong>信号面板</strong></div>
+                            <div id="signalContent">加载中...</div>
+                        </div>
+                        <!-- 指标详情 -->
+                        <div class="col-md-4">
+                            <div class="mb-2"><strong>关键指标</strong></div>
+                            <div class="indicator-grid" id="indicatorDetails">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 新闻监控 -->
+            <div class="col-md-4">
+                <div class="news-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="title mb-0">📡 实时新闻</div>
+                        <div>
+                            <span class="badge bg-warning" id="newsCount">--</span>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" id="newsToggle" onclick="toggleNewsMode()">全部</button>
+                        </div>
+                    </div>
+                    <div id="newsContent" style="max-height:300px; overflow-y:auto;">
+                        <div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四行：主图表 -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="chart-card" style="height:350px;">
+                    <div class="title">📈 分时走势 + 布林带</div>
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-card" style="height:350px;">
+                    <div class="title">📊 成交量</div>
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第五行：技术指标图 -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="chart-card" style="height:280px;">
+                    <div class="title">MACD</div>
+                    <canvas id="macdChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-card" style="height:280px;">
+                    <div class="title">KDJ</div>
+                    <canvas id="kdjChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-card" style="height:280px;">
+                    <div class="title">RSI</div>
+                    <canvas id="rsiChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-card" style="height:260px;">
+                    <div class="title">CCI (商品通道指数)</div>
+                    <canvas id="cciChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card" style="height:260px;">
+                    <div class="title">DMI (趋向指标)</div>
+                    <canvas id="dmiChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第六行：股票选择 + 设置 -->
+        <div class="settings-card mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">监控股票</div>
+                    <div id="stockList"></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">自动刷新</div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                        <label class="form-check-label" for="autoRefresh">开启</label>
+                    </div>
+                    <div class="mt-1">
+                        <label class="form-label small">间隔: <span id="intervalValue">5</span>秒</label>
+                        <input type="range" class="form-range" min="1" max="30" value="5" id="refreshInterval">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">刷新频率</div>
+                    <div class="small text-muted">
+                        <div>🟢 实时行情: 5秒</div>
+                        <div>🔵 分时走势: 60秒</div>
+                        <div>🟡 技术指标: 60秒</div>
+                        <div>🔴 ML预测: 5分钟</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="chart-card mb-4">
+            <div class="title">📋 实时数据</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr><th>代码</th><th>名称</th><th>当前价</th><th>涨跌幅</th><th>成交量</th><th>成交额</th><th>更新时间</th></tr>
+                    </thead>
+                    <tbody id="dataTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+    // ========== 全局状态 ==========
+    let selectedStock = '300201';
+    let autoRefresh = true;
+    let refreshInterval = 5;
+    let charts = {};
+    let lastReq = { realtime: 0, minute: 0, technical: 0, predict: 0 };
+    const INTERVALS = { realtime: 5000, minute: 60000, technical: 60000, predict: 300000 };
+    const stocks = [
+        { code: '300201', name: '海伦哲' },
+        { code: '000001', name: '平安银行' },
+        { code: '600519', name: '贵州茅台' },
+        { code: '300750', name: '宁德时代' },
+        { code: '002594', name: '比亚迪' }
+    ];
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        buildStockList();
+        initAllCharts();
+        setupEvents();
+        refreshAll();
+        setInterval(refreshAll, refreshInterval * 1000);
+    });
+
+    function buildStockList() {
+        const el = document.getElementById('stockList');
+        el.innerHTML = stocks.map(s => 
+            `<span class="stock-chip ${s.code === selectedStock ? 'active' : ''}" onclick="selectStock('${s.code}')">${s.name} ${s.code}</span>`
+        ).join('');
+    }
+
+    function setupEvents() {
+        document.getElementById('autoRefresh').addEventListener('change', function() { autoRefresh = this.checked; });
+        document.getElementById('refreshInterval').addEventListener('input', function() {
+            refreshInterval = parseInt(this.value);
+            document.getElementById('intervalValue').textContent = refreshInterval;
+        });
+    }
+
+    function selectStock(code) {
+        selectedStock = code;
+        buildStockList();
+        lastReq = { realtime: 0, minute: 0, technical: 0, predict: 0 };
+        refreshAll();
+    }
+
+    // ========== 图表 ==========
+    function makeChart(canvasId, type, datasets, extraOpts) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type, data: { labels: [], datasets },
+            options: Object.assign({ responsive: true, maintainAspectRatio: false, animation: { duration: 300 }, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } } }, extraOpts || {})
+        });
+    }
+
+    function initAllCharts() {
+        charts.price = makeChart('priceChart', 'line', [
+            { label: '价格', data: [], borderColor: '#1a1a2e', borderWidth: 2, pointRadius: 1, tension: 0.3, fill: false, order: 1 },
+            { label: 'VWAP', data: [], borderColor: '#ff9800', borderWidth: 1.5, borderDash: [5,3], pointRadius: 0, fill: false, order: 2 },
+            { label: '布林上轨', data: [], borderColor: 'rgba(255,0,0,0.3)', borderWidth: 1, pointRadius: 0, fill: false, order: 3 },
+            { label: '布林中轨', data: [], borderColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderDash: [4,2], pointRadius: 0, fill: false, order: 3 },
+            { label: '布林下轨', data: [], borderColor: 'rgba(0,128,0,0.3)', borderWidth: 1, pointRadius: 0, fill: '+1', backgroundColor: 'rgba(0,128,0,0.05)', order: 3 }
+        ], { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: false }, x: { ticks: { maxTicksLimit: 10 } } } });
+
+        charts.volume = makeChart('volumeChart', 'bar', [
+            { label: '成交量(万)', data: [], backgroundColor: [], borderWidth: 0 }
+        ], { plugins: { legend: { display: false } } });
+
+        charts.macd = makeChart('macdChart', 'bar', [
+            { label: 'MACD', data: [], backgroundColor: [], borderWidth: 0, order: 2 },
+            { label: 'DIF', data: [], borderColor: '#1f77b4', borderWidth: 2, type: 'line', fill: false, order: 1 },
+            { label: 'DEA', data: [], borderColor: '#ff7f0e', borderWidth: 2, type: 'line', fill: false, order: 1 }
+        ]);
+
+        charts.kdj = makeChart('kdjChart', 'line', [
+            { label: 'K', data: [], borderColor: '#1f77b4', borderWidth: 2, pointRadius: 0, fill: false },
+            { label: 'D', data: [], borderColor: '#ff7f0e', borderWidth: 2, pointRadius: 0, fill: false },
+            { label: 'J', data: [], borderColor: '#2ca02c', borderWidth: 2, pointRadius: 0, fill: false }
+        ], { scales: { y: { beginAtZero: false } } });
+
+        charts.rsi = makeChart('rsiChart', 'line', [
+            { label: 'RSI14', data: [], borderColor: '#9c27b0', borderWidth: 2, pointRadius: 0, fill: false }
+        ], { scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } });
+
+        charts.cci = makeChart('cciChart', 'line', [
+            { label: 'CCI', data: [], borderColor: '#00838f', borderWidth: 2, pointRadius: 0, fill: false }
+        ], { scales: { y: { beginAtZero: false } }, plugins: { legend: { display: false } } });
+
+        charts.dmi = makeChart('dmiChart', 'line', [
+            { label: '+DI', data: [], borderColor: '#ff4b4b', borderWidth: 2, pointRadius: 0, fill: false },
+            { label: '-DI', data: [], borderColor: '#00d56b', borderWidth: 2, pointRadius: 0, fill: false },
+            { label: 'ADX', data: [], borderColor: '#333', borderWidth: 1.5, borderDash: [4,2], pointRadius: 0, fill: false }
+        ]);
+    }
+
+    function updateChartData(chart, labels, datasets) {
+        chart.data.labels = labels;
+        datasets.forEach((ds, i) => { chart.data.datasets[i].data = ds; });
+        chart.update('none');
+    }
+
+    // ========== 核心刷新 ==========
+    function refreshAll() {
+        if (!autoRefresh) return;
+        const now = Date.now();
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+
+        if (now - lastReq.realtime >= INTERVALS.realtime) {
+            lastReq.realtime = now;
+            fetchJSON(`/api/realtime/${selectedStock}`, updateMetrics);
+        }
+        if (now - lastReq.minute >= INTERVALS.minute) {
+            lastReq.minute = now;
+            fetchJSON(`/api/minute/${selectedStock}?scale=5&datalen=48`, resp => {
+                if (resp.status === 'success') updateMinuteCharts(resp.data);
+            });
+        }
+        if (now - lastReq.technical >= INTERVALS.technical) {
+            lastReq.technical = now;
+            fetchJSON(`/api/technical/${selectedStock}?datalen=100`, resp => {
+                if (resp.status === 'success') updateTechnicalCharts(resp.data);
+            });
+        }
+        if (now - lastReq.predict >= INTERVALS.predict) {
+            lastReq.predict = now;
+            fetchJSON(`/api/predict/${selectedStock}`, resp => {
+                if (resp.status === 'success') updatePrediction(resp.data);
+            });
+        }
+    }
+
+    function fetchJSON(url, cb) { fetch(url).then(r => r.json()).then(cb).catch(e => console.error(url, e)); }
+
+    // ========== 更新函数 ==========
+    function updateMetrics(d) {
+        const cls = d.change >= 0 ? 'positive' : 'negative';
+        document.getElementById('m-price').className = `value ${cls}`;
+        document.getElementById('m-price').textContent = d.current.toFixed(2);
+        document.getElementById('m-name').textContent = d.name;
+        document.getElementById('m-change').className = `value ${cls}`;
+        document.getElementById('m-change').textContent = (d.change_percent >= 0 ? '+' : '') + d.change_percent.toFixed(2) + '%';
+        document.getElementById('m-change-val').textContent = (d.change >= 0 ? '+' : '') + d.change.toFixed(2);
+        document.getElementById('m-volume').textContent = (d.volume / 10000).toFixed(0);
+        document.getElementById('m-amount').textContent = (d.amount / 1e8).toFixed(2);
+
+        document.getElementById('dataTable').innerHTML = `<tr><td>${d.code}</td><td>${d.name}</td>
+            <td class="${cls}">${d.current.toFixed(2)}</td><td class="${cls}">${d.change_percent.toFixed(2)}%</td>
+            <td>${(d.volume/10000).toFixed(0)}万</td><td>${(d.amount/1e8).toFixed(2)}亿</td><td>${d.time}</td></tr>`;
+    }
+
+    function updateMinuteCharts(data) {
+        if (!data || !data.length) return;
+        const labels = data.map(i => i.day.split(' ')[1].substring(0, 5));
+        const prices = data.map(i => parseFloat(i.close));
+        const vols = data.map(i => parseFloat(i.volume) / 10000);
+        const volColors = data.map((item, idx) => {
+            if (idx === 0) return 'rgba(30,60,114,0.7)';
+            return parseFloat(item.close) >= parseFloat(data[idx-1].close) ? 'rgba(255,75,75,0.7)' : 'rgba(0,213,107,0.7)';
+        });
+        updateChartData(charts.price, labels, [prices, [], [], [], []]);
+        updateChartData(charts.volume, labels, [vols]);
+        charts.volume.data.datasets[0].backgroundColor = volColors;
+        charts.volume.update('none');
+    }
+
+    function updateTechnicalCharts(data) {
+        if (!data || data.length < 20) return;
+        const labels = data.map(i => i.day ? i.day.split(' ')[1].substring(0, 5) : '');
+        const closes = data.map(i => i.close);
+        updateChartData(charts.price, labels, [closes, data.map(i=>i.VWAP), data.map(i=>i.BB_UPPER), data.map(i=>i.BB_MID), data.map(i=>i.BB_LOWER)]);
+
+        const macdColors = data.map(i => (i.MACD||0) >= 0 ? 'rgba(255,75,75,0.7)' : 'rgba(0,213,107,0.7)');
+        charts.macd.data.labels = labels;
+        charts.macd.data.datasets[0].data = data.map(i => i.MACD||0);
+        charts.macd.data.datasets[0].backgroundColor = macdColors;
+        charts.macd.data.datasets[1].data = data.map(i => i.DIF||0);
+        charts.macd.data.datasets[2].data = data.map(i => i.DEA||0);
+        charts.macd.update('none');
+
+        updateChartData(charts.kdj, labels, [data.map(i=>i.K||0), data.map(i=>i.D||0), data.map(i=>i.J||0)]);
+        updateChartData(charts.rsi, labels, [data.map(i=>i.RSI14||50)]);
+        updateChartData(charts.cci, labels, [data.map(i=>i.CCI||0)]);
+        updateChartData(charts.dmi, labels, [data.map(i=>i.PLUS_DI||0), data.map(i=>i.MINUS_DI||0), data.map(i=>i.ADX||0)]);
+    }
+
+    function updatePrediction(d) {
+        // 处理已收盘状态
+        if (d.is_market_closed) {
+            document.getElementById('pred-action').className = 'neutral';
+            document.getElementById('pred-action').textContent = '⏸️ 已收盘';
+            document.getElementById('pred-time').textContent = '非交易时段 · 信号仅供参考';
+            document.getElementById('prob-up').style.width = '50%';
+            document.getElementById('prob-up').textContent = '暂停';
+            document.getElementById('prob-down').style.width = '50%';
+            document.getElementById('prob-down').textContent = '暂停';
+            document.getElementById('signalContent').innerHTML = '<span class="signal-tag signal-neutral">当前非交易时间</span><span class="signal-tag signal-neutral">技术面信号仅供参考</span>';
+            document.getElementById('indicatorDetails').innerHTML = '<div class="indicator-item"><div class="name">状态</div><div class="value">已收盘</div><div class="desc">明日开盘后更新</div></div>';
+            return;
+        }
+        
+        const cls = d.action_class === 'positive' ? 'positive' : d.action_class === 'negative' ? 'negative' : 'neutral';
+        document.getElementById('pred-action').className = '';
+        document.getElementById('pred-action').classList.add(cls);
+        document.getElementById('pred-action').textContent = d.action;
+        document.getElementById('pred-time').textContent = `${d.prediction_time} · 强度 ${d.signal_strength > 0 ? '+' : ''}${d.signal_strength}`;
+        document.getElementById('prob-up').style.width = d.up_probability + '%';
+        document.getElementById('prob-up').textContent = '涨 ' + d.up_probability + '%';
+        document.getElementById('prob-down').style.width = d.down_probability + '%';
+        document.getElementById('prob-down').textContent = '跌 ' + d.down_probability + '%';
+
+        let sigHtml = '';
+        d.signals.forEach(s => {
+            let c = 'signal-neutral';
+            if (/向上|金叉|超卖|上涨|多头|支撑|反弹|流入|底背离|强趋势↑/.test(s)) c = 'signal-bullish';
+            else if (/向下|死叉|超买|下跌|空头|压力|回调|流出|顶背离|强趋势↓/.test(s)) c = 'signal-bearish';
+            sigHtml += `<span class="signal-tag ${c}">${s}</span>`;
+        });
+        document.getElementById('signalContent').innerHTML = sigHtml;
+
+        if (d.indicators) {
+            const ind = d.indicators;
+            const items = [
+                { name: '布林%B', value: ind.BB_PCT ? ind.BB_PCT.toFixed(2) : '--', desc: ind.BB_PCT > 1 ? '超买' : ind.BB_PCT < 0 ? '超卖' : '正常' },
+                { name: 'VWAP', value: ind.VWAP ? ind.VWAP.toFixed(2) : '--', desc: d.current_price > ind.VWAP ? '多头' : '空头' },
+                { name: '量比', value: ind.VOL_RATIO ? ind.VOL_RATIO.toFixed(2) : '--', desc: ind.VOL_RATIO > 2 ? '放量' : ind.VOL_RATIO < 0.5 ? '缩量' : '正常' },
+                { name: 'CCI', value: ind.CCI ? ind.CCI.toFixed(0) : '--', desc: ind.CCI > 100 ? '超买' : ind.CCI < -100 ? '超卖' : '中性' },
+                { name: 'ADX', value: ind.ADX ? ind.ADX.toFixed(0) : '--', desc: ind.ADX > 25 ? '有趋势' : '无趋势' },
+                { name: '+DI/-DI', value: `${(ind.PLUS_DI||0).toFixed(0)}/${(ind.MINUS_DI||0).toFixed(0)}`, desc: ind.PLUS_DI > ind.MINUS_DI ? '多头' : '空头' },
+                { name: 'OBV', value: ind.OBV ? (ind.OBV/10000).toFixed(0)+'万' : '--', desc: '能量潮' },
+                { name: 'ATR', value: ind.ATR ? ind.ATR.toFixed(3) : '--', desc: '波幅' }
+            ];
+            let html = '';
+            items.forEach(i => {
+                html += `<div class="indicator-item"><div class="name">${i.name}</div><div class="value">${i.value}</div><div class="desc">${i.desc}</div></div>`;
+            });
+            document.getElementById('indicatorDetails').innerHTML = html;
+        }
+    }
+
+    // ========== ML信号 ==========
+    function loadMLSignals() {
+        fetch('/api/ml_predict_all').then(r => r.json()).then(d => {
+            if (d.status !== 'success' || !d.data) {
+                document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">信号暂不可用</div>';
+                return;
+            }
+            document.getElementById('mlModelInfo').textContent = `${d.meta.model} · ${d.meta.stocks}只`;
+            
+            let html = '';
+            d.data.forEach(s => {
+                const icon = s.predicted_return > 2 ? '🔥' : s.predicted_return > 0 ? '📈' : s.predicted_return < 0 ? '📉' : '➡️';
+                const rsMom = s.relative_strength.momentum;
+                const momIcon = rsMom > 0.5 ? '↑' : rsMom < -0.5 ? '↓' : '→';
+                
+                html += `
+                <div class="col">
+                    <div class="ml-stock">
+                        <div class="name">${s.name}</div>
+                        <div class="pred">${s.predicted_return > 0 ? '+' : ''}${s.predicted_return}%</div>
+                        <div class="meta">${icon} 动量${momIcon}${rsMom > 0 ? '+' : ''}${rsMom.toFixed(1)}</div>
+                        <span class="badge ${s.confidence==='高'?'bg-danger':s.confidence==='中'?'bg-warning':'bg-secondary'} mt-1">${s.signal} ${s.confidence}</span>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('mlSignalContent').innerHTML = html;
+        }).catch(e => {
+            document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">加载失败</div>';
+        });
+    }
+    loadMLSignals();
+    setInterval(loadMLSignals, 5 * 60 * 1000);
+
+    // ========== 新闻 ==========
+    let newsMode = 'important'; // 'important' or 'all'
+    let allNewsData = [];
+    
+    function toggleNewsMode() {
+        newsMode = newsMode === 'important' ? 'all' : 'important';
+        document.getElementById('newsToggle').textContent = newsMode === 'important' ? '全部' : '重要';
+        renderNews();
+    }
+    
+    function renderNews() {
+        const container = document.getElementById('newsContent');
+        if (!allNewsData || allNewsData.length === 0) {
+            container.innerHTML = '<div class="text-muted small">暂无新闻</div>';
+            return;
+        }
+        
+        // 根据模式筛选
+        let filtered = newsMode === 'important' 
+            ? allNewsData.filter(n => n.is_important)
+            : allNewsData;
+        
+        // 限制显示数量
+        const limit = newsMode === 'important' ? 15 : 30;
+        filtered = filtered.slice(0, limit);
+        
+        let html = '';
+        filtered.forEach(news => {
+            const icon = news.sentiment === '利好' ? '🟢' : (news.sentiment === '利空' ? '🔴' : '⚪');
+            const cls = news.sentiment === '利好' ? 'positive' : (news.sentiment === '利空' ? 'negative' : '');
+            const stockTag = news.related_stocks && news.related_stocks.length > 0 
+                ? `<span class="badge bg-primary ms-1" style="font-size:0.6rem">${news.related_stocks.map(s=>s.code).join(',')}</span>` : '';
+            const importantBadge = news.is_important ? '<span class="badge bg-danger ms-1" style="font-size:0.55rem">重要</span>' : '';
+            
+            html += `
+            <div class="news-item ${cls}">
+                <div style="font-size:0.8rem;font-weight:600">${icon} ${news.title.substring(0,45)}${importantBadge}</div>
+                <div style="font-size:0.65rem;color:#888">[${news.source}] ${news.time}${stockTag}</div>
+            </div>`;
+        });
+        container.innerHTML = html || '<div class="text-muted small">暂无新闻</div>';
+    }
+    
+    function loadNews() {
+        fetch('/api/news').then(r => r.json()).then(d => {
+            if (d.status !== 'success' || !d.data) {
+                document.getElementById('newsContent').innerHTML = '<div class="text-muted small">新闻暂不可用</div>';
+                return;
+            }
+            allNewsData = d.data;
+            const importantCount = d.meta ? d.meta.important_count : d.data.length;
+            document.getElementById('newsCount').textContent = `${d.data.length}条 (重要${importantCount}条)`;
+            renderNews();
+        }).catch(e => {
+            document.getElementById('newsContent').innerHTML = '<div class="text-muted small">加载失败</div>';
+        });
+    }
+    loadNews();
+    setInterval(loadNews, 2 * 60 * 1000);
+
+    // ========== 股票搜索 ==========
+    let customStocks = JSON.parse(localStorage.getItem('customStocks') || '[]');
+    let watchlistCollapsed = false;
+    
+    function updateCustomStocksUI() {
+        const panel = document.getElementById('watchlistPanel');
+        const count = document.getElementById('watchlistCount');
+        
+        if (customStocks.length === 0) {
+            panel.style.display = 'none';
+            return;
+        }
+        
+        panel.style.display = 'block';
+        count.textContent = customStocks.length;
+        refreshWatchlist();
+    }
+    
+    function addCustomStock(code, name, market) {
+        if (customStocks.find(s => s.code === code)) { alert('已在自选中'); return; }
+        customStocks.push({ code, name, market: market || (code.startsWith('6') ? 'sh' : 'sz') });
+        localStorage.setItem('customStocks', JSON.stringify(customStocks));
+        updateCustomStocksUI();
+        document.getElementById('searchResults').style.display = 'none';
+        document.getElementById('searchInput').value = '';
+    }
+    
+    function removeCustomStock(code) {
+        if (!confirm(`确定从自选中删除 ${code}？`)) return;
+        customStocks = customStocks.filter(s => s.code !== code);
+        localStorage.setItem('customStocks', JSON.stringify(customStocks));
+        updateCustomStocksUI();
+    }
+    
+    function toggleWatchlistPanel() {
+        const body = document.getElementById('watchlistBody');
+        const btn = document.querySelector('#watchlistPanel .btn-outline-secondary');
+        watchlistCollapsed = !watchlistCollapsed;
+        body.style.display = watchlistCollapsed ? 'none' : 'block';
+        btn.textContent = watchlistCollapsed ? '展开' : '收起';
+    }
+    
+    function refreshWatchlist() {
+        const tbody = document.getElementById('watchlistTable');
+        if (customStocks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无自选股票</td></tr>';
+            return;
+        }
+        
+        // Render rows with IDs for each stock
+        tbody.innerHTML = customStocks.map(s => 
+            `<tr id="watchlist-${s.code}">
+                <td><strong>${s.code}</strong></td>
+                <td>${s.name || '--'}</td>
+                <td class="watchlist-price">--</td>
+                <td class="watchlist-change">--</td>
+                <td class="watchlist-volume">--</td>
+                <td class="watchlist-pred">--</td>
+                <td class="watchlist-signal">--</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewStock('${s.code}')" title="查看分析">📊</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeCustomStock('${s.code}')" title="删除">✕</button>
+                </td>
+            </tr>`
+        ).join('');
+        
+        // Fetch real-time data for each stock
+        customStocks.forEach(stock => {
+            fetch(`/api/realtime/${stock.code}`).then(r => r.json()).then(d => {
+                if (d.status === 'success') {
+                    updateWatchlistStock(stock.code, d);
+                }
+            }).catch(() => {});
+            
+            // Fetch ML prediction
+            fetch(`/api/ml_predict/${stock.code}`).then(r => r.json()).then(d => {
+                if (d.status === 'success' && d.data) {
+                    updateWatchlistPrediction(stock.code, d.data);
+                }
+            }).catch(() => {});
+        });
+    }
+    
+    function updateWatchlistStock(code, data) {
+        const row = document.getElementById(`watchlist-${code}`);
+        if (!row) return;
+        
+        const price = data.current || data.current_price || 0;
+        const change = data.change_percent || 0;
+        const volume = data.volume || 0;
+        const changeClass = change >= 0 ? 'positive' : 'negative';
+        const changeSign = change >= 0 ? '+' : '';
+        
+        row.querySelector('.watchlist-price').textContent = price.toFixed(2);
+        row.querySelector('.watchlist-change').className = `watchlist-change ${changeClass}`;
+        row.querySelector('.watchlist-change').textContent = `${changeSign}${change.toFixed(2)}%`;
+        row.querySelector('.watchlist-volume').textContent = formatVolume(volume);
+    }
+    
+    function updateWatchlistPrediction(code, data) {
+        const row = document.getElementById(`watchlist-${code}`);
+        if (!row) return;
+        
+        const pred = data.predicted_return || 0;
+        const signal = data.signal || '中性';
+        const predClass = pred >= 0 ? 'positive' : 'negative';
+        const signalClass = signal === '看涨' ? 'signal-bullish' : (signal === '看跌' ? 'signal-bearish' : 'signal-neutral');
+        
+        row.querySelector('.watchlist-pred').className = `watchlist-pred ${predClass}`;
+        row.querySelector('.watchlist-pred').textContent = `${pred >= 0 ? '+' : ''}${(pred * 100).toFixed(1)}%`;
+        row.querySelector('.watchlist-signal').innerHTML = `<span class="signal-tag ${signalClass}">${signal}</span>`;
+    }
+    
+    function formatVolume(vol) {
+        if (vol >= 100000000) return (vol / 100000000).toFixed(2) + '亿';
+        if (vol >= 10000) return (vol / 10000).toFixed(0) + '万';
+        return vol.toString();
+    }
+    
+    function viewStock(code) {
+        // Switch to this stock as the main monitoring target
+        selectStock(code);
+    }
+    
+    // Initialize watchlist on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCustomStocksUI();
+    });
+    
+    function handleSearchKey(event) { if (event.key === 'Enter') searchStock(); }
+    
+    function searchStock() {
+        const keyword = document.getElementById('searchInput').value.trim();
+        if (!keyword) return;
+        const container = document.getElementById('searchResults');
+        container.style.display = 'block';
+        container.innerHTML = '<div class="text-center p-2"><div class="spinner-border spinner-border-sm"></div> 搜索中...</div>';
+        
+        fetch(`/api/search?q=${encodeURIComponent(keyword)}`).then(r => r.json()).then(d => {
+            if (d.status !== 'success' || !d.data || d.data.length === 0) {
+                container.innerHTML = '<div class="text-muted p-2">未找到</div>';
+                return;
+            }
+            let html = '';
+            d.data.forEach(s => {
+                const isAdded = customStocks.find(c => c.code === s.code);
+                html += `
+                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <div>
+                        <strong>${s.code}</strong> ${s.name}
+                        <span class="badge bg-secondary ms-1" style="font-size:0.65rem">${s.type || 'A股'}</span>
+                    </div>
+                    <button class="btn btn-sm ${isAdded ? 'btn-outline-secondary' : 'btn-dark'}" 
+                            onclick="addCustomStock('${s.code}','${s.name}','${s.market}')" ${isAdded ? 'disabled' : ''}>
+                        ${isAdded ? '已添加' : '+ 添加'}
+                    </button>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }).catch(e => { container.innerHTML = '<div class="text-danger p-2">搜索失败</div>'; });
+    }
+    
+    updateCustomStocksUI();
+    </script>
+</body>
+</html>
