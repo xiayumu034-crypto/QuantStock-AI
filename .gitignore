@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+.env
+.DS_Store
+Thumbs.db
+*.log
+temp_repo/
+fix_*.py
+test_*.py
+*.csv
+hailunzhe_data/
+sina_minute_data/
