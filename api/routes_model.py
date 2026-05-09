@@ -53,22 +53,31 @@ def manual_trade():
 
 @model_bp.route('/api/ml_predict/<stock_code>')
 def get_ml_prediction(stock_code):
-    """直接从离线 JSON 中读取预测结果，O(1)响应速度，彻底杜绝线上计算引发的崩溃"""
+    """直接从离线 JSON 中读取预测结果，支持带前缀的代码"""
+    clean_code = stock_code[-6:]
     predictions = read_predictions()
     
-    if stock_code in predictions:
-        pred_data = predictions[stock_code]
+    if clean_code in predictions:
+        pred_data = predictions[clean_code]
+        # 对齐全量接口的 signal 判定逻辑
+        pred_val = pred_data.get("predicted_return", 0)
+        momentum = pred_data.get("momentum", 0.8)
+        
+        signal = "中性"
+        if pred_val > 0.015: signal = "强烈看涨" if momentum > 0.5 else "看涨"
+        elif pred_val > 0.005: signal = "看涨"
+        elif pred_val < -0.01: signal = "看跌"
+
         return jsonify({
             "status": "success",
             "data": {
-                "predicted_return": pred_data["predicted_return"],
-                "signal": pred_data["signal"],
-                "confidence": pred_data.get("confidence", 0.88),
-                "predicted_price": 0  # 前端主要渲染 predicted_return 即可
+                "predicted_return": pred_val,
+                "signal": signal,
+                "confidence": "高" if pred_val > 0.02 else "中"
             }
         })
     else:
-        return jsonify({"status": "error", "message": f"暂无 {stock_code} 的离线预测数据，请等待盘后跑批。"})
+        return jsonify({"status": "error", "message": f"暂无 {clean_code} 的离线预测数据"})
 
 @model_bp.route('/api/ml_predict_all')
 def get_ml_predict_all():

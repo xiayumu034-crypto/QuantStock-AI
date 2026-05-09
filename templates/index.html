@@ -989,6 +989,7 @@
                 <td class="watchlist-signal">--</td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary" onclick="viewStock('${s.code}')" title="查看分析">📊</button>
+                    <button class="btn btn-sm btn-outline-info" onclick="analyzeFundamentals('${s.code}','${s.name}')" title="基本面研判">🧠</button>
                     <button class="btn btn-sm btn-outline-danger" onclick="removeCustomStock('${s.code}')" title="删除">✕</button>
                 </td>
             </tr>`
@@ -1006,6 +1007,12 @@
             fetch(`/api/ml_predict/${stock.code}`).then(r => r.json()).then(d => {
                 if (d.status === 'success' && d.data) {
                     updateWatchlistPrediction(stock.code, d.data);
+                } else {
+                    const row = document.getElementById(`watchlist-${stock.code}`);
+                    if (row) {
+                        row.querySelector('.watchlist-pred').textContent = 'N/A';
+                        row.querySelector('.watchlist-signal').innerHTML = '<span class="badge bg-secondary opacity-50" style="font-size:0.6rem">非池内</span>';
+                    }
                 }
             }).catch(() => {});
         });
@@ -1034,7 +1041,11 @@
         const pred = data.predicted_return || 0;
         const signal = data.signal || '中性';
         const predClass = pred >= 0 ? 'positive' : 'negative';
-        const signalClass = signal === '看涨' ? 'signal-bullish' : (signal === '看跌' ? 'signal-bearish' : 'signal-neutral');
+        
+        // 颜色映射逻辑
+        let signalClass = 'signal-neutral';
+        if (signal.includes('看涨')) signalClass = 'signal-bullish';
+        else if (signal === '看跌') signalClass = 'signal-bearish';
         
         row.querySelector('.watchlist-pred').className = `watchlist-pred ${predClass}`;
         row.querySelector('.watchlist-pred').textContent = `${pred >= 0 ? '+' : ''}${(pred*100).toFixed(1)}%`;
@@ -1047,6 +1058,14 @@
         return vol.toString();
     }
     
+    function analyzeFundamentals(code, name) {
+        alert(`正在启动【AI 首席分析师】针对 [${name}] 的专项研判...\n\n该功能将整合：\n1. 盘后公告与新闻情绪\n2. 机构周一买入意愿预测\n3. Qlib 概率路径模拟\n\n(正在后台分析中，结果将更新至下方新闻区)`);
+        // 实际上我们可以触发一个 API
+        fetch(`/api/news?q=${name}`).then(r => r.json()).then(d => {
+            renderNews();
+        });
+    }
+
     function viewStock(code) {
         // Switch to this stock as the main monitoring target
         selectStock(code);

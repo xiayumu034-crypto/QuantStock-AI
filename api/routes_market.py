@@ -23,17 +23,21 @@ def get_stock_list():
 
 @market_bp.route('/api/realtime/<stock_code>')
 def get_realtime(stock_code):
-    return jsonify(stock_api.get_realtime_data(stock_code))
+    # 处理带前缀的代码，如 sz300201 -> 300201
+    clean_code = stock_code[-6:]
+    return jsonify(stock_api.get_realtime_data(clean_code))
 
 @market_bp.route('/api/minute/<stock_code>')
 def get_minute(stock_code):
+    clean_code = stock_code[-6:]
     scale = request.args.get('scale', 5, type=int)
     datalen = request.args.get('datalen', 48, type=int)
-    return jsonify(stock_api.get_minute_data(stock_code, scale, datalen))
+    return jsonify(stock_api.get_minute_data(clean_code, scale, datalen))
 
 @market_bp.route('/api/technical/<stock_code>')
 def get_technical(stock_code):
-    minute_data = stock_api.get_minute_data(stock_code, scale=5, datalen=100)
+    clean_code = stock_code[-6:]
+    minute_data = stock_api.get_minute_data(clean_code, scale=5, datalen=100)
     if minute_data['status'] == 'success':
         technical_data = stock_api.calculate_technical_indicators(minute_data['data'])
         if technical_data:
