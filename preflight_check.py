@@ -3,6 +3,7 @@
 """上线前全面检查"""
 import sys, os
 import shutil
+import importlib.metadata
 
 print("=" * 50)
 print("  监控系统上线前检查 (uv 环境)")
@@ -20,40 +21,39 @@ print(f"    UV Path: {uv_path if uv_path else '未找到'}")
 print(f"\n[1] Python: {sys.version.split(' ')[0]}")
 
 # 2. 依赖检查
-try:
-    import flask; print(f"[2] Flask: {flask.__version__}")
-except Exception as e:
-    errors.append(f"Flask 缺失: {e}")
-    print(f"[2] Flask: FAILED - {e}")
+print("\n[2] 核心依赖检查...")
+core_deps = [
+    "flask", "requests", "pandas", "numpy", 
+    "lightgbm", "scikit-learn", "akshare", "scipy"
+]
 
-try:
-    import pandas; print(f"[3] Pandas: {pandas.__version__}")
-except Exception as e:
-    errors.append(f"Pandas 缺失: {e}")
-    print(f"[3] Pandas: FAILED - {e}")
-
-try:
-    import requests; print(f"[4] Requests: {requests.__version__}")
-except Exception as e:
-    errors.append(f"Requests 缺失: {e}")
-    print(f"[4] Requests: FAILED - {e}")
+for pkg in core_deps:
+    try:
+        ver = importlib.metadata.version(pkg)
+        print(f"  [OK] {pkg}: {ver}")
+    except importlib.metadata.PackageNotFoundError:
+        errors.append(f"{pkg} 缺失")
+        print(f"  [FAIL] {pkg}: 未安装!")
+    except Exception as e:
+        errors.append(f"{pkg} 异常: {e}")
+        print(f"  [FAIL] {pkg}: {e}")
 
 # 可选依赖检查 (不报错)
-print("\n[可选依赖检查 (WARNING ONLY)]")
+print("\n[3] 可选依赖检查 (WARNING ONLY)...")
 try:
-    import qlib
-    print("  [OK] pyqlib 已安装")
-except ImportError:
+    qlib_ver = importlib.metadata.version("pyqlib")
+    print(f"  [OK] pyqlib: {qlib_ver}")
+except importlib.metadata.PackageNotFoundError:
     print("  [WARN] pyqlib 未安装 (仅影响离线训练/推理，Web大屏仍可运行)")
 
 try:
-    import vnpy
-    print("  [OK] vnpy 已安装")
-except ImportError:
+    vnpy_ver = importlib.metadata.version("vnpy")
+    print(f"  [OK] vnpy: {vnpy_ver}")
+except importlib.metadata.PackageNotFoundError:
     print("  [WARN] vnpy 未安装 (仅影响实盘自动交易)")
 
 # 3. 核心文件检查
-print("\n[5] 核心资源检查...")
+print("\n[4] 核心资源检查...")
 files = {
     "app.py": "app.py",
     "templates/index.html": "templates/index.html",
