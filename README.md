@@ -16,14 +16,18 @@
 ## 🚀 快速开始
 
 ```bash
-# 启动 Web 与 API 服务
+# 1. 启动 Web 与 API 服务
 pip install -r requirements.txt
-python start_app.py
+python app.py
 # 打开 http://localhost:5000
 
-# （后台数据更新与推理，可配置为定时任务）
-python fetch_hs300_qlib.py
-python daily_inference.py
+# ================================
+# 以下为 Qlib 跑批与数据更新命令 (可选)
+# 注：Qlib 依赖不在基础 requirements.txt 中，需自行配置独立的 Qlib 环境
+# pip install pyqlib
+# ================================
+# python fetch_hs300_qlib.py
+# python daily_inference.py
 ```
 
 ## 🤖 v17 模型

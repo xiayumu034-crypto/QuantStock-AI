@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, render_template
 import requests
 import pandas as pd
+import re
 from data.market_data import StockDataAPI
 
 market_bp = Blueprint('market', __name__)
@@ -68,7 +69,6 @@ def search_stocks():
         try:
             response = requests.get(url, timeout=3)
             response.encoding = 'gbk'
-            import re
             match = re.search(r'="(.+)"', response.text)
             if match:
                 items = match.group(1).split(';')

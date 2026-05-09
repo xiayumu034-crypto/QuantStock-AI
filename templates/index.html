@@ -824,7 +824,11 @@
                 document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">信号暂不可用</div>';
                 return;
             }
-            document.getElementById('mlModelInfo').textContent = `${d.meta.model} · ${d.meta.stocks}只`;
+            if(d.meta && d.meta.sample) {
+                document.getElementById('mlModelInfo').innerHTML = `<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> 样例数据 (请运行 daily_inference.py)</span>`;
+            } else {
+                document.getElementById('mlModelInfo').textContent = `${d.meta.model} · ${d.meta.stocks}只`;
+            }
             
             allMLData = d.data;
             handleMLFilterChange(); // 初始调用一次过滤（默认全部）
@@ -867,6 +871,13 @@
     function sendManualTrade(direction) {
         const code = document.getElementById('trade-code').value || '300201';
         const volume = document.getElementById('trade-vol').value || 100;
+        const btn = event.currentTarget || document.activeElement;
+        const oldText = btn ? btn.innerHTML : direction;
+        
+        if (btn) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" style="width: 1rem; height: 1rem;"></span>';
+            btn.disabled = true;
+        }
         
         fetch('/api/trade/manual', {
             method: 'POST',
@@ -878,7 +889,13 @@
             } else {
                 alert('下单失败: ' + d.message);
             }
-        }).catch(e => alert('请求失败'));
+        }).catch(e => alert('请求失败'))
+        .finally(() => {
+            if (btn) {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        });
     }
 
     // ========== 新闻 ==========

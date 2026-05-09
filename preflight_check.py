@@ -53,8 +53,9 @@ except Exception as e:
 files = {
     "app.py": "app.py",
     "templates/index.html": "templates/index.html",
-    "model_output/lgb_model_v17.pkl": "model_output/lgb_model_v17.pkl",
-    "model_output/features_v17.json": "model_output/features_v17.json",
+    "data/stock_names.json": "data/stock_names.json",
+    "model_output/daily_predictions.json": "model_output/daily_predictions.json",
+    "model_output/trade_logs.json": "model_output/trade_logs.json"
 }
 for name, path in files.items():
     if os.path.exists(path):
@@ -63,6 +64,17 @@ for name, path in files.items():
     else:
         errors.append(f"{name} not found")
         print(f"[8] {name}: MISSING!")
+
+# 附加警告检查：真实预跑批产物
+print("\n[8.5] 检查跑批产物 (WARNING ONLY)...")
+runtime_files = [
+    "model_output/daily_predictions.json",
+    "model_output/lgb_model_v17.pkl",
+    "model_output/features_v17.json"
+]
+for p in runtime_files:
+    if not os.path.exists(p):
+        print(f"  [WARN] 缺少真实业务文件: {p} (建议运行 train_qlib_v17.py 或 daily_inference.py 生成)")
 
 # 4. 语法检查
 try:

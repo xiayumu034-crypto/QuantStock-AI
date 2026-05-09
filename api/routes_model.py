@@ -2,19 +2,15 @@ from flask import Blueprint, jsonify, request
 import json
 import os
 import subprocess
+import time
 from data.market_data import StockDataAPI
+from api.model_service import read_daily_predictions
 
 model_bp = Blueprint('model', __name__)
 stock_api = StockDataAPI()
 
-PREDICTIONS_FILE = "model_output/daily_predictions.json"
 TRADE_LOGS_FILE = "model_output/trade_logs.json"
-
-def read_predictions():
-    if os.path.exists(PREDICTIONS_FILE):
-        with open(PREDICTIONS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return {}
+SAMPLE_TRADE_LOGS_FILE = "model_output/sample_trade_logs.json"
 
 @model_bp.route('/api/predict/<stock_code>')
 def get_prediction(stock_code):
@@ -24,6 +20,9 @@ def get_prediction(stock_code):
 def get_trade_logs():
     if os.path.exists(TRADE_LOGS_FILE):
         with open(TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
+            return jsonify({"status": "success", "data": json.load(f)})
+    elif os.path.exists(SAMPLE_TRADE_LOGS_FILE):
+        with open(SAMPLE_TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
             return jsonify({"status": "success", "data": json.load(f)})
     return jsonify({"status": "success", "data": []})
 
@@ -48,6 +47,24 @@ def manual_trade():
     # 模拟鉴权及环境变量判断
     trade_mode = os.environ.get("TRADE_MODE", "mock")
     if trade_mode == "mock":
+        # 追加一条 mock 日志
+        mock_log = {
+            "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "direction": direction,
+            "direction_label": f"手工{'买入' if direction == 'buy' else '卖出'}",
+            "source": "manual",
+            "code": code,
+            "price": price,
+            "volume": volume,
+            "status": "已成交(Mock)"
+        }
+        logs = []
+        if os.path.exists(SAMPLE_TRADE_LOGS_FILE):
+            with open(SAMPLE_TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
+                logs = json.load(f).get("data", [])
+        logs.insert(0, mock_log)
+        with open(SAMPLE_TRADE_LOGS_FILE, 'w', encoding='utf-8') as f:
+            json.dump({"status": "success", "data": logs}, f, ensure_ascii=False, indent=4)
         return jsonify({"status": "success", "message": f"[Mock模式] 模拟指令发送成功: {direction} {code} {volume}股"})
 
     try:
@@ -71,7 +88,7 @@ def manual_trade():
 def get_ml_prediction(stock_code):
     """直接从离线 JSON 中读取预测结果，支持带前缀的代码"""
     clean_code = stock_code[-6:]
-    predictions = read_predictions()
+    predictions, is_sample = read_daily_predictions()
     
     if clean_code in predictions:
         pred_data = predictions[clean_code]
@@ -90,7 +107,8 @@ def get_ml_prediction(stock_code):
                 "predicted_return": pred_val,
                 "signal": signal,
                 "confidence": "高" if pred_val > 0.02 else "中"
-            }
+            },
+            "meta": {"sample": is_sample}
         })
     else:
         return jsonify({"status": "error", "message": f"暂无 {clean_code} 的离线预测数据"})
@@ -98,7 +116,7 @@ def get_ml_prediction(stock_code):
 @model_bp.route('/api/ml_predict_all')
 def get_ml_predict_all():
     """获取全量预测结果"""
-    predictions = read_predictions()
+    predictions, is_sample = read_daily_predictions()
     
     # 加载股票名称映射
     names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stock_names.json")
@@ -138,6 +156,6 @@ def get_ml_predict_all():
             
     return jsonify({
         "status": "success",
-        "meta": {"model": "Qlib v17", "stocks": len(results)},
+        "meta": {"model": "Qlib v17", "stocks": len(results), "sample": is_sample},
         "data": results
     })
