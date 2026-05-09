@@ -183,28 +183,6 @@
                 </div>
             </div>
         </div>
-        <!-- AI 研判报告弹窗 -->
-        <div class="modal fade" id="aiAnalyzeModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-dark text-white border-secondary">
-                    <div class="modal-header border-secondary">
-                        <h5 class="modal-title">🧠 AI 首席分析师 · 专项研判报告</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="aiAnalyzeContent">
-                            <div class="text-center py-5">
-                                <div class="spinner-border text-primary"></div>
-                                <div class="mt-2 small text-white-50">正在调动全网数据进行基本面研判...</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">收到</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="container-fluid px-4 mt-3">
@@ -554,19 +532,32 @@
     // ========== 图表 ==========
     function makeChart(canvasId, type, datasets, extraOpts) {
         const ctx = document.getElementById(canvasId).getContext('2d');
+        const gridConfig = { color: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' };
+        
         return new Chart(ctx, {
             type, data: { labels: [], datasets },
-            options: Object.assign({ responsive: true, maintainAspectRatio: false, animation: { duration: 300 }, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } } }, extraOpts || {})
+            options: Object.assign({ 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                animation: { duration: 300 }, 
+                scales: {
+                    x: { grid: gridConfig, ticks: { color: '#888' } },
+                    y: { grid: gridConfig, ticks: { color: '#888' } }
+                },
+                plugins: { 
+                    legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 }, color: '#aaa' } } 
+                } 
+            }, extraOpts || {})
         });
     }
 
     function initAllCharts() {
         charts.price = makeChart('priceChart', 'line', [
-            { label: '价格', data: [], borderColor: '#1a1a2e', borderWidth: 2, pointRadius: 1, tension: 0.3, fill: false, order: 1 },
-            { label: 'VWAP', data: [], borderColor: '#ff9800', borderWidth: 1.5, borderDash: [5,3], pointRadius: 0, fill: false, order: 2 },
-            { label: '布林上轨', data: [], borderColor: 'rgba(255,0,0,0.3)', borderWidth: 1, pointRadius: 0, fill: false, order: 3 },
-            { label: '布林中轨', data: [], borderColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderDash: [4,2], pointRadius: 0, fill: false, order: 3 },
-            { label: '布林下轨', data: [], borderColor: 'rgba(0,128,0,0.3)', borderWidth: 1, pointRadius: 0, fill: '+1', backgroundColor: 'rgba(0,128,0,0.05)', order: 3 }
+            { label: '价格', data: [], borderColor: '#00e5ff', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false, order: 1 },
+            { label: 'VWAP', data: [], borderColor: '#ffea00', borderWidth: 1.5, borderDash: [4,2], pointRadius: 0, fill: false, order: 2 },
+            { label: '布林上轨', data: [], borderColor: 'rgba(255, 82, 82, 0.7)', borderWidth: 1, pointRadius: 0, fill: false, order: 3 },
+            { label: '布林中轨', data: [], borderColor: 'rgba(255, 255, 255, 0.3)', borderWidth: 1, borderDash: [4,2], pointRadius: 0, fill: false, order: 3 },
+            { label: '布林下轨', data: [], borderColor: 'rgba(0, 230, 118, 0.7)', borderWidth: 1, pointRadius: 0, fill: '+1', backgroundColor: 'rgba(0, 230, 118, 0.05)', order: 3 }
         ], { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: false }, x: { ticks: { maxTicksLimit: 10 } } } });
 
         charts.volume = makeChart('volumeChart', 'bar', [
@@ -575,28 +566,28 @@
 
         charts.macd = makeChart('macdChart', 'bar', [
             { label: 'MACD', data: [], backgroundColor: [], borderWidth: 0, order: 2 },
-            { label: 'DIF', data: [], borderColor: '#1f77b4', borderWidth: 2, type: 'line', fill: false, order: 1 },
-            { label: 'DEA', data: [], borderColor: '#ff7f0e', borderWidth: 2, type: 'line', fill: false, order: 1 }
+            { label: 'DIF', data: [], borderColor: '#00e5ff', borderWidth: 1.5, type: 'line', fill: false, order: 1 },
+            { label: 'DEA', data: [], borderColor: '#ffea00', borderWidth: 1.5, type: 'line', fill: false, order: 1 }
         ]);
 
         charts.kdj = makeChart('kdjChart', 'line', [
-            { label: 'K', data: [], borderColor: '#1f77b4', borderWidth: 2, pointRadius: 0, fill: false },
-            { label: 'D', data: [], borderColor: '#ff7f0e', borderWidth: 2, pointRadius: 0, fill: false },
-            { label: 'J', data: [], borderColor: '#2ca02c', borderWidth: 2, pointRadius: 0, fill: false }
+            { label: 'K', data: [], borderColor: '#00e5ff', borderWidth: 1.5, pointRadius: 0, fill: false },
+            { label: 'D', data: [], borderColor: '#ffea00', borderWidth: 1.5, pointRadius: 0, fill: false },
+            { label: 'J', data: [], borderColor: '#ff4081', borderWidth: 1.5, pointRadius: 0, fill: false }
         ], { scales: { y: { beginAtZero: false } } });
 
         charts.rsi = makeChart('rsiChart', 'line', [
-            { label: 'RSI14', data: [], borderColor: '#9c27b0', borderWidth: 2, pointRadius: 0, fill: false }
+            { label: 'RSI14', data: [], borderColor: '#e040fb', borderWidth: 2, pointRadius: 0, fill: false }
         ], { scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } });
 
         charts.cci = makeChart('cciChart', 'line', [
-            { label: 'CCI', data: [], borderColor: '#00838f', borderWidth: 2, pointRadius: 0, fill: false }
+            { label: 'CCI', data: [], borderColor: '#00e676', borderWidth: 2, pointRadius: 0, fill: false }
         ], { scales: { y: { beginAtZero: false } }, plugins: { legend: { display: false } } });
 
         charts.dmi = makeChart('dmiChart', 'line', [
-            { label: '+DI', data: [], borderColor: '#ff4b4b', borderWidth: 2, pointRadius: 0, fill: false },
-            { label: '-DI', data: [], borderColor: '#00d56b', borderWidth: 2, pointRadius: 0, fill: false },
-            { label: 'ADX', data: [], borderColor: '#333', borderWidth: 1.5, borderDash: [4,2], pointRadius: 0, fill: false }
+            { label: '+DI', data: [], borderColor: '#ff5252', borderWidth: 2, pointRadius: 0, fill: false },
+            { label: '-DI', data: [], borderColor: '#00e676', borderWidth: 2, pointRadius: 0, fill: false },
+            { label: 'ADX', data: [], borderColor: '#aaa', borderWidth: 1.5, borderDash: [4,2], pointRadius: 0, fill: false }
         ]);
     }
 
@@ -1234,6 +1225,28 @@
             });
         });
     </script>
+    <!-- AI 研判报告弹窗 (已移至最外层防止 z-index 冲突) -->
+    <div class="modal fade" id="aiAnalyzeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">🧠 AI 首席分析师 · 专项研判报告</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="aiAnalyzeContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary"></div>
+                            <div class="mt-2 small text-white-50">正在调动全网数据进行基本面研判...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">收到</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
