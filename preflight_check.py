@@ -53,8 +53,8 @@ except Exception as e:
 files = {
     "app.py": "app.py",
     "templates/index.html": "templates/index.html",
-    "model_output/lgb_model_v16.pkl": "model_output/lgb_model_v16.pkl",
-    "model_output/features_v16.json": "model_output/features_v16.json",
+    "model_output/lgb_model_v17.pkl": "model_output/lgb_model_v17.pkl",
+    "model_output/features_v17.json": "model_output/features_v17.json",
 }
 for name, path in files.items():
     if os.path.exists(path):
