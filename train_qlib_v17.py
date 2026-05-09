@@ -100,15 +100,17 @@ def main():
     # 5. 评估并保存指标
     from sklearn.metrics import mean_squared_error, mean_absolute_error
     y_pred = model.predict(X_test)
-    rmse = mean_squared_error(y_test, y_pred, squared=False)
-    mae = mean_absolute_error(y_test, y_pred)
+    rmse = float(np.sqrt(mean_squared_error(y_test, y_pred)))
+    mae = float(mean_absolute_error(y_test, y_pred))
     
     # 简单计算 Rank IC
     try:
         test_df = pd.DataFrame({'pred': y_pred, 'label': y_test})
         test_df['date'] = dates[test_mask]
         ic_list = test_df.groupby('date').apply(lambda x: x['pred'].corr(x['label'], method='spearman'))
-        mean_ic = ic_list.mean()
+        mean_ic = float(ic_list.mean())
+        if np.isnan(mean_ic):
+            mean_ic = 0.0
     except Exception as e:
         mean_ic = 0.0
         print(f"Rank IC 计算失败: {e}")

@@ -234,6 +234,7 @@
                     <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseML">
                         <div class="title" style="margin-bottom: 0;">🤖 Qlib v17 信号</div>
                         <div class="d-flex align-items-center">
+                            <span class="badge text-info me-2" id="modelReportBadge" style="font-size: 0.75rem; cursor: help;">状态检测中</span>
                             <span class="badge text-white me-2" id="mlModelInfo">加载中...</span>
                             <span class="collapse-icon">▼</span>
                         </div>
@@ -829,6 +830,26 @@
             } else {
                 document.getElementById('mlModelInfo').textContent = `${d.meta.model} · ${d.meta.stocks}只`;
             }
+            
+            // 获取模型评估简报
+            fetch('/api/model_report').then(rr => rr.json()).then(rd => {
+                let badge = document.getElementById('modelReportBadge');
+                if(rd.status === 'success' && rd.data && rd.data.health_check) {
+                    let uniqueStr = rd.data.prediction_distribution ? rd.data.prediction_distribution.unique_values : "?";
+                    let warnIcon = rd.data.health_check.warnings.length > 0 ? '⚠️' : '✅';
+                    badge.innerHTML = `${warnIcon} 唯一值 ${uniqueStr}/${rd.data.stock_count}`;
+                    if(rd.data.health_check.warnings.length > 0) {
+                        badge.className = "badge text-warning me-2";
+                        badge.title = rd.data.health_check.warnings.join("\n");
+                    } else {
+                        badge.className = "badge text-success me-2";
+                        badge.title = "预测分布正常";
+                    }
+                } else {
+                    badge.innerHTML = '暂无报告';
+                    badge.className = "badge text-secondary me-2";
+                }
+            }).catch(e => console.log('获取评估报告失败', e));
             
             allMLData = d.data;
             handleMLFilterChange(); // 初始调用一次过滤（默认全部）

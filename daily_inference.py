@@ -77,12 +77,24 @@ def main():
             "predicted_return": pred_return,
             "signal": signal,
             "confidence": 0.88,
-            "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "momentum": 0.8  # TODO: 从真实指标计算
         }
+        
+    final_output = {
+        "_meta": {
+            "model_version": "v17",
+            "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "stock_count": len(predictions_dict),
+            "feature_count": len(feature_names),
+            "end_date": end_date,
+            "is_sample": False
+        },
+        "data": predictions_dict
+    }
         
     out_file = "model_output/daily_predictions.json"
     with open(out_file, 'w', encoding='utf-8') as f:
-        json.dump(predictions_dict, f, ensure_ascii=False, indent=4)
+        json.dump(final_output, f, ensure_ascii=False, indent=4)
         
     print(f"[Inference] 批量离线预测完成，共计 {len(predictions_dict)} 只股票。")
     print(f"[Inference] 预测结果已输出至 {out_file}")

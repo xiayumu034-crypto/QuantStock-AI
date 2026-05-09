@@ -37,11 +37,13 @@ def evaluate_predictions():
     # 因为历史代码有些英文有些中文，做一下容错统一
     signal_map = {"bullish": "看涨", "bearish": "看跌", "neutral": "中性"}
     
-    # 如果预测数据包了一层 {"status": "success", "data": ...} 需要解包
-    # 虽然目前架构不这样，但容错
-    items = preds.items()
-    if "data" in preds and isinstance(preds["data"], dict) and "status" in preds:
+    # 兼容新的 _meta 结构
+    if "_meta" in preds and "data" in preds:
         items = preds["data"].items()
+    elif "data" in preds and isinstance(preds["data"], dict) and "status" in preds:
+        items = preds["data"].items()
+    else:
+        items = preds.items()
 
     for code, data in items:
         # 有些是 dict，有些可能因为格式乱掉是其他，做个安全判断
@@ -70,14 +72,33 @@ def evaluate_predictions():
     mean_ret = sum(returns) / n_stocks
     std_ret = (sum((x - mean_ret)**2 for x in returns) / n_stocks) ** 0.5
     
-    # 排序计算 Top / Bottom (仅记录 code, name 取不到先用 code)
+    # 加载股票名称映射
+    names_file = "data/stock_names.json"
+    stock_names = {}
+    if os.path.exists(names_file):
+        with open(names_file, 'r', encoding='utf-8') as f:
+            stock_names = json.load(f)
+
+    # 排序计算 Top / Bottom
     sorted_items = sorted(items, key=lambda x: x[1].get("predicted_return", 0.0), reverse=True)
-    top_5 = [{"code": k, "pred": v.get("predicted_return", 0)} for k,v in sorted_items[:5]]
-    bottom_5 = [{"code": k, "pred": v.get("predicted_return", 0)} for k,v in sorted_items[-5:]]
+    top_5 = [{"code": k, "name": stock_names.get(k, f"代码-{k}"), "pred": v.get("predicted_return", 0)} for k,v in sorted_items[:5]]
+    bottom_5 = [{"code": k, "name": stock_names.get(k, f"代码-{k}"), "pred": v.get("predicted_return", 0)} for k,v in sorted_items[-5:]]
     
+    duplicate_ratio = 1.0 - unique_returns / n_stocks if n_stocks > 0 else 0
+    top_spread = max_ret - min_ret
+    
+    warnings = []
+    if duplicate_ratio > 0.7:  # unique_values/stock_count < 0.3
+        warnings.append("预测离散度偏低，重复值过多，建议扩展特征或调整模型参数")
+
     report = {
         "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "is_sample": is_sample,
+        "health_check": {
+            "warnings": warnings,
+            "duplicate_ratio": round(duplicate_ratio, 4),
+            "top_spread": round(top_spread, 6)
+        },
         "stock_count": n_stocks,
         "prediction_distribution": {
             "min": round(min_ret, 6),

@@ -127,7 +127,7 @@ def manual_trade():
 def get_ml_prediction(stock_code):
     """直接从离线 JSON 中读取预测结果，支持带前缀的代码"""
     clean_code = stock_code[-6:]
-    predictions, is_sample = read_daily_predictions()
+    predictions, is_sample, meta = read_daily_predictions()
     
     if clean_code in predictions:
         pred_data = predictions[clean_code]
@@ -147,7 +147,7 @@ def get_ml_prediction(stock_code):
                 "signal": signal,
                 "confidence": "高" if pred_val > 0.02 else "中"
             },
-            "meta": {"sample": is_sample}
+            "meta": {"sample": is_sample, "model": meta.get("model_version", "v17")}
         })
     else:
         return jsonify({"status": "error", "message": f"暂无 {clean_code} 的离线预测数据"})
@@ -155,7 +155,7 @@ def get_ml_prediction(stock_code):
 @model_bp.route('/api/ml_predict_all')
 def get_ml_predict_all():
     """获取全量预测结果"""
-    predictions, is_sample = read_daily_predictions()
+    predictions, is_sample, meta = read_daily_predictions()
     
     # 加载股票名称映射
     names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stock_names.json")
@@ -195,6 +195,6 @@ def get_ml_predict_all():
             
     return jsonify({
         "status": "success",
-        "meta": {"model": "Qlib v17", "stocks": len(results), "sample": is_sample},
+        "meta": {"model": meta.get("model_version", "Qlib v17"), "stocks": len(results), "sample": is_sample},
         "data": results
     })
