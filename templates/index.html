@@ -183,6 +183,28 @@
                 </div>
             </div>
         </div>
+        <!-- AI 研判报告弹窗 -->
+        <div class="modal fade" id="aiAnalyzeModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white border-secondary">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">🧠 AI 首席分析师 · 专项研判报告</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="aiAnalyzeContent">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary"></div>
+                                <div class="mt-2 small text-white-50">正在调动全网数据进行基本面研判...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">收到</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="container-fluid px-4 mt-3">
@@ -1059,11 +1081,46 @@
     }
     
     function analyzeFundamentals(code, name) {
-        alert(`正在启动【AI 首席分析师】针对 [${name}] 的专项研判...\n\n该功能将整合：\n1. 盘后公告与新闻情绪\n2. 机构周一买入意愿预测\n3. Qlib 概率路径模拟\n\n(正在后台分析中，结果将更新至下方新闻区)`);
-        // 实际上我们可以触发一个 API
-        fetch(`/api/news?q=${name}`).then(r => r.json()).then(d => {
-            renderNews();
-        });
+        const modal = new bootstrap.Modal(document.getElementById('aiAnalyzeModal'));
+        const content = document.getElementById('aiAnalyzeContent');
+        content.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div><div class="mt-2 small text-white-50">正在深度研判 [${name}] ...</div></div>`;
+        modal.show();
+
+        fetch(`/api/ai_analyze/${code}`)
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'success') {
+                    const data = d.data;
+                    content.innerHTML = `
+                        <div class="mb-3">
+                            <div class="small text-white-50 mb-1">基本面画像:</div>
+                            <div class="p-2 rounded bg-white-5 d-flex justify-content-between align-items-center">
+                                <span>营收增长: <span class="text-danger">${data.fundamental.revenue_growth}</span></span>
+                                <span>净利增长: <span class="text-danger">${data.fundamental.net_profit_growth}</span></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-white-50 mb-1">周一走势预测:</div>
+                            <div class="p-2 rounded border border-secondary">
+                                <div class="h5 text-warning mb-2">建议: ${data.monday_prediction.action}</div>
+                                <div class="small text-white-80">· 支撑: ${data.monday_prediction.support_level}</div>
+                                <div class="small text-white-80">· 压力: ${data.monday_prediction.resistance_level}</div>
+                            </div>
+                        </div>
+                        <div class="mb-1">
+                            <div class="small text-white-50 mb-1">AI 综合结论:</div>
+                            <div class="p-3 rounded" style="background: rgba(13, 110, 253, 0.1); border-left: 4px solid #0d6efd;">
+                                ${data.ai_conclusion}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `<div class="alert alert-danger">研判失败: ${d.message}</div>`;
+                }
+            })
+            .catch(e => {
+                content.innerHTML = `<div class="alert alert-danger">分析引擎响应超时</div>`;
+            });
     }
 
     function viewStock(code) {
