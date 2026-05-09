@@ -1,0 +1,1676 @@
+{
+    "600010": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600011": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600015": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600016": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600018": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600019": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600023": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600025": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600027": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600028": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600029": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600030": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600031": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600036": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600039": {
+        "predicted_return": 0.002943429366799113,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600048": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600050": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600061": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600066": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600085": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600104": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600111": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600115": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600150": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600160": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600161": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600176": {
+        "predicted_return": 0.0012348872287647492,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600183": {
+        "predicted_return": 0.0008217692950284861,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600196": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600233": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600276": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600309": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600346": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600362": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600372": {
+        "predicted_return": 0.0012934226219284404,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600377": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600406": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600415": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600426": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600436": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600438": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600482": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600489": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600515": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600519": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600522": {
+        "predicted_return": -0.001717611216614474,
+        "signal": "bearish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600547": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600570": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600584": {
+        "predicted_return": 0.005361410840564514,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600585": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600588": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600660": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600674": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600690": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600741": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600760": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600795": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600803": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600809": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600845": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600875": {
+        "predicted_return": 0.0013227795153989298,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600886": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600887": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600893": {
+        "predicted_return": 0.0008024070783610702,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600900": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600905": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600918": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600919": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600926": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600930": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600938": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600941": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600958": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600989": {
+        "predicted_return": 0.0010745341778883495,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "600999": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601006": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601009": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601012": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601018": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601021": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601058": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601059": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601066": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601077": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601088": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601100": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601111": {
+        "predicted_return": 0.0008024070783610702,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601117": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601127": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601136": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601138": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601166": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601169": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601186": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601211": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601225": {
+        "predicted_return": 0.0008968325291774118,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601229": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601236": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601288": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601298": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601318": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601319": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601328": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601336": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601377": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601390": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601398": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601456": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601600": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601601": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601607": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601618": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601628": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601633": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601658": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601668": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601669": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601688": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601689": {
+        "predicted_return": 0.005294655510763535,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601698": {
+        "predicted_return": 0.0018805561965386148,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601728": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601766": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601788": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601800": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601816": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601818": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601825": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601857": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601868": {
+        "predicted_return": 0.0041005632197390765,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601872": {
+        "predicted_return": 0.0015747744929221577,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601877": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601878": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601881": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601888": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601898": {
+        "predicted_return": 0.0011466555653074418,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601899": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601901": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601916": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601919": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601939": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601985": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601988": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601995": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "601998": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603019": {
+        "predicted_return": 0.0008217692950284861,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603195": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603259": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603260": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603296": {
+        "predicted_return": 0.005294655510763535,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603369": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603392": {
+        "predicted_return": 0.0016835557753216686,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603501": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603799": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603893": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603986": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "603993": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "605117": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "605499": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688008": {
+        "predicted_return": 0.00686016234722108,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688012": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688041": {
+        "predicted_return": 0.0029486215381925493,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688047": {
+        "predicted_return": 0.0023803284418157378,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688082": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688111": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688126": {
+        "predicted_return": 0.0014125888774756865,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688169": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688187": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688223": {
+        "predicted_return": 0.0016307331604085847,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688256": {
+        "predicted_return": -0.010108696389931636,
+        "signal": "bearish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688271": {
+        "predicted_return": 0.0008024070783610702,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688303": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688396": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688472": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688506": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "688981": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000001": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000100": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000166": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000301": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000333": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000338": {
+        "predicted_return": 0.0023803284418157378,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000408": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000538": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000568": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000596": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000617": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000625": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000630": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000661": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000708": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000725": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000768": {
+        "predicted_return": 0.0008024070783610702,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000776": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000786": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000792": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000807": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000876": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000895": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000938": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000963": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000975": {
+        "predicted_return": 0.001643049696938301,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000977": {
+        "predicted_return": 0.0015709283095192083,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000983": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "000999": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "001391": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "001965": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "001979": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002001": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002027": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002028": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002049": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002050": {
+        "predicted_return": 0.007326480665301594,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002074": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002142": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002179": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002230": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002236": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002241": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002252": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002304": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002311": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002352": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002371": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002384": {
+        "predicted_return": -0.00020997086684063884,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002415": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002422": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002459": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002460": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002463": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002466": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002475": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002493": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002594": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002600": {
+        "predicted_return": 0.0008024070783610702,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002601": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002625": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002648": {
+        "predicted_return": 0.0008217692950284861,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002709": {
+        "predicted_return": 0.0022754159208233067,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002714": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002736": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002916": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002920": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "002938": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "003816": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300014": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300015": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300033": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300059": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300122": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300124": {
+        "predicted_return": 0.0014847102648947793,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300201": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300251": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300274": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300308": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300316": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300347": {
+        "predicted_return": 0.0008968325291774118,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300394": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300408": {
+        "predicted_return": 0.0008217692950284861,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300413": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300418": {
+        "predicted_return": 0.0014847102648947793,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300433": {
+        "predicted_return": 0.001435174768829121,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300442": {
+        "predicted_return": 0.0014847102648947793,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300476": {
+        "predicted_return": 0.0015747744929221577,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300498": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300502": {
+        "predicted_return": 0.0010329855890876501,
+        "signal": "bullish",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300628": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300661": {
+        "predicted_return": 0.0008217692950284861,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300750": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300759": {
+        "predicted_return": 0.0008968325291774118,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300760": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300782": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300803": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300866": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300896": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300979": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "300999": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "301236": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "301269": {
+        "predicted_return": 0.0008938906824475785,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    },
+    "302132": {
+        "predicted_return": 0.0006440676463175483,
+        "signal": "neutral",
+        "confidence": 0.88,
+        "update_time": "2026-05-09 14:09:49"
+    }
+}

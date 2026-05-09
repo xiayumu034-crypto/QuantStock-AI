@@ -1,0 +1,137 @@
+from flask import Blueprint, jsonify, request, render_template
+import requests
+import pandas as pd
+from data.market_data import StockDataAPI
+
+market_bp = Blueprint('market', __name__)
+stock_api = StockDataAPI()
+
+@market_bp.route('/')
+def index():
+    return render_template('index.html')
+
+@market_bp.route('/api/stocks')
+def get_stock_list():
+    stocks = [
+        {"code": "300201", "name": "海伦哲"},
+        {"code": "000001", "name": "平安银行"},
+        {"code": "600519", "name": "贵州茅台"},
+        {"code": "300750", "name": "宁德时代"},
+        {"code": "002594", "name": "比亚迪"}
+    ]
+    return jsonify({"status": "success", "data": stocks})
+
+@market_bp.route('/api/realtime/<stock_code>')
+def get_realtime(stock_code):
+    return jsonify(stock_api.get_realtime_data(stock_code))
+
+@market_bp.route('/api/minute/<stock_code>')
+def get_minute(stock_code):
+    scale = request.args.get('scale', 5, type=int)
+    datalen = request.args.get('datalen', 48, type=int)
+    return jsonify(stock_api.get_minute_data(stock_code, scale, datalen))
+
+@market_bp.route('/api/technical/<stock_code>')
+def get_technical(stock_code):
+    minute_data = stock_api.get_minute_data(stock_code, scale=5, datalen=100)
+    if minute_data['status'] == 'success':
+        technical_data = stock_api.calculate_technical_indicators(minute_data['data'])
+        if technical_data:
+            return jsonify({"status": "success", "data": technical_data})
+    return jsonify({"status": "error", "message": "技术指标计算失败"})
+
+@market_bp.route('/api/search')
+def search_stocks():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify({"status": "success", "data": []})
+    
+    url = f"https://suggest3.sinajs.cn/suggest/type=11,12,31,41,71,72,73,81,82&key={query}"
+    try:
+        response = requests.get(url, timeout=5)
+        response.encoding = 'gbk'
+        match = re.search(r'="(.+)"', response.text)
+        if match:
+            results = []
+            items = match.group(1).split(';')
+            for item in items[:10]:
+                parts = item.split(',')
+                if len(parts) >= 5:
+                    results.append({
+                        "name": parts[4],
+                        "code": parts[3],
+                        "symbol": parts[3]
+                    })
+            return jsonify({"status": "success", "data": results})
+    except Exception as e:
+        print(f"Search API error: {e}")
+    return jsonify({"status": "success", "data": []})
+
+@market_bp.route('/api/stock_info/<code>')
+def get_stock_info(code):
+    try:
+        if code.startswith('6'):
+            symbol = f"sh{code}"
+        elif code.startswith('8') or code.startswith('4'):
+            symbol = f"bj{code}"
+        else:
+            symbol = f"sz{code}"
+            
+        url = f"https://hq.sinajs.cn/list={symbol}"
+        headers = {'Referer': 'https://finance.sina.com.cn/'}
+        response = requests.get(url, headers=headers, timeout=5)
+        response.encoding = 'gbk'
+        
+        match = re.search(r'="(.+)"', response.text)
+        if match:
+            parts = match.group(1).split(',')
+            if len(parts) > 0 and parts[0]:
+                return jsonify({
+                    "status": "success",
+                    "data": {"code": code, "name": parts[0]}
+                })
+    except Exception as e:
+        print(f"Get stock info error: {e}")
+        
+    return jsonify({"status": "error", "message": "获取股票信息失败"})
+
+@market_bp.route('/api/news')
+def get_news():
+    try:
+        # 使用新浪财经7x24小时全球实时财经新闻播报
+        url = "https://zhibo.sina.com.cn/api/zhibo/feed?page=1&page_size=10&zhibo_id=152"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=5)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if 'result' in data and 'data' in data['result'] and 'feed' in data['result']['data']:
+                news_list = []
+                for item in data['result']['data']['feed']['list']:
+                    # 清理HTML标签
+                    content = re.sub(r'<[^>]+>', '', item.get('rich_text', ''))
+                    # 截取前100个字符作为摘要
+                    summary = content[:100] + '...' if len(content) > 100 else content
+                    
+                    news_list.append({
+                        'id': item.get('id'),
+                        'title': summary[:30] + '...',  # 用摘要前30字作为标题
+                        'content': summary,
+                        'time': item.get('create_time')
+                    })
+                return jsonify({"status": "success", "data": news_list})
+                
+    except Exception as e:
+        print(f"Get news error: {e}")
+        
+    # 如果API失败，返回模拟数据
+    from datetime import datetime
+    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    return jsonify({
+        "status": "success",
+        "data": [
+            {"id": "1", "title": "暂无最新消息", "content": "新闻接口加载失败，请稍后再试", "time": now_str}
+        ]
+    })
