@@ -42,30 +42,48 @@ def get_technical(stock_code):
 
 @market_bp.route('/api/search')
 def search_stocks():
-    query = request.args.get('q', '').strip()
+    query = request.args.get('q', '').strip().lower()
     if not query:
         return jsonify({"status": "success", "data": []})
     
-    url = f"https://suggest3.sinajs.cn/suggest/type=11,12,31,41,71,72,73,81,82&key={query}"
-    try:
-        response = requests.get(url, timeout=5)
-        response.encoding = 'gbk'
-        match = re.search(r'="(.+)"', response.text)
-        if match:
-            results = []
-            items = match.group(1).split(';')
-            for item in items[:10]:
-                parts = item.split(',')
-                if len(parts) >= 5:
-                    results.append({
-                        "name": parts[4],
-                        "code": parts[3],
-                        "symbol": parts[3]
-                    })
-            return jsonify({"status": "success", "data": results})
-    except Exception as e:
-        print(f"Search API error: {e}")
-    return jsonify({"status": "success", "data": []})
+    # 1. 优先搜索本地沪深300映射表 (速度极快，且符合核心池)
+    import os, json
+    names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stock_names.json")
+    local_results = []
+    if os.path.exists(names_file):
+        with open(names_file, 'r', encoding='utf-8') as f:
+            stock_names = json.load(f)
+            for code, name in stock_names.items():
+                if query in code or query in name.lower():
+                    local_results.append({"code": code, "name": name, "symbol": code})
+                    if len(local_results) >= 10: break
+
+    # 2. 如果本地结果不足，再请求新浪 API 获取全量市场提示
+    if len(local_results) < 5:
+        url = f"https://suggest3.sinajs.cn/suggest/type=11,12,31,41,71,72,73,81,82&key={query}"
+        try:
+            response = requests.get(url, timeout=3)
+            response.encoding = 'gbk'
+            import re
+            match = re.search(r'="(.+)"', response.text)
+            if match:
+                items = match.group(1).split(';')
+                for item in items:
+                    if not item: continue
+                    parts = item.split(',')
+                    if len(parts) >= 5:
+                        # 避免重复
+                        if not any(r['code'] == parts[3] for r in local_results):
+                            local_results.append({
+                                "name": parts[4],
+                                "code": parts[3],
+                                "symbol": parts[3]
+                            })
+                    if len(local_results) >= 15: break
+        except:
+            pass
+            
+    return jsonify({"status": "success", "data": local_results})
 
 @market_bp.route('/api/stock_info/<code>')
 def get_stock_info(code):

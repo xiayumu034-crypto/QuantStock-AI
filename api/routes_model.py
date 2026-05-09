@@ -85,13 +85,27 @@ def get_ml_predict_all():
     results = []
     for code, pred in predictions.items():
         name = stock_names.get(code, f"代码-{code}")
+        
+        # 融合逻辑：AI收益 + 动量强度 + 信号共振
+        pred_val = pred.get("predicted_return", 0)
+        momentum = pred.get("momentum", 0.8) # 默认动量
+        
+        # 简单融合算法：如果AI预测涨幅 > 1.5% 且动量强，则为“强烈看涨”
+        signal = "中性"
+        if pred_val > 0.015:
+            signal = "强烈看涨" if momentum > 0.5 else "看涨"
+        elif pred_val > 0.005:
+            signal = "看涨"
+        elif pred_val < -0.01:
+            signal = "看跌"
+            
         results.append({
             "code": code,
             "name": name,
-            "predicted_return": pred.get("predicted_return", 0),
-            "signal": "看涨" if pred.get("predicted_return", 0) > 0.001 else ("看跌" if pred.get("predicted_return", 0) < -0.001 else "中性"),
-            "confidence": "高" if pred.get("confidence", 0) > 0.8 else "中",
-            "relative_strength": {"momentum": 0.8}
+            "predicted_return": pred_val,
+            "signal": signal,
+            "confidence": "高" if pred_val > 0.02 else "中",
+            "relative_strength": {"momentum": momentum}
         })
     
     # 排序并返回全量沪深300数据（已增加前端滚动条）

@@ -35,6 +35,22 @@
         .ml-stock .meta { font-size: 0.7rem; opacity: 0.8; }
         .ml-stock .badge { font-size: 0.7rem; }
         
+        /* 搜索建议下拉列表 */
+        .search-suggestions { 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            background: #111827; border: 1px solid #1f2937; 
+            border-radius: 8px; z-index: 9999; 
+            max-height: 250px; overflow-y: auto; display: none;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+        }
+        .suggestion-item { 
+            padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #1f2937;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .suggestion-item:hover { background: #1f2937; }
+        .suggestion-item .s-code { color: #9ca3af; font-size: 0.8rem; }
+        .suggestion-item .s-type { font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
+        
         /* 迷你预览卡片 */
         .ml-preview-card { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); flex: 1; }
         .ml-preview-card .p-name { font-weight: 600; margin-right: 0.5rem; }
@@ -174,11 +190,12 @@
         <div class="row">
             <!-- 搜索栏 -->
             <div class="col-md-4">
-                <div class="search-bar">
+                <div class="search-bar position-relative">
                     <div class="d-flex gap-2">
-                        <input type="text" class="form-control" id="searchInput" placeholder="🔍 搜索股票代码/名称" onkeyup="handleSearchKey(event)">
-                        <button class="btn btn-dark" onclick="searchStock()" style="border-radius:20px">搜索</button>
+                        <input type="text" class="form-control" id="searchInput" placeholder="🔍 搜索代码/名称/拼音" oninput="handleSearchInput(this)" onkeyup="handleSearchKey(event)" autocomplete="off">
+                        <button class="btn btn-dark" onclick="searchStock()" style="border-radius:20px">查询</button>
                     </div>
+                    <div id="searchSuggestions" class="search-suggestions"></div>
                     <div id="searchResults" class="search-results mt-2" style="display:none"></div>
                 </div>
             </div>
@@ -1038,6 +1055,44 @@
         }).catch(e => { container.innerHTML = '<div class="text-danger p-2">搜索失败</div>'; });
     }
     
+    function selectSuggestion(code, name) {
+        document.getElementById('searchInput').value = code;
+        document.getElementById('searchSuggestions').style.display = 'none';
+        searchStock();
+    }
+    
+    // 搜索建议逻辑
+    let searchTimer = null;
+    function handleSearchInput(input) {
+        const query = input.value.trim();
+        const suggestionsBox = document.getElementById('searchSuggestions');
+        if (!query) { suggestionsBox.style.display = 'none'; return; }
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.status === 'success' && d.data.length > 0) {
+                        let html = '';
+                        d.data.forEach(item => {
+                            html += `<div class="suggestion-item" onclick="selectSuggestion('${item.code}', '${item.name}')">
+                                <span>${item.name}</span>
+                                <span class="s-code">${item.code}</span>
+                            </div>`;
+                        });
+                        suggestionsBox.innerHTML = html;
+                        suggestionsBox.style.display = 'block';
+                    } else { suggestionsBox.style.display = 'none'; }
+                });
+        }, 300);
+    }
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-bar')) {
+            const el = document.getElementById('searchSuggestions');
+            if(el) el.style.display = 'none';
+        }
+    });
+
     updateCustomStocksUI();
     </script>
 
