@@ -20,10 +20,21 @@ def get_prediction(stock_code):
 def get_trade_logs():
     if os.path.exists(TRADE_LOGS_FILE):
         with open(TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
-            return jsonify({"status": "success", "data": json.load(f)})
-    elif os.path.exists(SAMPLE_TRADE_LOGS_FILE):
+            try:
+                data = json.load(f)
+                # Ensure we extract the list if it's wrapped
+                logs = data.get("data", []) if isinstance(data, dict) else data
+                return jsonify({"status": "success", "data": logs})
+            except:
+                pass
+    if os.path.exists(SAMPLE_TRADE_LOGS_FILE):
         with open(SAMPLE_TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
-            return jsonify({"status": "success", "data": json.load(f)})
+            try:
+                data = json.load(f)
+                logs = data.get("data", []) if isinstance(data, dict) else data
+                return jsonify({"status": "success", "data": logs})
+            except:
+                pass
     return jsonify({"status": "success", "data": []})
 
 @model_bp.route('/api/trade/manual', methods=['POST'])
@@ -47,7 +58,7 @@ def manual_trade():
     # 模拟鉴权及环境变量判断
     trade_mode = os.environ.get("TRADE_MODE", "mock")
     if trade_mode == "mock":
-        # 追加一条 mock 日志
+        # 追加一条 mock 日志到真实的运行时 TRADE_LOGS_FILE，不要弄脏被 tracked 的 sample
         mock_log = {
             "time": time.strftime("%Y-%m-%d %H:%M:%S"),
             "direction": direction,
@@ -58,13 +69,30 @@ def manual_trade():
             "volume": volume,
             "status": "已成交(Mock)"
         }
+        
         logs = []
-        if os.path.exists(SAMPLE_TRADE_LOGS_FILE):
-            with open(SAMPLE_TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
-                logs = json.load(f).get("data", [])
+        if os.path.exists(TRADE_LOGS_FILE):
+            try:
+                with open(TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
+                    file_data = json.load(f)
+                    logs = file_data.get("data", []) if isinstance(file_data, dict) else file_data
+            except:
+                pass
+        else:
+            # 如果运行时文件还不存在，先从 sample 复制打底
+            if os.path.exists(SAMPLE_TRADE_LOGS_FILE):
+                try:
+                    with open(SAMPLE_TRADE_LOGS_FILE, 'r', encoding='utf-8') as f:
+                        sample_data = json.load(f)
+                        logs = sample_data.get("data", []) if isinstance(sample_data, dict) else sample_data
+                except:
+                    pass
+
         logs.insert(0, mock_log)
-        with open(SAMPLE_TRADE_LOGS_FILE, 'w', encoding='utf-8') as f:
+        
+        with open(TRADE_LOGS_FILE, 'w', encoding='utf-8') as f:
             json.dump({"status": "success", "data": logs}, f, ensure_ascii=False, indent=4)
+            
         return jsonify({"status": "success", "message": f"[Mock模式] 模拟指令发送成功: {direction} {code} {volume}股"})
 
     try:
