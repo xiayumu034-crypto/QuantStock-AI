@@ -42,7 +42,8 @@ def main():
     all_names = list(features.keys()) + list(label.keys())
 
     print("[Train v17] 正在通过 Qlib 提取特征和标签 (2024-01-01 至今)...")
-    df = D.features(stock_list, all_fields, start_time="2024-01-01", end_time="2026-12-31", freq='day')
+    end_date = pd.Timestamp.now().strftime("%Y-%m-%d")
+    df = D.features(stock_list, all_fields, start_time="2024-01-01", end_time=end_date, freq='day')
     df.columns = all_names
 
     # 3. 数据清洗
@@ -96,8 +97,47 @@ def main():
         callbacks=[lgb.early_stopping(stopping_rounds=50)]
     )
 
-    # 5. 保存模型和特征配置
+    # 5. 评估并保存指标
+    from sklearn.metrics import mean_squared_error, mean_absolute_error
+    y_pred = model.predict(X_test)
+    rmse = mean_squared_error(y_test, y_pred, squared=False)
+    mae = mean_absolute_error(y_test, y_pred)
+    
+    # 简单计算 Rank IC
+    try:
+        test_df = pd.DataFrame({'pred': y_pred, 'label': y_test})
+        test_df['date'] = dates[test_mask]
+        ic_list = test_df.groupby('date').apply(lambda x: x['pred'].corr(x['label'], method='spearman'))
+        mean_ic = ic_list.mean()
+    except Exception as e:
+        mean_ic = 0.0
+        print(f"Rank IC 计算失败: {e}")
+
+    metrics = {
+        "train_samples": len(X_train),
+        "test_samples": len(X_test),
+        "rmse": float(rmse),
+        "mae": float(mae),
+        "mean_rank_ic": float(mean_ic),
+        "update_time": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    
     os.makedirs("model_output", exist_ok=True)
+    with open("model_output/training_metrics_v17.json", 'w', encoding='utf-8') as f:
+        json.dump(metrics, f, indent=4)
+        
+    print(f"[Train v17] 模型评估完成！RMSE: {rmse:.4f}, MAE: {mae:.4f}, Rank IC: {mean_ic:.4f}")
+
+    # 6. 保存特征重要性
+    import_df = pd.DataFrame({
+        'feature': feature_cols,
+        'importance': model.feature_importance(importance_type='gain')
+    }).sort_values('importance', ascending=False)
+    
+    with open("model_output/feature_importance_v17.json", 'w', encoding='utf-8') as f:
+        json.dump(import_df.to_dict(orient='records'), f, ensure_ascii=False, indent=4)
+
+    # 7. 保存模型和特征配置
     model_path = "model_output/lgb_model_v17.pkl"
     features_path = "model_output/features_v17.json"
 

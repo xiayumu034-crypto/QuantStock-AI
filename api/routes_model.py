@@ -12,6 +12,17 @@ stock_api = StockDataAPI()
 TRADE_LOGS_FILE = "model_output/trade_logs.json"
 SAMPLE_TRADE_LOGS_FILE = "model_output/sample_trade_logs.json"
 
+@model_bp.route('/api/model_report')
+def get_model_report():
+    report_file = "model_output/model_report_v17.json"
+    if os.path.exists(report_file):
+        try:
+            with open(report_file, 'r', encoding='utf-8') as f:
+                return jsonify({"status": "success", "data": json.load(f)})
+        except Exception as e:
+            return jsonify({"status": "error", "message": f"解析评估报告失败: {str(e)}"})
+    return jsonify({"status": "error", "message": "暂无离线模型评估报告，请先运行 evaluate_model_v17.py"})
+
 @model_bp.route('/api/predict/<stock_code>')
 def get_prediction(stock_code):
     return jsonify(stock_api.predict_next_5_minutes(stock_code))

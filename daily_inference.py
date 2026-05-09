@@ -48,7 +48,8 @@ def main():
     stock_list = D.list_instruments(instruments=instruments, as_list=True)
     
     print("[Inference] 正在通过 Qlib 极速提取最新特征...")
-    df = D.features(stock_list, fields, start_time="2026-04-01", end_time="2026-12-31", freq='day')
+    end_date = pd.Timestamp.now().strftime("%Y-%m-%d")
+    df = D.features(stock_list, fields, start_time="2024-01-01", end_time=end_date, freq='day')
     df.columns = feature_names
     df = df.dropna()
     
