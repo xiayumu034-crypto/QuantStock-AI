@@ -19,3 +19,7 @@ data_cache/
 qlib_source/
 .idea/
 .vscode/
+
+# 忽略生产数据和模型产物
+model_output/*.pkl
+model_output/*.json

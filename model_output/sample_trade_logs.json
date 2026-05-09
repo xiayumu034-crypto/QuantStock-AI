@@ -1,0 +1,15 @@
+{
+    "status": "success",
+    "data": [
+        {
+            "time": "2026-05-09 10:30:00",
+            "direction": "buy",
+            "direction_label": "手工买入",
+            "source": "manual",
+            "code": "300201",
+            "price": 12.80,
+            "volume": 1000,
+            "status": "已成交"
+        }
+    ]
+}
