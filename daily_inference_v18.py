@@ -32,28 +32,44 @@ def main():
         
     # v18 全量特征配置 (必须与训练时一致)
     features = {
+        # === 动量特征 ===
         "MOM_1": "$close / Ref($close, 1) - 1",
         "MOM_3": "$close / Ref($close, 3) - 1",
         "MOM_5": "$close / Ref($close, 5) - 1",
         "MOM_10": "$close / Ref($close, 10) - 1",
         "MOM_20": "$close / Ref($close, 20) - 1",
+        "MOM_60": "$close / Ref($close, 60) - 1",
+        
+        # === 均线偏离 ===
         "MA_5_ratio": "$close / Mean($close, 5)",
         "MA_10_ratio": "$close / Mean($close, 10)",
         "MA_20_ratio": "$close / Mean($close, 20)",
         "MA_60_ratio": "$close / Mean($close, 60)",
+        
+        # === 波动率 ===
         "VOL_5": "Std($close / Ref($close, 1) - 1, 5)",
         "VOL_10": "Std($close / Ref($close, 1) - 1, 10)",
         "VOL_20": "Std($close / Ref($close, 1) - 1, 20)",
+        "VOL_60": "Std($close / Ref($close, 1) - 1, 60)",
+        
+        # === 量价特征 ===
         "VOLU_RATIO": "$volume / Mean($volume, 5)",
+        "VOLU_10_RATIO": "$volume / Mean($volume, 10)",
         "VWAP_ratio": "$vwap / $close",
-        "CCI_14": "(($close - Mean($close, 14)) / (0.015 * Std($close, 14)))",
-        "RSI_14": "100 - 100 / (1 + (Sum(If($close > Ref($close, 1), $close - Ref($close, 1), 0), 14) / Sum(If($close < Ref($close, 1), Ref($close, 1) - $close, 0), 14)))",
-        "EMA_12_ratio": "$close / EMA($close, 12)",
-        "EMA_26_ratio": "$close / EMA($close, 26)",
+        "V_STD_10": "Std($volume, 10) / Mean($volume, 10)",
+        "V_STD_20": "Std($volume, 20) / Mean($volume, 20)",
+        
+        # === 反转与位置 ===
         "HIGH_ratio": "$close / Max($high, 20)",
         "LOW_ratio": "$close / Min($low, 20)",
         "O_C_ratio": "$close / $open",
-        "V_STD_10": "Std($volume, 10) / Mean($volume, 10)"
+        
+        # === 传统技术指标 ===
+        "CCI_14": "(($close - Mean($close, 14)) / (0.015 * Std($close, 14)))",
+        "RSI_14": "100 - 100 / (1 + (Sum(If($close > Ref($close, 1), $close - Ref($close, 1), 0), 14) / Sum(If($close < Ref($close, 1), Ref($close, 1) - $close, 0), 14)))",
+        # MACD (近似)
+        "EMA_12_ratio": "$close / EMA($close, 12)",
+        "EMA_26_ratio": "$close / EMA($close, 26)"
     }
     
     # 动态匹配模型需要的特征

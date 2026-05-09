@@ -22,7 +22,7 @@ def main():
     stock_list = D.list_instruments(instruments=instruments, as_list=True)
 
     # 2. 定义因子和标签 (Label)
-    # v18 扩展特征池: 动量、均线偏离、波动、量价、技术形态等
+    # v18 扩展特征池: 动量、均线偏离、波动、量价、技术形态等 (共 28 个特征)
     features = {
         # === 动量特征 ===
         "MOM_1": "$close / Ref($close, 1) - 1",
@@ -30,6 +30,7 @@ def main():
         "MOM_5": "$close / Ref($close, 5) - 1",
         "MOM_10": "$close / Ref($close, 10) - 1",
         "MOM_20": "$close / Ref($close, 20) - 1",
+        "MOM_60": "$close / Ref($close, 60) - 1",
         
         # === 均线偏离 ===
         "MA_5_ratio": "$close / Mean($close, 5)",
@@ -41,25 +42,26 @@ def main():
         "VOL_5": "Std($close / Ref($close, 1) - 1, 5)",
         "VOL_10": "Std($close / Ref($close, 1) - 1, 10)",
         "VOL_20": "Std($close / Ref($close, 1) - 1, 20)",
+        "VOL_60": "Std($close / Ref($close, 1) - 1, 60)",
         
         # === 量价特征 ===
         "VOLU_RATIO": "$volume / Mean($volume, 5)",
+        "VOLU_10_RATIO": "$volume / Mean($volume, 10)",
         "VWAP_ratio": "$vwap / $close",
+        "V_STD_10": "Std($volume, 10) / Mean($volume, 10)",
+        "V_STD_20": "Std($volume, 20) / Mean($volume, 20)",
+        
+        # === 反转与位置 ===
+        "HIGH_ratio": "$close / Max($high, 20)",
+        "LOW_ratio": "$close / Min($low, 20)",
+        "O_C_ratio": "$close / $open",
         
         # === 传统技术指标 ===
         "CCI_14": "(($close - Mean($close, 14)) / (0.015 * Std($close, 14)))",
         "RSI_14": "100 - 100 / (1 + (Sum(If($close > Ref($close, 1), $close - Ref($close, 1), 0), 14) / Sum(If($close < Ref($close, 1), Ref($close, 1) - $close, 0), 14)))",
         # MACD (近似)
         "EMA_12_ratio": "$close / EMA($close, 12)",
-        "EMA_26_ratio": "$close / EMA($close, 26)",
-        
-        # === 形态与反转 ===
-        "HIGH_ratio": "$close / Max($high, 20)",
-        "LOW_ratio": "$close / Min($low, 20)",
-        "O_C_ratio": "$close / $open",
-        
-        # === 换手率相关 (由于 Qlib cn_data 默认未严格保证换手率存在，用 volume/均量 代替) ===
-        "V_STD_10": "Std($volume, 10) / Mean($volume, 10)"
+        "EMA_26_ratio": "$close / EMA($close, 26)"
     }
     
     # 预测未来 1 天的收益率作为 Label (注意：防止未来函数，是用明天的收盘价除以今天的收盘价)

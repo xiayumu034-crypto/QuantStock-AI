@@ -160,6 +160,19 @@ def get_ml_predict_all():
     version = request.args.get('version', 'v17')
     predictions, is_sample, meta = read_daily_predictions(version)
     
+    # v18 没有预测数据时，直接返回空列表和提示，不要 fallback 给 v17 的伪装
+    if version == "v18" and not predictions:
+        return jsonify({
+            "status": "success",
+            "meta": {
+                "model": "Qlib v18",
+                "stocks": 0,
+                "sample": False,
+                "warning": "v18 模型预测数据不存在，请在服务器上运行 train_qlib_v18.py 与 daily_inference_v18.py 以生成预测池。"
+            },
+            "data": []
+        })
+    
     # 加载股票名称映射
     names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stock_names.json")
     stock_names = {}
