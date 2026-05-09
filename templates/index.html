@@ -246,13 +246,27 @@
 
                     <div class="collapse" id="collapseML">
                         <div class="mt-3 pt-3 border-top border-white-10">
-                            <!-- 展开后显示的其余 12 个卡片 -->
+                            <!-- 筛选与控制 -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="small text-white-50">信号过滤:</span>
+                                    <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: 120px;" id="mlSignalFilter" onchange="handleMLFilterChange()">
+                                        <option value="all">全部信号</option>
+                                        <option value="strong">强烈看涨</option>
+                                        <option value="bull">看涨 (含强烈)</option>
+                                        <option value="neutral">中性</option>
+                                        <option value="bear">看跌</option>
+                                    </select>
+                                </div>
+                                <div class="pagination-info small opacity-75" id="mlPaginationInfo">第 1 / 1 页</div>
+                            </div>
+
+                            <!-- 展开后显示的其余卡片 -->
                             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3" id="mlSignalContent">
                             </div>
                             
                             <!-- 分页控制 -->
-                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-white-50">
-                                <div class="pagination-info small opacity-75" id="mlPaginationInfo">第 1 / 1 页</div>
+                            <div class="d-flex justify-content-end align-items-center mt-3 pt-2 border-top border-white-50">
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-light py-0 px-3" onclick="changeMLPage(-1)" id="mlPrevBtn">上一页</button>
                                     <button class="btn btn-outline-light py-0 px-3" onclick="changeMLPage(1)" id="mlNextBtn">下一页</button>
@@ -714,35 +728,67 @@
     let currentMLPage = 1;
     const mlPageSize = 15;
 
+    // ========== ML信号 (带分页与筛选逻辑) ==========
+    let allMLData = [];
+    let filteredMLData = [];
+    let currentMLPage = 1;
+    const mlPageSize = 15;
+
+    function handleMLFilterChange() {
+        const filter = document.getElementById('mlSignalFilter').value;
+        if (filter === 'all') {
+            filteredMLData = allMLData;
+        } else if (filter === 'strong') {
+            filteredMLData = allMLData.filter(s => s.signal === '强烈看涨');
+        } else if (filter === 'bull') {
+            filteredMLData = allMLData.filter(s => s.signal.includes('看涨'));
+        } else if (filter === 'neutral') {
+            filteredMLData = allMLData.filter(s => s.signal === '中性');
+        } else if (filter === 'bear') {
+            filteredMLData = allMLData.filter(s => s.signal === '看跌');
+        }
+        currentMLPage = 1;
+        renderMLPage();
+    }
+
     function renderMLPage() {
+        const dataToRender = filteredMLData;
+        
         const start = (currentMLPage - 1) * mlPageSize;
         const end = start + mlPageSize;
-        const pageData = allMLData.slice(start, end);
-        const totalPages = Math.ceil(allMLData.length / mlPageSize);
+        const pageData = dataToRender.slice(start, end);
+        const totalPages = Math.ceil(dataToRender.length / mlPageSize);
 
         const generateCardHtml = (s) => {
             const icon = s.predicted_return > 0.02 ? '🔥' : s.predicted_return > 0 ? '📈' : s.predicted_return < 0 ? '📉' : '➡️';
             const rsMom = s.relative_strength ? s.relative_strength.momentum : 0;
             const momIcon = rsMom > 0.5 ? '↑' : rsMom < -0.5 ? '↓' : '→';
+            
+            // 颜色逻辑优化：红色看涨，黄色中性，绿色下跌
+            let badgeClass = 'bg-secondary';
+            if (s.signal.includes('看涨')) badgeClass = 'bg-danger';
+            else if (s.signal === '中性') badgeClass = 'bg-warning text-dark';
+            else if (s.signal === '看跌') badgeClass = 'bg-success';
+
             return `
             <div class="col">
                 <div class="ml-stock text-center py-3">
                     <div class="name h5 mb-2">${s.name}</div>
                     <div class="pred h3 mb-2">${s.predicted_return > 0 ? '+' : ''}${(s.predicted_return * 100).toFixed(2)}%</div>
                     <div class="meta text-white-50 mb-2 small">${icon} 动量${momIcon}${rsMom > 0 ? '+' : ''}${rsMom.toFixed(1)}</div>
-                    <span class="badge ${s.confidence==='高'?'bg-danger':s.confidence==='中'?'bg-warning':'bg-secondary'} px-3">${s.signal}${s.confidence}</span>
+                    <span class="badge ${badgeClass} px-3" style="font-weight:bold">${s.signal}${s.confidence}</span>
                 </div>
             </div>`;
         };
 
-        // 1. 渲染外露的 Top 3
+        // 1. 渲染外露的 Top 3 (基于当前过滤后的数据)
         let previewHtml = '';
-        pageData.slice(0, 3).forEach(s => {
+        dataToRender.slice(0, 3).forEach(s => {
             previewHtml += generateCardHtml(s);
         });
-        document.getElementById('mlSignalPreview').innerHTML = previewHtml || '<div class="col-12 text-center py-3 text-white-50">暂无数据</div>';
+        document.getElementById('mlSignalPreview').innerHTML = previewHtml || '<div class="col-12 text-center py-3 text-white-50">无匹配数据</div>';
 
-        // 2. 渲染折叠区的剩余 12 个
+        // 2. 渲染折叠区的剩余
         let contentHtml = '';
         pageData.slice(3).forEach(s => {
             contentHtml += generateCardHtml(s);
@@ -750,23 +796,17 @@
         document.getElementById('mlSignalContent').innerHTML = contentHtml;
         
         // 3. 更新分页信息
-        document.getElementById('mlPaginationInfo').textContent = `第 ${currentMLPage} / ${totalPages || 1} 页 (共 ${allMLData.length} 只)`;
+        document.getElementById('mlPaginationInfo').textContent = `第 ${currentMLPage} / ${totalPages || 1} 页 (共 ${dataToRender.length} 只)`;
         document.getElementById('mlPrevBtn').disabled = currentMLPage <= 1;
         document.getElementById('mlNextBtn').disabled = currentMLPage >= totalPages;
     }
 
-    // 移除之前的监听器逻辑
-    const collapseEl = document.getElementById('collapseML');
-    // 不需要特殊的 opacity 切换了，因为物理结构已经分离
-
     function changeMLPage(delta) {
-        const totalPages = Math.ceil(allMLData.length / mlPageSize);
+        const totalPages = Math.ceil(filteredMLData.length / mlPageSize);
         const newPage = currentMLPage + delta;
         if (newPage >= 1 && newPage <= totalPages) {
             currentMLPage = newPage;
             renderMLPage();
-            // 平滑滚动到顶部 (可选)
-            // document.getElementById('collapseML').scrollIntoView({ behavior: 'smooth' });
         }
     }
 
@@ -779,7 +819,7 @@
             document.getElementById('mlModelInfo').textContent = `${d.meta.model} · ${d.meta.stocks}只`;
             
             allMLData = d.data;
-            renderMLPage();
+            handleMLFilterChange(); // 初始调用一次过滤（默认全部）
         }).catch(e => {
             console.error('ML Data Error:', e);
             document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">加载失败</div>';
