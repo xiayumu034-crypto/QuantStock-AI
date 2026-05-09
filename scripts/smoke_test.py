@@ -39,16 +39,18 @@ def check_endpoint(endpoint, expected_type):
                 try:
                     data = json.loads(body)
                     if data.get("status") == "error":
-                        if "v18" in endpoint and "暂无离线模型评估报告" in data.get("message", ""):
-                            print(f"[WARN] {endpoint} (OK: {elapsed:.2f}ms) - {data.get('message')}")
+                        # 收紧 WARN 判定：只有 v18 报告找不到时允许 WARN，其他所有 error 都为 FAIL
+                        if endpoint == "/api/model_report?version=v18":
+                            print(f"[WARN] {endpoint} ({elapsed:.2f}ms) - v18 report missing: {data.get('message', 'error')}")
                             return True
-                        print(f"[WARN] {endpoint} (API Error: {data.get('message')}) - {elapsed:.2f}ms")
-                        return True
+                        
+                        print(f"[FAIL] {endpoint} ({elapsed:.2f}ms) - API Error: {data.get('message', 'unknown')}")
+                        return False
                     
-                    # 补充检查特定 warning
+                    # 补充检查特定 warning (例如 v18 ml_predict_all 降级提示)
                     warning = data.get("meta", {}).get("warning", "") if isinstance(data, dict) and isinstance(data.get("meta"), dict) else ""
                     if warning:
-                        print(f"[WARN] {endpoint} ({elapsed:.2f}ms) - status: {data.get('status')}, warning: {warning}")
+                        print(f"[WARN] {endpoint} ({elapsed:.2f}ms) - warning: {warning}")
                     else:
                         print(f"[OK] {endpoint} ({elapsed:.2f}ms) - status: {data.get('status', 'N/A')}")
                 except json.JSONDecodeError:
@@ -61,8 +63,8 @@ def check_endpoint(endpoint, expected_type):
             
     except urllib.error.URLError as e:
         if isinstance(e.reason, ConnectionRefusedError):
-            print(f"\n[FATAL] 无法连接到 {BASE_URL}")
-            print(">>> 请先启动服务: uv run app.py <<<\n")
+            print(f"\n[FATAL] Connection refused: {BASE_URL}")
+            print(">>> Please start the server first: uv run app.py <<<\n")
             sys.exit(1)
         print(f"[FAIL] {endpoint} - URLError: {e.reason}")
         return False
