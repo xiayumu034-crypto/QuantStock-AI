@@ -882,7 +882,7 @@
     }
 
     // ========== 新闻 ==========
-    let newsMode = 'important'; // 'important' or 'all'
+    let newsMode = 'all'; // 默认为全部，防止筛选逻辑导致空白
     let allNewsData = [];
     
     function toggleNewsMode() {
@@ -900,7 +900,7 @@
         
         // 根据模式筛选
         let filtered = newsMode === 'important' 
-            ? allNewsData.filter(n => n.is_important)
+            ? allNewsData.filter(n => n.is_important || n.is_important === undefined) // 兼容老数据
             : allNewsData;
         
         // 限制显示数量
@@ -909,19 +909,26 @@
         
         let html = '';
         filtered.forEach(news => {
-            const icon = news.sentiment === '利好' ? '🟢' : (news.sentiment === '利空' ? '🔴' : '⚪');
-            const cls = news.sentiment === '利好' ? 'positive' : (news.sentiment === '利空' ? 'negative' : '');
+            // 鲁棒性检查：如果字段缺失给出默认值
+            const sentiment = news.sentiment || '中性';
+            const icon = sentiment === '利好' ? '🟢' : (sentiment === '利空' ? '🔴' : '⚪');
+            const cls = sentiment === '利好' ? 'positive' : (sentiment === '利空' ? 'negative' : '');
+            const source = news.source || '新浪财经';
+            const time = news.time || '--:--';
+            const title = news.title || '无标题';
+            
             const stockTag = news.related_stocks && news.related_stocks.length > 0 
                 ? `<span class="badge bg-primary ms-1" style="font-size:0.6rem">${news.related_stocks.map(s=>s.code).join(',')}</span>` : '';
-            const importantBadge = news.is_important ? '<span class="badge bg-danger ms-1" style="font-size:0.55rem">重要</span>' : '';
+            const isImportant = news.is_important || false;
+            const importantBadge = isImportant ? '<span class="badge bg-danger ms-1" style="font-size:0.55rem">重要</span>' : '';
             
             html += `
             <div class="news-item ${cls}">
-                <div style="font-size:0.8rem;font-weight:600">${icon} ${news.title.substring(0,45)}${importantBadge}</div>
-                <div style="font-size:0.65rem;color:#888">[${news.source}] ${news.time}${stockTag}</div>
+                <div style="font-size:0.8rem;font-weight:600">${icon} ${title.substring(0,45)}${importantBadge}</div>
+                <div style="font-size:0.65rem;color:#888">[${source}] ${time}${stockTag}</div>
             </div>`;
         });
-        container.innerHTML = html || '<div class="text-muted small">暂无新闻</div>';
+        container.innerHTML = html || '<div class="text-muted small">暂无匹配新闻</div>';
     }
     
     function loadNews() {
