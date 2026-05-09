@@ -14,14 +14,15 @@ SAMPLE_TRADE_LOGS_FILE = "model_output/sample_trade_logs.json"
 
 @model_bp.route('/api/model_report')
 def get_model_report():
-    report_file = "model_output/model_report_v17.json"
+    version = request.args.get('version', 'v17')
+    report_file = f"model_output/model_report_{version}.json"
     if os.path.exists(report_file):
         try:
             with open(report_file, 'r', encoding='utf-8') as f:
                 return jsonify({"status": "success", "data": json.load(f)})
         except Exception as e:
             return jsonify({"status": "error", "message": f"解析评估报告失败: {str(e)}"})
-    return jsonify({"status": "error", "message": "暂无离线模型评估报告，请先运行 evaluate_model_v17.py"})
+    return jsonify({"status": "error", "message": f"暂无离线模型评估报告，请先运行 evaluate_model.py --version {version}"})
 
 @model_bp.route('/api/predict/<stock_code>')
 def get_prediction(stock_code):
@@ -126,8 +127,9 @@ def manual_trade():
 @model_bp.route('/api/ml_predict/<stock_code>')
 def get_ml_prediction(stock_code):
     """直接从离线 JSON 中读取预测结果，支持带前缀的代码"""
+    version = request.args.get('version', 'v17')
     clean_code = stock_code[-6:]
-    predictions, is_sample, meta = read_daily_predictions()
+    predictions, is_sample, meta = read_daily_predictions(version)
     
     if clean_code in predictions:
         pred_data = predictions[clean_code]
@@ -147,7 +149,7 @@ def get_ml_prediction(stock_code):
                 "signal": signal,
                 "confidence": "高" if pred_val > 0.02 else "中"
             },
-            "meta": {"sample": is_sample, "model": meta.get("model_version", "v17")}
+            "meta": {"sample": is_sample, "model": meta.get("model_version", version)}
         })
     else:
         return jsonify({"status": "error", "message": f"暂无 {clean_code} 的离线预测数据"})
@@ -155,7 +157,8 @@ def get_ml_prediction(stock_code):
 @model_bp.route('/api/ml_predict_all')
 def get_ml_predict_all():
     """获取全量预测结果"""
-    predictions, is_sample, meta = read_daily_predictions()
+    version = request.args.get('version', 'v17')
+    predictions, is_sample, meta = read_daily_predictions(version)
     
     # 加载股票名称映射
     names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stock_names.json")

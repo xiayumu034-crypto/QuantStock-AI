@@ -26,8 +26,16 @@ python app.py
 # 注：Qlib 依赖不在基础 requirements.txt 中，需自行配置独立的 Qlib 环境
 # pip install pyqlib
 # ================================
-# python fetch_hs300_qlib.py
+
+# [常规稳定版] Qlib v17
+# python train_qlib_v17.py
 # python daily_inference.py
+# python evaluate_model.py --version v17
+
+# [激进增强版] Qlib v18 (推荐，含特征截面标准化与 22 大高维特征)
+# python train_qlib_v18.py
+# python daily_inference_v18.py
+# python evaluate_model.py --version v18
 ```
 
 ## 🤖 v17 模型
@@ -50,6 +58,7 @@ python app.py
 | `/api/ai_analyze/<code>` | AI 首席研判报告 |
 | `/api/ml_predict/<code>` | 离线 JSON 毫秒级返回 |
 | `/api/ml_predict_all` | 沪深300批量排序与信号 |
+| `/api/model_report` | 离线模型评估报告 |
 | `/api/news` | 实时新闻流 |
 | `/api/search?q=` | 智能股票搜索 |
 

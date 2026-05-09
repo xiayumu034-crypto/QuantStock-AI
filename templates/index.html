@@ -234,6 +234,10 @@
                     <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseML">
                         <div class="title" style="margin-bottom: 0;">🤖 Qlib v17 信号</div>
                         <div class="d-flex align-items-center">
+                            <select id="modelVersionSelect" class="form-select form-select-sm bg-dark text-white border-secondary me-2" style="width: auto; cursor: pointer;" onchange="switchModelVersion(this.value)">
+                                <option value="v17" selected>v17 (稳健)</option>
+                                <option value="v18">v18 (激进)</option>
+                            </select>
                             <span class="badge text-info me-2" id="modelReportBadge" style="font-size: 0.75rem; cursor: help;">状态检测中</span>
                             <span class="badge text-white me-2" id="mlModelInfo">加载中...</span>
                             <span class="collapse-icon">▼</span>
@@ -819,20 +823,31 @@
         }
     }
 
+    let currentMLVersion = 'v17';
+
+    function switchModelVersion(ver) {
+        currentMLVersion = ver;
+        document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">切换模型并重新加载中...</div>';
+        loadMLSignals();
+    }
+
     function loadMLSignals() {
-        fetch('/api/ml_predict_all').then(r => r.json()).then(d => {
+        fetch(`/api/ml_predict_all?version=${currentMLVersion}`).then(r => r.json()).then(d => {
             if (d.status !== 'success' || !d.data) {
-                document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">信号暂不可用</div>';
+                document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">信号暂不可用 (可能未进行跑批)</div>';
+                document.getElementById('modelReportBadge').innerHTML = '暂无报告';
+                document.getElementById('modelReportBadge').className = 'badge text-secondary me-2';
+                document.getElementById('mlModelInfo').innerHTML = '未就绪';
                 return;
             }
             if(d.meta && d.meta.sample) {
-                document.getElementById('mlModelInfo').innerHTML = `<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> 样例数据 (请运行 daily_inference.py)</span>`;
+                document.getElementById('mlModelInfo').innerHTML = `<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> 样例数据 (请运行 inference)</span>`;
             } else {
                 document.getElementById('mlModelInfo').textContent = `${d.meta.model} · ${d.meta.stocks}只`;
             }
             
             // 获取模型评估简报
-            fetch('/api/model_report').then(rr => rr.json()).then(rd => {
+            fetch(`/api/model_report?version=${currentMLVersion}`).then(rr => rr.json()).then(rd => {
                 let badge = document.getElementById('modelReportBadge');
                 if(rd.status === 'success' && rd.data && rd.data.health_check) {
                     let uniqueStr = rd.data.prediction_distribution ? rd.data.prediction_distribution.unique_values : "?";
