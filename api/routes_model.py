@@ -30,24 +30,40 @@ def get_trade_logs():
 @model_bp.route('/api/trade/manual', methods=['POST'])
 def manual_trade():
     data = request.json
-    code = data.get('code', '300201')
-    direction = data.get('direction', 'buy')
+    code = data.get('code', '')
+    direction = data.get('direction', '')
     price = data.get('price', 0)
-    volume = data.get('volume', 100)
+    volume = data.get('volume', 0)
     
+    # P2级别修复：严格校验输入参数
+    if not code or len(str(code)) != 6 or not str(code).isdigit():
+        return jsonify({"status": "error", "message": "无效的股票代码，必须为6位数字"})
+    if direction not in ['buy', 'sell']:
+        return jsonify({"status": "error", "message": "交易方向只能为 buy 或 sell"})
+    if not isinstance(volume, int) or volume <= 0 or volume % 100 != 0:
+        return jsonify({"status": "error", "message": "交易数量必须是100的整数倍"})
+    if float(price) < 0:
+        return jsonify({"status": "error", "message": "价格不能为负数"})
+    
+    # 模拟鉴权及环境变量判断
+    trade_mode = os.environ.get("TRADE_MODE", "mock")
+    if trade_mode == "mock":
+        return jsonify({"status": "success", "message": f"[Mock模式] 模拟指令发送成功: {direction} {code} {volume}股"})
+
     try:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        vnpy_python = os.environ.get("VNPY_PYTHON", os.path.join(base_dir, ".venv_vnpy", "Scripts", "python.exe"))
+        
         cmd = [
-            os.path.join(base_dir, ".venv_vnpy", "Scripts", "python.exe"), 
+            vnpy_python, 
             "trade_manual_executor.py", 
             str(code), 
             str(direction), 
             str(price), 
             str(volume)
         ]
-        # 后台异步执行手工交易脚本
         subprocess.Popen(cmd, cwd=base_dir)
-        return jsonify({"status": "success", "message": "手工交易指令已发送至实盘网关"})
+        return jsonify({"status": "success", "message": f"实盘交易指令已发送: {direction} {code}"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
