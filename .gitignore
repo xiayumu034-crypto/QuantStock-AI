@@ -3,6 +3,7 @@ __pycache__/
 *.so
 .Python
 venv/
+.venv*
 .env
 .DS_Store
 Thumbs.db
@@ -13,3 +14,8 @@ test_*.py
 *.csv
 hailunzhe_data/
 sina_minute_data/
+mlruns/
+data_cache/
+qlib_source/
+.idea/
+.vscode/
