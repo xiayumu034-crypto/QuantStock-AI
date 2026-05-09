@@ -329,7 +329,7 @@
                                 <th>当前价</th>
                                 <th>涨跌幅</th>
                                 <th>成交量</th>
-                                <th>20日预测</th>
+                                <th>1日预测</th>
                                 <th>信号</th>
                                 <th>操作</th>
                             </tr>
@@ -886,10 +886,13 @@
             }
             let html = '';
             d.data.forEach(log => {
-                const color = log.direction === '买入' ? '#ef4444' : '#10b981';
+                let isBuy = log.direction === 'buy' || log.direction === '买入' || (log.direction_label && log.direction_label.includes('买'));
+                const color = isBuy ? '#ef4444' : '#10b981';
+                const displayDir = log.direction_label || (isBuy ? '买入' : '卖出');
+                
                 html += `<div style="margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px;">
                     <span style="color: #6b7280;">${log.time.split(' ')[1]}</span>
-                    <span style="color: ${color}; font-weight: bold; margin: 0 5px;">${log.direction}</span>
+                    <span style="color: ${color}; font-weight: bold; margin: 0 5px;">${displayDir}</span>
                     <span style="color: white;">${log.code}</span>
                     <span style="margin-left: 5px; opacity: 0.8;">${log.volume}股</span>
                     <span style="float: right; color: #fbbf24;">${log.status}</span>
