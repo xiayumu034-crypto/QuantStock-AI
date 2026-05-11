@@ -217,6 +217,50 @@ class StockDataAPI:
         elif vol_ratio < 0.5:
             signals.append("缩量 → 观望")
 
+        # ---------------- 补充前端所需的全部关键指标 ----------------
+        closes_s = pd.Series(closes)
+        volumes_s = pd.Series(volumes)
+        highs = pd.Series([float(d['high']) for d in data])
+        lows = pd.Series([float(d['low']) for d in data])
+        
+        # BB_PCT
+        bb_mid = closes_s.rolling(20).mean()
+        bb_std = closes_s.rolling(20).std()
+        bb_upper = bb_mid + 2 * bb_std
+        bb_lower = bb_mid - 2 * bb_std
+        bb_pct = (closes_s - bb_lower) / (bb_upper - bb_lower)
+        bb_pct_val = float(bb_pct.iloc[-1]) if not pd.isna(bb_pct.iloc[-1]) else 0
+
+        # VWAP
+        vwap = (closes_s * volumes_s).cumsum() / volumes_s.cumsum()
+        vwap_val = float(vwap.iloc[-1]) if not pd.isna(vwap.iloc[-1]) else 0
+        
+        # CCI
+        tp = (highs + lows + closes_s) / 3
+        cci = (tp - tp.rolling(14).mean()) / (0.015 * tp.rolling(14).std())
+        cci_val = float(cci.iloc[-1]) if not pd.isna(cci.iloc[-1]) else 0
+        
+        # DMI (ADX, PLUS_DI, MINUS_DI)
+        tr1 = highs - lows
+        tr2 = (highs - closes_s.shift(1)).abs()
+        tr3 = (lows - closes_s.shift(1)).abs()
+        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+        up_move = highs - highs.shift(1)
+        down_move = lows.shift(1) - lows
+        plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)
+        minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)
+        tr_14 = tr.rolling(14).sum()
+        plus_di = 100 * pd.Series(plus_dm).rolling(14).sum() / tr_14
+        minus_di = 100 * pd.Series(minus_dm).rolling(14).sum() / tr_14
+        dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di)
+        adx = dx.rolling(14).mean()
+        
+        # OBV
+        obv = (np.sign(closes_s.diff()) * volumes_s).fillna(0).cumsum()
+        
+        # ATR
+        atr = tr.rolling(14).mean()
+
         up_prob = min(max(50 + strength * 8, 5), 95)
         down_prob = 100 - up_prob
         if strength >= 2: action, action_class = "强烈看涨", "positive"
@@ -227,13 +271,25 @@ class StockDataAPI:
 
         return {
             "action": f"{action} {up_prob:.1f}%", "action_class": action_class,
-            "prediction_time": datetime.now().strftime("%H:%M:%S"),
+            "prediction_time": dt.now().strftime("%H:%M:%S"),
             "up_probability": up_prob, "down_probability": down_prob,
             "signal_strength": strength, "signals": signals,
-            "indicators": {"rsi": round(rsi, 1), "macd_dif": round(dif, 4),
-                           "sma5": round(sma5, 2), "sma20": round(sma20, 2),
-                           "vol_ratio": round(vol_ratio, 2)},
+            "indicators": {
+                "rsi": round(rsi, 1), "macd_dif": round(dif, 4),
+                "sma5": round(sma5, 2), "sma20": round(sma20, 2),
+                "vol_ratio": round(vol_ratio, 2),
+                "BB_PCT": bb_pct_val,
+                "VWAP": vwap_val,
+                "VOL_RATIO": round(vol_ratio, 2),
+                "CCI": cci_val,
+                "PLUS_DI": float(plus_di.iloc[-1]) if not pd.isna(plus_di.iloc[-1]) else 0,
+                "MINUS_DI": float(minus_di.iloc[-1]) if not pd.isna(minus_di.iloc[-1]) else 0,
+                "ADX": float(adx.iloc[-1]) if not pd.isna(adx.iloc[-1]) else 0,
+                "OBV": float(obv.iloc[-1]) if not pd.isna(obv.iloc[-1]) else 0,
+                "ATR": float(atr.iloc[-1]) if not pd.isna(atr.iloc[-1]) else 0
+            },
             "is_market_closed": False,
+            "current_price": current
         }
 
 

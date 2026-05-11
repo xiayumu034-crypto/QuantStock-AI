@@ -71,10 +71,10 @@
         .signal-bearish { background: #d4edda; color: #1b5e20; }
         .signal-neutral { background: #e9ecef; color: #555; }
         .indicator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .indicator-item { background: #f8f9fa; border-radius: 8px; padding: 8px; text-align: center; }
-        .indicator-item .name { font-size: 0.7rem; color: #888; }
-        .indicator-item .value { font-size: 1rem; font-weight: 600; }
-        .indicator-item .desc { font-size: 0.65rem; color: #999; }
+        .indicator-item { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 8px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); }
+        .indicator-item .name { font-size: 0.7rem; color: #9ca3af; }
+        .indicator-item .value { font-size: 1rem; font-weight: 600; color: #f3f4f6; }
+        .indicator-item .desc { font-size: 0.65rem; color: #6b7280; }
         
         /* 新闻卡 */
         .news-card {  border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
@@ -455,14 +455,14 @@
                         <label class="form-check-label" for="autoRefresh">开启</label>
                     </div>
                     <div class="mt-1">
-                        <label class="form-label small">间隔: <span id="intervalValue">5</span>秒</label>
-                        <input type="range" class="form-range" min="1" max="30" value="5" id="refreshInterval">
+                        <label class="form-label small">间隔: <span id="intervalValue">3</span>秒</label>
+                        <input type="range" class="form-range" min="1" max="30" value="3" id="refreshInterval">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="title" style="font-weight:600;margin-bottom:0.5rem">刷新频率</div>
                     <div class="small text-muted">
-                        <div>🟢 实时行情: 5秒</div>
+                        <div>🟢 实时行情: 3秒</div>
                         <div>🔵 分时走势: 60秒</div>
                         <div>🟡 技术指标: 60秒</div>
                         <div>🔴 ML预测: 5分钟</div>
@@ -491,10 +491,10 @@
     // ========== 全局状态 ==========
     let selectedStock = '300201';
     let autoRefresh = true;
-    let refreshInterval = 5;
+    let refreshInterval = 3;
     let charts = {};
     let lastReq = { realtime: 0, minute: 0, technical: 0, predict: 0 };
-    const INTERVALS = { realtime: 5000, minute: 60000, technical: 60000, predict: 300000 };
+    const INTERVALS = { realtime: 3000, minute: 60000, technical: 60000, predict: 300000 };
     const stocks = [
         { code: '300201', name: '海伦哲' },
         { code: '000001', name: '平安银行' },
@@ -823,7 +823,7 @@
         }
     }
 
-    let currentMLVersion = 'v17';
+    let currentMLVersion = 'v18';
 
     function switchModelVersion(ver) {
         currentMLVersion = ver;

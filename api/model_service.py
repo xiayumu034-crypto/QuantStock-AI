@@ -5,9 +5,19 @@ PREDICTIONS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 SAMPLE_PREDICTIONS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "model_output", "sample_daily_predictions.json")
 
 PREDICTIONS_FILE_V18 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "model_output", "daily_predictions_v18.json")
+PREDICTIONS_FILE_V19 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "model_output", "daily_predictions_v19.json")
 
 def read_daily_predictions(version="v17"):
-    """读取 Qlib 跑批生成的离线预测结果，Web端目前采用离线O(1)架构"""
+    """读取跑批生成的离线预测结果，Web端目前采用离线O(1)架构"""
+    if version in ("v19", "v19_ensemble"):
+        if os.path.exists(PREDICTIONS_FILE_V19):
+            with open(PREDICTIONS_FILE_V19, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, dict) and "data" in data and "_meta" in data:
+                    return data["data"], False, data["_meta"]
+                return data, False, {}
+        return {}, False, {}
+        
     if version == "v18":
         if os.path.exists(PREDICTIONS_FILE_V18):
             with open(PREDICTIONS_FILE_V18, 'r', encoding='utf-8') as f:

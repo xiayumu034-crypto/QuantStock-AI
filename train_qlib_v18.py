@@ -47,7 +47,7 @@ def main():
         # === 量价特征 ===
         "VOLU_RATIO": "$volume / Mean($volume, 5)",
         "VOLU_10_RATIO": "$volume / Mean($volume, 10)",
-        "VWAP_ratio": "$vwap / $close",
+        "VWAP_ratio": "($high + $low + $close) / 3 / $close",
         "V_STD_10": "Std($volume, 10) / Mean($volume, 10)",
         "V_STD_20": "Std($volume, 20) / Mean($volume, 20)",
         

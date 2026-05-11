@@ -8,7 +8,10 @@ from datetime import datetime
 
 def evaluate_predictions(version="v17"):
     # 强制优先使用真实数据进行评估
-    if version == "v18":
+    if version in ("v19", "v19_ensemble"):
+        pred_path = "model_output/daily_predictions_v19.json"
+        out_path = "model_output/model_report_v19.json"
+    elif version == "v18":
         pred_path = "model_output/daily_predictions_v18.json"
         out_path = "model_output/model_report_v18.json"
     else:
@@ -18,7 +21,7 @@ def evaluate_predictions(version="v17"):
     is_sample = False
     
     if not os.path.exists(pred_path):
-        if version == "v18":
+        if version in ("v18", "v19", "v19_ensemble"):
             print(f"[Evaluate {version}] 找不到任何预测数据！无法生成评估报告。")
             return
         else:

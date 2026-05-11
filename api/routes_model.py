@@ -14,7 +14,7 @@ SAMPLE_TRADE_LOGS_FILE = "model_output/sample_trade_logs.json"
 
 @model_bp.route('/api/model_report')
 def get_model_report():
-    version = request.args.get('version', 'v17')
+    version = request.args.get('version', 'v18')
     report_file = f"model_output/model_report_{version}.json"
     if os.path.exists(report_file):
         try:
@@ -26,7 +26,8 @@ def get_model_report():
 
 @model_bp.route('/api/predict/<stock_code>')
 def get_prediction(stock_code):
-    return jsonify(stock_api.predict_next_5_minutes(stock_code))
+    result = stock_api.predict_next_5_minutes(stock_code)
+    return jsonify({"status": "success", "data": result})
 
 @model_bp.route('/api/trade_logs')
 def get_trade_logs():
@@ -127,7 +128,7 @@ def manual_trade():
 @model_bp.route('/api/ml_predict/<stock_code>')
 def get_ml_prediction(stock_code):
     """直接从离线 JSON 中读取预测结果，支持带前缀的代码"""
-    version = request.args.get('version', 'v17')
+    version = request.args.get('version', 'v18')
     clean_code = stock_code[-6:]
     predictions, is_sample, meta = read_daily_predictions(version)
     
@@ -157,18 +158,18 @@ def get_ml_prediction(stock_code):
 @model_bp.route('/api/ml_predict_all')
 def get_ml_predict_all():
     """获取全量预测结果"""
-    version = request.args.get('version', 'v17')
+    version = request.args.get('version', 'v18')
     predictions, is_sample, meta = read_daily_predictions(version)
     
-    # v18 没有预测数据时，直接返回空列表和提示，不要 fallback 给 v17 的伪装
-    if version == "v18" and not predictions:
+    # v18/v19 没有预测数据时，直接返回空列表和提示，不要 fallback 给 v17 的伪装
+    if version in ("v18", "v19", "v19_ensemble") and not predictions:
         return jsonify({
             "status": "success",
             "meta": {
-                "model": "Qlib v18",
+                "model": "v19 Ensemble" if "19" in version else "Qlib v18",
                 "stocks": 0,
                 "sample": False,
-                "warning": "v18 模型预测数据不存在，请在服务器上运行 train_qlib_v18.py 与 daily_inference_v18.py 以生成预测池。"
+                "warning": f"{version} 模型预测数据不存在，请在服务器上运行对应的训练脚本以生成预测池。"
             },
             "data": []
         })
