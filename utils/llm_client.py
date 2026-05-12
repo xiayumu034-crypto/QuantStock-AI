@@ -2,11 +2,14 @@ import os
 import json
 import logging
 from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class XiaomiLLMClient:
     def __init__(self):
-        self.api_key = "tp-crye0n3ju9erc0j12npxv3e7cdi7a86phag35y9ypccmpspz"
-        self.base_url = "https://token-plan-cn.xiaomimimo.com/v1"
+        self.api_key = os.getenv("XIAOMI_API_KEY", "")
+        self.base_url = "https://api.xiaomimimo.com/v1"
         self.model = "mimo-v2.5-pro"
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
