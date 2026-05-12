@@ -108,6 +108,32 @@ def sim_step():
 
     top_codes = [p["code"] for p in sorted_preds if p["pred"] >= p90_val]
     
+    # 2.5 接入【新闻与国家大事驱动】逻辑（超越原本监控池）
+    event_driven_info = {}
+    try:
+        import akshare as ak
+        sector_df = ak.stock_sector_spot(indicator='新浪行业')
+        if not sector_df.empty:
+            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(3)
+            for _, row in hot_sectors.iterrows():
+                sector_name = row['板块']
+                leader_code = str(row['股票代码']) 
+                leader_name = str(row['股票名称'])
+                leader_change = float(row['个股-涨跌幅'])
+                
+                pure_code = leader_code[2:] if leader_code[:2] in ['sh', 'sz', 'bj'] else leader_code
+                
+                # 寻找有动能的票，排除封死20%涨停的极端情况
+                if 2.0 < leader_change < 19.5:
+                    if pure_code not in top_codes:
+                        top_codes.insert(0, pure_code) # 优先买入热点
+                    event_driven_info[pure_code] = {
+                        "name": leader_name,
+                        "reason": f"新闻热点驱动: [{sector_name}]板块强势领涨"
+                    }
+    except Exception as e:
+        logging.error(f"Error fetching event driven stocks: {e}")
+
     names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stock_names.json")
     stock_names = {}
     if os.path.exists(names_file):
@@ -190,15 +216,19 @@ def sim_step():
             
             if account["cash"] >= cost:
                 account["cash"] -= cost
-                name = stock_names.get(code, code)
+                if code in event_driven_info:
+                    name = event_driven_info[code]["name"]
+                    reason = event_driven_info[code]["reason"]
+                else:
+                    name = stock_names.get(code, code)
+                    reason = f"V19强共振买入信号"
+                
                 account["holdings"][code] = {
                     "name": name,
                     "vol": vol,
                     "cost_price": buy_price,
                     "current_price": buy_price
                 }
-                pred_val = predictions.get(code, {}).get("predicted_return", 0)
-                reason = f"V19强共振买入信号"
                 log_trade(account, "buy", code, name, buy_price, vol, fee, reason)
                 actions_taken.append(f"买入 {name}({code})")
 
