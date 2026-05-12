@@ -3,7 +3,6 @@ import json
 import logging
 from datetime import datetime
 from flask import Blueprint, jsonify, request
-import akshare as ak
 
 sim_trade_bp = Blueprint('sim_trade', __name__)
 
@@ -30,8 +29,8 @@ def save_account(account):
     with open(ACCOUNT_FILE, 'w', encoding='utf-8') as f:
         json.dump(account, f, ensure_ascii=False, indent=4)
 
-def log_trade(account, action, code, name, price, vol, reason="手工操作"):
-    timestamp = datetime.now().strftime("%H:%M:%S")
+def log_trade(account, action, code, name, price, vol, fee, reason="系统自动"):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     amount = price * vol
     log_msg = {
         "time": timestamp,
@@ -41,37 +40,27 @@ def log_trade(account, action, code, name, price, vol, reason="手工操作"):
         "price": price,
         "vol": vol,
         "amount": amount,
+        "fee": round(fee, 2),
         "reason": reason
     }
     account["logs"].insert(0, log_msg)
-    # Keep only last 50 logs
-    account["logs"] = account["logs"][:50]
+    # 保留最近 500 条操作记录
+    account["logs"] = account["logs"][:500]
 
 @sim_trade_bp.route('/info', methods=['GET'])
 def get_info():
     account = load_account()
-    
-    # Calculate total asset
     total_asset = account["cash"]
-    holdings_value = 0
-    
-    # In a real scenario we'd batch fetch prices, but for simplicity here we assume the frontend might fetch or we use last known.
-    # To be fast, let's just use cost_price if current is unknown, but we should update it.
-    try:
-        if account["holdings"]:
-            # Need to get realtime prices for holdings to calculate net worth
-            # But AKShare realtime API might be slow for all. Let's do it if needed, or rely on a background task.
-            # We'll just return the account directly for now.
-            pass
-    except Exception as e:
-        pass
-
-    # Quick estimate without real-time price fetch to keep API fast
     for code, pos in account["holdings"].items():
         total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
     
     account["total_asset"] = total_asset
     return jsonify({"status": "success", "data": account})
+
+@sim_trade_bp.route('/logs', methods=['GET'])
+def get_logs():
+    account = load_account()
+    return jsonify({"status": "success", "data": account.get("logs", [])})
 
 @sim_trade_bp.route('/toggle_auto', methods=['POST'])
 def toggle_auto():
@@ -85,16 +74,27 @@ def toggle_auto():
 def sim_step():
     """Execute one step of AI auto trading (sell bad, buy good)"""
     account = load_account()
-    if not account.get("auto_trade", False):
-        return jsonify({"status": "skip", "msg": "Auto trade is disabled"})
+    
+    is_manual = request.json and request.json.get("force", False)
 
-    # 1. Fetch ML predictions
+    # 1. 严格判断是否在交易时间内 (09:30-11:30, 13:00-15:00)
+    now = datetime.now()
+    time_str = now.strftime("%H:%M")
+    is_weekday = now.weekday() < 5
+    is_open = is_weekday and (("09:30" <= time_str <= "11:30") or ("13:00" <= time_str <= "15:00"))
+    
+    if not is_open and not is_manual:
+        return jsonify({"status": "skip", "msg": "当前为休市时间，停止自动交易"})
+
+    if not account.get("auto_trade", False) and not is_manual:
+        return jsonify({"status": "skip", "msg": "自动交易已暂停"})
+
+    # 2. 获取预测信号
     from api.routes_model import read_daily_predictions
     predictions, _, _ = read_daily_predictions("v19")
     if not predictions:
         return jsonify({"status": "error", "msg": "No V19 predictions available"})
     
-    # Sort predictions by probability (descending)
     sorted_preds = sorted([
         {"code": k, "pred": v.get("predicted_return", 0)} for k, v in predictions.items()
     ], key=lambda x: x["pred"], reverse=True)
@@ -114,7 +114,7 @@ def sim_step():
         with open(names_file, 'r', encoding='utf-8') as f:
             stock_names = json.load(f)
 
-    # 2. Get real-time prices for holdings and top candidates
+    # 3. 抓取实时行情
     codes_to_fetch = list(set(list(account["holdings"].keys()) + top_codes[:10]))
     prices = {}
     try:
@@ -129,12 +129,11 @@ def sim_step():
 
     actions_taken = []
 
-    # 3. Sell Logic: if holding's pred is < p30_val (bottom 30%) or missing
-    # To avoid day-trading lock (T+1), we ideally check hold days, but for simple simulation we'll just sell.
+    # 4. 卖出逻辑 (排名跌出前70%)
     codes_to_sell = []
     for code, pos in account["holdings"].items():
         if code in prices:
-            pos["current_price"] = prices[code] # Update current price
+            pos["current_price"] = prices[code]
         
         pred_val = predictions.get(code, {}).get("predicted_return", 0)
         if pred_val < p30_val:
@@ -146,44 +145,62 @@ def sim_step():
         pos = account["holdings"].pop(code)
         sell_price = prices[code]
         vol = pos["vol"]
-        revenue = sell_price * vol * 0.999 # 0.1% fee
+        amount = sell_price * vol
+        
+        # 东财标准手续费：佣金万2.5(单笔最低5元) + 过户费万0.1 + 印花税万5
+        commission = max(amount * 0.00025, 5.0)
+        transfer_fee = amount * 0.00001
+        stamp_duty = amount * 0.0005
+        fee = commission + transfer_fee + stamp_duty
+        
+        revenue = amount - fee
         account["cash"] += revenue
         name = stock_names.get(code, code)
-        reason = f"V19评分下降 (仅{(predictions.get(code, {}).get('predicted_return', 0)*100):.1f}%)"
-        log_trade(account, "sell", code, name, sell_price, vol, reason)
+        reason = f"V19评分跌出安全区"
+        log_trade(account, "sell", code, name, sell_price, vol, fee, reason)
         actions_taken.append(f"卖出 {name}({code})")
 
-    # 4. Buy Logic: Buy top_codes if not holding, and cash > 0
-    target_pos_value = account["total_asset"] / MAX_POSITIONS if "total_asset" in account else 20000.0
+    # 5. 买入逻辑 (排名前10%)
+    target_pos_value = account.get("total_asset", 100000.0) / MAX_POSITIONS
     
     for code in top_codes:
         if len(account["holdings"]) >= MAX_POSITIONS:
             break
         if code in account["holdings"]:
             continue
-        
         if code not in prices or prices[code] <= 0:
             continue
             
         buy_price = prices[code]
-        # Calculate how many shares we can buy (lots of 100)
-        invest_amount = min(account["cash"], target_pos_value)
-        vol = int((invest_amount / buy_price) // 100) * 100
-        cost = buy_price * vol * 1.001 # 0.1% fee
         
-        if vol > 0 and account["cash"] >= cost:
-            account["cash"] -= cost
-            name = stock_names.get(code, code)
-            account["holdings"][code] = {
-                "name": name,
-                "vol": vol,
-                "cost_price": buy_price,
-                "current_price": buy_price
-            }
-            pred_val = predictions.get(code, {}).get("predicted_return", 0)
-            reason = f"V19强烈看涨 ({(pred_val*100):.1f}%)"
-            log_trade(account, "buy", code, name, buy_price, vol, reason)
-            actions_taken.append(f"买入 {name}({code})")
+        # 预估最高可买金额，预留5元保底佣金
+        max_invest = min(account["cash"] - 5.0, target_pos_value)
+        if max_invest <= 0:
+            continue
+            
+        vol = int((max_invest / buy_price) // 100) * 100
+        if vol > 0:
+            amount = buy_price * vol
+            
+            # 东财买入手续费：佣金万2.5(单笔最低5元) + 过户费万0.1
+            commission = max(amount * 0.00025, 5.0)
+            transfer_fee = amount * 0.00001
+            fee = commission + transfer_fee
+            cost = amount + fee
+            
+            if account["cash"] >= cost:
+                account["cash"] -= cost
+                name = stock_names.get(code, code)
+                account["holdings"][code] = {
+                    "name": name,
+                    "vol": vol,
+                    "cost_price": buy_price,
+                    "current_price": buy_price
+                }
+                pred_val = predictions.get(code, {}).get("predicted_return", 0)
+                reason = f"V19强共振买入信号"
+                log_trade(account, "buy", code, name, buy_price, vol, fee, reason)
+                actions_taken.append(f"买入 {name}({code})")
 
     save_account(account)
     

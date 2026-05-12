@@ -310,8 +310,9 @@
                                 <div class="text-center opacity-50">加载中...</div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-end mt-2">
-                            <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:0.7rem" onclick="triggerSimStep()">🔄 手动触发交易</button>
+                        <div class="d-flex justify-content-end gap-2 mt-2">
+                            <button class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.7rem" onclick="openTradeLogModal()">📜 历史记录</button>
+                            <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:0.7rem" onclick="triggerSimStep()">🔄 测试触发(无视休市)</button>
                         </div>
                     </div>
 
@@ -967,17 +968,52 @@
         btn.innerHTML = '处理中...';
         btn.disabled = true;
         
-        fetch('/api/sim/step', { method: 'POST' })
+        fetch('/api/sim/step', { 
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ force: true })
+        })
         .then(r => r.json())
         .then(d => {
-            if (d.status === 'success' && d.actions.length > 0) {
-                // 如果有新交易，更新提示
+            if (d.status === 'success') {
+                // success
+            } else if (d.status === 'skip') {
+                alert('提示: ' + d.msg);
             }
             loadSimAccount(); // 强制刷新状态
         })
         .finally(() => {
             btn.innerHTML = oldText;
             btn.disabled = false;
+        });
+    }
+
+    function openTradeLogModal() {
+        fetch('/api/sim/logs').then(r => r.json()).then(d => {
+            const tbody = document.getElementById('tradeLogTableBody');
+            if (d.status === 'success' && d.data.length > 0) {
+                let html = '';
+                d.data.forEach(log => {
+                    const isBuy = log.action === 'buy';
+                    const color = isBuy ? '#ef4444' : '#10b981';
+                    const displayDir = isBuy ? '买入' : '卖出';
+                    html += `<tr>
+                        <td>${log.time}</td>
+                        <td style="color:${color}; font-weight:bold">${displayDir}</td>
+                        <td>${log.name} (${log.code})</td>
+                        <td>¥${log.price.toFixed(2)}</td>
+                        <td>${log.vol}</td>
+                        <td style="color:#fbbf24">¥${log.fee ? log.fee.toFixed(2) : '0.00'}</td>
+                        <td class="text-white-50">${log.reason}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center opacity-50">暂无历史交易记录</td></tr>';
+            }
+            new bootstrap.Modal(document.getElementById('tradeLogModal')).show();
+        }).catch(e => {
+            alert('获取记录失败');
         });
     }
 
@@ -1362,6 +1398,35 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- 交易日志模态框 -->
+    <div class="modal fade" id="tradeLogModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white" style="border: 1px solid #10b981;">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title" style="color:#10b981">📜 模拟炒股交易流水</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0">
+            <table class="table table-dark table-striped table-hover mb-0" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>方向</th>
+                        <th>标的</th>
+                        <th>成交价</th>
+                        <th>股数</th>
+                        <th>手续费</th>
+                        <th>操作原因</th>
+                    </tr>
+                </thead>
+                <tbody id="tradeLogTableBody">
+                    <tr><td colspan="7" class="text-center opacity-50">加载中...</td></tr>
+                </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 </body>
 
