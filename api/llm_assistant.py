@@ -1,7 +1,7 @@
 import os
-import requests
 import logging
 import markdown
+from openai import OpenAI
 
 def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
     api_key = "sk-cqvvnuhso706lj6njtjfl76gfhozwjqpv379ilmbbabgsqwv"
@@ -43,24 +43,17 @@ def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
 
 请基于以上数据，为我生成一份有深度、会变通的操盘研判报告。"""
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        "temperature": 0.8
-    }
-
     try:
-        response = requests.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=40)
-        response.raise_for_status()
-        res_data = response.json()
-        ai_text = res_data['choices'][0]['message']['content']
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.8
+        )
+        ai_text = response.choices[0].message.content
         
         # 将 Markdown 转换为 HTML
         html_output = markdown.markdown(ai_text, extensions=['extra', 'codehilite'])

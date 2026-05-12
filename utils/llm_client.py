@@ -1,30 +1,23 @@
 import os
-import requests
 import json
 import logging
+from openai import OpenAI
 
 class XiaomiLLMClient:
     def __init__(self):
         self.api_key = "sk-cqvvnuhso706lj6njtjfl76gfhozwjqpv379ilmbbabgsqwv"
         self.base_url = "https://token-plan-cn.xiaomimimo.com/v1"
         self.model = "mimo-v2.5-pro"
+        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def chat_completion(self, messages, temperature=0.7):
-        url = f"{self.base_url}/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": temperature
-        }
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=30)
-            response.raise_for_status()
-            data = response.json()
-            return data['choices'][0]['message']['content']
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature
+            )
+            return response.choices[0].message.content
         except Exception as e:
             logging.error(f"Xiaomi LLM Error: {e}")
             return None

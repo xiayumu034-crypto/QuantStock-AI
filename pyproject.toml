@@ -19,6 +19,7 @@ dependencies = [
     "setuptools<=69.5.1",
     "protobuf<=3.20.3",
     "markdown>=3.10.2",
+    "openai>=2.36.0",
 ]
 
 [project.optional-dependencies]
