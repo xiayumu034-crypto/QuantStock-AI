@@ -54,10 +54,22 @@ def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
             temperature=0.8
         )
         ai_text = response.choices[0].message.content
-        
-        # 将 Markdown 转换为 HTML
-        html_output = markdown.markdown(ai_text, extensions=['extra', 'codehilite'])
-        return html_output
+        return markdown.markdown(ai_text, extensions=['extra', 'codehilite'])
     except Exception as e:
+        error_str = str(e).lower()
+        if "401" in error_str or "invalid_key" in error_str or "unauthorized" in error_str:
+            mock_text = """### 🧠 操盘大脑研判（体验模式）
+
+> **⚠️ 系统提示**：当前未配置有效的 API Key (或原 Key 已失效)，正在为您呈现 **AI 脱机模拟报告**。如需真实分析，请在代码中替换您的专属 Key。
+
+**【大脑研判】**：市场轮动加速，资金主要聚焦于科技与低空经济，当前账户持仓处于防御状态。
+
+**【持仓体检】**：目前持仓中规中矩，但缺乏绝对的领涨龙头，建议汰弱留强，释放闲置资金。
+
+**【机会捕获】**：建议密切关注近期突破 20 日均线的强势科技标的，同时警惕高位连板股的突然核按钮补跌。
+
+**【明日推演】**：如果早盘大盘放量上攻，可适当加仓核心标的；若出现缩量阴跌，则严格保持现有仓位观望，切勿盲目抄底。"""
+            return markdown.markdown(mock_text, extensions=['extra', 'codehilite'])
+            
         logging.error(f"AI Analysis failed: {e}")
         return f"<div class='alert alert-danger'>AI 分析暂时罢工了: {str(e)}</div>"
