@@ -62,11 +62,12 @@ set TRADE_MODE=live  # 实盘模式 (极其危险，请谨慎！)
 
 ### 🧪 端到端验收 (Smoke Test)
 
-在启动 Web 服务后（必须先运行 `uv run app.py`），您可以在新的终端窗口中执行冒烟测试，快速验证所有核心 API 链路的健康度：
+在启动 Web 服务后（必须先执行 `uv run app.py`），您可以在新的终端窗口中运行冒烟测试，快速验证所有核心 API 的连通性：
 
 ```bash
 uv run python scripts/smoke_test.py
 ```
+
 
 ## 🤖 v17 模型
 

@@ -9,7 +9,7 @@ load_dotenv()
 class XiaomiLLMClient:
     def __init__(self):
         self.api_key = os.getenv("XIAOMI_API_KEY", "")
-        self.base_url = "https://api.xiaomimimo.com/v1"
+        self.base_url = "https://token-plan-cn.xiaomimimo.com/v1"
         self.model = "mimo-v2.5-pro"
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 

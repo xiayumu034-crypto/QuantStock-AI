@@ -8,7 +8,7 @@ load_dotenv()
 
 def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
     api_key = os.getenv("XIAOMI_API_KEY", "")
-    base_url = "https://api.xiaomimimo.com/v1"
+    base_url = "https://token-plan-cn.xiaomimimo.com/v1"
     model = "mimo-v2.5-pro"
 
     system_prompt = """你是一位处于内测阶段的顶尖 AI 投资总监（代号：MiMo-Quant）。

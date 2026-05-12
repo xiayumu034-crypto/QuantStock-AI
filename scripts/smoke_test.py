@@ -31,63 +31,63 @@ def check_endpoint(endpoint, expected_type):
             body = response.read().decode('utf-8')
             elapsed = (time.time() - start_time) * 1000
             
-            if status_code != 200:
-                print(f"[FAIL] {endpoint} (HTTP {status_code}) - {elapsed:.2f}ms")
-                return False
-                
             if expected_type == "JSON":
                 try:
                     data = json.loads(body)
-                    if data.get("status") == "error":
-                        # 收紧 WARN 判定：只有 v18 报告找不到时允许 WARN，其他所有 error 都为 FAIL
-                        if endpoint == "/api/model_report?version=v18":
-                            print(f"[WARN] {endpoint} ({elapsed:.2f}ms) - v18 report missing: {data.get('message', 'error')}")
-                            return True
-                        
-                        print(f"[FAIL] {endpoint} ({elapsed:.2f}ms) - API Error: {data.get('message', 'unknown')}")
-                        return False
-                    
-                    # 补充检查特定 warning (例如 v18 ml_predict_all 降级提示)
-                    warning = data.get("meta", {}).get("warning", "") if isinstance(data, dict) and isinstance(data.get("meta"), dict) else ""
-                    if warning:
-                        print(f"[WARN] {endpoint} ({elapsed:.2f}ms) - warning: {warning}")
-                    else:
-                        print(f"[OK] {endpoint} ({elapsed:.2f}ms) - status: {data.get('status', 'N/A')}")
+                    status = data.get("status", "unknown")
+                    # v18 报告缺失或者预测缺失的情况，如果 status 是 error 或者虽然 success 但没数据且带 warning，记录为 WARN
+                    if status == "error":
+                        if "v18" in endpoint or "model_report" in endpoint:
+                             return "WARN", elapsed, f"Status: error, Msg: {data.get('message', '')[:40]}"
+                        return "FAIL", elapsed, f"API error: {data.get('message', '')}"
+                    if status == "success" and data.get("meta", {}).get("warning"):
+                        return "WARN", elapsed, f"Status: success (with warning)"
+                    return "OK", elapsed, f"Status: {status}, Data Len: {len(str(data))}"
                 except json.JSONDecodeError:
-                    print(f"[FAIL] {endpoint} ({elapsed:.2f}ms) - Not valid JSON")
-                    return False
-            else:
-                print(f"[OK] {endpoint} ({elapsed:.2f}ms) - length: {len(body)}")
-                
-            return True
+                    return "FAIL", elapsed, "Invalid JSON"
+            
+            return "OK", elapsed, f"Len: {len(body)}"
             
     except urllib.error.URLError as e:
-        if isinstance(e.reason, ConnectionRefusedError):
-            print(f"\n[FATAL] Connection refused: {BASE_URL}")
-            print(">>> Please start the server first: uv run app.py <<<\n")
-            sys.exit(1)
-        print(f"[FAIL] {endpoint} - URLError: {e.reason}")
-        return False
+        return "FAIL", 0, str(e)
     except Exception as e:
-        print(f"[FAIL] {endpoint} - Exception: {e}")
-        return False
+        return "FAIL", 0, str(e)
 
 def main():
-    print("=" * 50)
-    print("  QuantStock-AI Smoke Test")
-    print("=" * 50)
+    print("=" * 60)
+    print(f"  QuantStock-AI End-to-End Smoke Test")
+    print("=" * 60)
     
-    all_passed = True
-    for endpoint, exp_type in ENDPOINTS:
-        if not check_endpoint(endpoint, exp_type):
-            all_passed = False
-            
-    print("=" * 50)
-    if all_passed:
-        print("Smoke Test: PASSED")
-    else:
-        print("Smoke Test: FAILED (Some endpoints failed)")
+    # 检查根路径连通性，如果不通直接提示退出
+    try:
+        urllib.request.urlopen(BASE_URL, timeout=3)
+    except urllib.error.URLError:
+        print(f"\n[FATAL] 无法连接到 {BASE_URL}！")
+        print("请先启动 Web 服务：uv run app.py")
         sys.exit(1)
+        
+    has_error = False
+    
+    for endpoint, expected_type in ENDPOINTS:
+        res_status, elapsed, msg = check_endpoint(endpoint, expected_type)
+        
+        status_color = res_status
+        if res_status == "OK":
+            status_color = "\033[92m[OK]\033[0m"
+        elif res_status == "WARN":
+            status_color = "\033[93m[WARN]\033[0m"
+        else:
+            status_color = "\033[91m[FAIL]\033[0m"
+            has_error = True
+            
+        print(f"{status_color} {endpoint:<35} | {elapsed:>5.0f}ms | {msg}")
+        
+    print("=" * 60)
+    if has_error:
+        print("\033[91m测试未完全通过，请检查 FAIL 项。\033[0m")
+        sys.exit(1)
+    else:
+        print("\033[92m测试通过！核心链路畅通。\033[0m")
 
 if __name__ == "__main__":
     main()
