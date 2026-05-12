@@ -232,11 +232,11 @@
             <div class="col-md-8">
                 <div class="ml-card" style="margin-bottom: 0;">
                     <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseML">
-                        <div class="title" style="margin-bottom: 0;">🤖 Qlib v17 信号</div>
+                        <div class="title" style="margin-bottom: 0;" id="mlPanelTitle">🤖 Qlib 信号集</div>
                         <div class="d-flex align-items-center">
                             <select id="modelVersionSelect" class="form-select form-select-sm bg-dark text-white border-secondary me-2" style="width: auto; cursor: pointer;" onchange="switchModelVersion(this.value)">
-                                <option value="v17" selected>v17 (稳健)</option>
-                                <option value="v18">v18 (激进)</option>
+                                <option value="v17">v17 (稳健)</option>
+                                <option value="v18" selected>v18 (激进)</option>
                             </select>
                             <span class="badge text-info me-2" id="modelReportBadge" style="font-size: 0.75rem; cursor: help;">状态检测中</span>
                             <span class="badge text-white me-2" id="mlModelInfo">加载中...</span>

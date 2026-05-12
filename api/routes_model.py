@@ -182,6 +182,16 @@ def get_ml_predict_all():
             stock_names = json.load(f)
 
     results = []
+    all_returns = [pred.get("predicted_return", 0) for pred in predictions.values()]
+    if all_returns and version == "v18":
+        all_returns_sorted = sorted(all_returns)
+        n = len(all_returns_sorted)
+        p90 = all_returns_sorted[int(n * 0.9)] if n > 0 else 0.015
+        p70 = all_returns_sorted[int(n * 0.7)] if n > 0 else 0.005
+        p30 = all_returns_sorted[int(n * 0.3)] if n > 0 else -0.01
+    else:
+        p90, p70, p30 = 0.015, 0.005, -0.01
+
     for code, pred in predictions.items():
         name = stock_names.get(code, f"代码-{code}")
         
@@ -189,13 +199,13 @@ def get_ml_predict_all():
         pred_val = pred.get("predicted_return", 0)
         momentum = pred.get("momentum", 0.8) # 默认动量
         
-        # 简单融合算法：如果AI预测涨幅 > 1.5% 且动量强，则为“强烈看涨”
+        # 动态分位数融合算法（适配不同模型的数值缩放）
         signal = "中性"
-        if pred_val > 0.015:
+        if pred_val >= p90:
             signal = "强烈看涨" if momentum > 0.5 else "看涨"
-        elif pred_val > 0.005:
+        elif pred_val >= p70:
             signal = "看涨"
-        elif pred_val < -0.01:
+        elif pred_val <= p30:
             signal = "看跌"
             
         results.append({
@@ -203,7 +213,7 @@ def get_ml_predict_all():
             "name": name,
             "predicted_return": pred_val,
             "signal": signal,
-            "confidence": "高" if pred_val > 0.02 else "中",
+            "confidence": "高" if pred_val >= p90 else "中",
             "relative_strength": {"momentum": momentum}
         })
     
@@ -212,6 +222,6 @@ def get_ml_predict_all():
             
     return jsonify({
         "status": "success",
-        "meta": {"model": meta.get("model_version", "Qlib v17"), "stocks": len(results), "sample": is_sample},
+        "meta": {"model": meta.get("model_version", "Qlib v18" if version == "v18" else "Qlib v17"), "stocks": len(results), "sample": is_sample},
         "data": results
     })
