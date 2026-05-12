@@ -1,0 +1,88 @@
+{
+    "cash": 12365.45300000002,
+    "holdings": {
+        "002179": {
+            "name": "中航光电",
+            "vol": 400,
+            "cost_price": 40.85,
+            "current_price": 40.85
+        },
+        "000975": {
+            "name": "山金国际",
+            "vol": 700,
+            "cost_price": 28.06,
+            "current_price": 28.06
+        },
+        "000977": {
+            "name": "浪潮信息",
+            "vol": 200,
+            "cost_price": 73.13,
+            "current_price": 73.13
+        },
+        "000938": {
+            "name": "紫光股份",
+            "vol": 600,
+            "cost_price": 30.69,
+            "current_price": 30.69
+        },
+        "000792": {
+            "name": "盐湖股份",
+            "vol": 500,
+            "cost_price": 37.05,
+            "current_price": 37.05
+        }
+    },
+    "logs": [
+        {
+            "time": "15:44:37",
+            "action": "buy",
+            "code": "000792",
+            "name": "盐湖股份",
+            "price": 37.05,
+            "vol": 500,
+            "amount": 18525.0,
+            "reason": "V19强烈看涨 (0.1%)"
+        },
+        {
+            "time": "15:44:37",
+            "action": "buy",
+            "code": "000938",
+            "name": "紫光股份",
+            "price": 30.69,
+            "vol": 600,
+            "amount": 18414.0,
+            "reason": "V19强烈看涨 (0.1%)"
+        },
+        {
+            "time": "15:44:37",
+            "action": "buy",
+            "code": "000977",
+            "name": "浪潮信息",
+            "price": 73.13,
+            "vol": 200,
+            "amount": 14626.0,
+            "reason": "V19强烈看涨 (0.1%)"
+        },
+        {
+            "time": "15:44:37",
+            "action": "buy",
+            "code": "000975",
+            "name": "山金国际",
+            "price": 28.06,
+            "vol": 700,
+            "amount": 19642.0,
+            "reason": "V19强烈看涨 (0.1%)"
+        },
+        {
+            "time": "15:44:37",
+            "action": "buy",
+            "code": "002179",
+            "name": "中航光电",
+            "price": 40.85,
+            "vol": 400,
+            "amount": 16340.0,
+            "reason": "V19强烈看涨 (0.4%)"
+        }
+    ],
+    "auto_trade": true
+}

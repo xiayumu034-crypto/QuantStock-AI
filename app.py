@@ -2,12 +2,14 @@ from flask import Flask
 import os
 from api.routes_market import market_bp
 from api.routes_model import model_bp
+from api.routes_sim_trade import sim_trade_bp
 
 app = Flask(__name__)
 
 # Register Blueprints
 app.register_blueprint(market_bp)
 app.register_blueprint(model_bp)
+app.register_blueprint(sim_trade_bp, url_prefix='/api/sim')
 
 if __name__ == '__main__':
     # Web端已采用离线跑批O(1)架构，不再进行内存在线模型加载，从而保证大屏丝滑不卡顿
