@@ -311,6 +311,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-2 mt-2">
+                            <button class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.7rem" onclick="openSimAiModal()">🧠 AI 助手诊断</button>
                             <button class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.7rem" onclick="openTradeLogModal()">📜 历史记录</button>
                             <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:0.7rem" onclick="triggerSimStep()">🔄 测试触发(无视休市)</button>
                         </div>
@@ -988,33 +989,79 @@
         });
     }
 
+    let allTradeLogs = [];
+    
     function openTradeLogModal() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('tradeLogDate').value = todayStr;
+        
         fetch('/api/sim/logs').then(r => r.json()).then(d => {
-            const tbody = document.getElementById('tradeLogTableBody');
-            if (d.status === 'success' && d.data.length > 0) {
-                let html = '';
-                d.data.forEach(log => {
-                    const isBuy = log.action === 'buy';
-                    const color = isBuy ? '#ef4444' : '#10b981';
-                    const displayDir = isBuy ? '买入' : '卖出';
-                    html += `<tr>
-                        <td>${log.time}</td>
-                        <td style="color:${color}; font-weight:bold">${displayDir}</td>
-                        <td>${log.name} (${log.code})</td>
-                        <td>¥${log.price.toFixed(2)}</td>
-                        <td>${log.vol}</td>
-                        <td style="color:#fbbf24">¥${log.fee ? log.fee.toFixed(2) : '0.00'}</td>
-                        <td class="text-white-50">${log.reason}</td>
-                    </tr>`;
-                });
-                tbody.innerHTML = html;
+            if (d.status === 'success') {
+                allTradeLogs = d.data;
+                filterTradeLogs();
             } else {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center opacity-50">暂无历史交易记录</td></tr>';
+                alert('获取记录失败');
             }
             new bootstrap.Modal(document.getElementById('tradeLogModal')).show();
         }).catch(e => {
             alert('获取记录失败');
         });
+    }
+
+    function filterTradeLogs() {
+        const dateFilter = document.getElementById('tradeLogDate').value;
+        const tbody = document.getElementById('tradeLogTableBody');
+        
+        if (!allTradeLogs || allTradeLogs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center opacity-50">暂无历史交易记录</td></tr>';
+            return;
+        }
+
+        let filtered = allTradeLogs;
+        if (dateFilter) {
+            filtered = allTradeLogs.filter(log => log.time.startsWith(dateFilter));
+        }
+
+        if (filtered.length > 0) {
+            let html = '';
+            filtered.forEach(log => {
+                const isBuy = log.action === 'buy';
+                const color = isBuy ? '#ef4444' : '#10b981';
+                const displayDir = isBuy ? '买入' : '卖出';
+                html += `<tr>
+                    <td>${log.time}</td>
+                    <td style="color:${color}; font-weight:bold">${displayDir}</td>
+                    <td>${log.name} (${log.code})</td>
+                    <td>¥${log.price.toFixed(2)}</td>
+                    <td>${log.vol}</td>
+                    <td style="color:#fbbf24">¥${log.fee ? log.fee.toFixed(2) : '0.00'}</td>
+                    <td class="text-white-50">${log.reason}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center opacity-50">该日期无交易记录</td></tr>';
+        }
+    }
+
+    function openSimAiModal() {
+        const modal = new bootstrap.Modal(document.getElementById('simAiModal'));
+        const content = document.getElementById('simAiContent');
+        content.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-warning"></div><div class="mt-2 small text-white-50">小米大模型 mimo-v2.5-pro 正在深度诊断您的模拟盘...</div></div>`;
+        modal.show();
+
+        fetch('/api/sim/analyze')
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'success') {
+                    content.innerHTML = d.html;
+                } else {
+                    content.innerHTML = `<div class="text-danger">分析失败: ${d.msg}</div>`;
+                }
+            })
+            .catch(e => {
+                content.innerHTML = `<div class="text-danger">网络请求失败: ${e.message}</div>`;
+            });
     }
 
     loadSimAccount();
@@ -1403,9 +1450,12 @@
     <div class="modal fade" id="tradeLogModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content bg-dark text-white" style="border: 1px solid #10b981;">
-          <div class="modal-header border-secondary">
+          <div class="modal-header border-secondary d-flex justify-content-between align-items-center">
             <h5 class="modal-title" style="color:#10b981">📜 模拟炒股交易流水</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="d-flex align-items-center gap-2">
+                <input type="date" id="tradeLogDate" class="form-control form-control-sm bg-dark text-white border-secondary" onchange="filterTradeLogs()">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
           </div>
           <div class="modal-body p-0">
             <table class="table table-dark table-striped table-hover mb-0" style="font-size: 0.85rem;">
@@ -1427,6 +1477,22 @@
           </div>
         </div>
       </div>
+    </div>
+    <!-- 模拟盘AI诊断模态框 -->
+    <div class="modal fade" id="simAiModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark text-white border-secondary" style="border: 1px solid #f59e0b;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" style="color:#f59e0b">🧠 操盘大脑研判报告 (mimo-v2.5-pro)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="simAiContent" style="line-height: 1.6; font-size: 0.95rem;">
+                        <!-- AI 动态回传的内容将渲染在此 -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 

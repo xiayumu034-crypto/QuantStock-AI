@@ -59,8 +59,38 @@ def get_info():
 
 @sim_trade_bp.route('/logs', methods=['GET'])
 def get_logs():
+    date_filter = request.args.get('date') # YYYY-MM-DD
     account = load_account()
-    return jsonify({"status": "success", "data": account.get("logs", [])})
+    logs = account.get("logs", [])
+    
+    if date_filter:
+        logs = [l for l in logs if l['time'].startswith(date_filter)]
+    
+    return jsonify({"status": "success", "data": logs})
+
+@sim_trade_bp.route('/ai_advice', methods=['GET'])
+def ai_advice():
+    """获取小米大模型提供的策略指导"""
+    try:
+        from utils.llm_client import XiaomiLLMClient
+        client = XiaomiLLMClient()
+        
+        # 准备上下文
+        account = load_account()
+        holdings = [f"{v['name']}({k})" for k, v in account['holdings'].items()]
+        market_ctx = f"账户净资产: {account.get('total_asset', 100000):.0f}, 当前持仓: {', '.join(holdings) if holdings else '空仓'}"
+        
+        # 获取最新新闻作为背景
+        from data.news_data import fetch_all_news
+        news_data = fetch_all_news()
+        news_summary = ""
+        if news_data:
+            news_summary = "\n".join([f"- {n['title']}" for n in news_data[:8]])
+            
+        advice = client.get_trading_advice(market_ctx, news_summary)
+        return jsonify({"status": "success", "data": advice})
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)})
 
 @sim_trade_bp.route('/toggle_auto', methods=['POST'])
 def toggle_auto():
@@ -239,3 +269,41 @@ def sim_step():
         "actions": actions_taken, 
         "msg": f"Step completed. {len(actions_taken)} actions taken." if actions_taken else "No actions taken."
     })
+
+@sim_trade_bp.route('/analyze', methods=['GET'])
+def ai_analyze():
+    account = load_account()
+    
+    # 提取持仓
+    portfolio = f"总资产: {account.get('total_asset', account['cash'])}, 可用资金: {account['cash']}\n"
+    if account["holdings"]:
+        for code, pos in account["holdings"].items():
+            portfolio += f"- {pos['name']}({code}): {pos['vol']}股, 成本价: {pos['cost_price']}\n"
+    else:
+        portfolio += "当前空仓\n"
+        
+    # 提取日志(最近5条)
+    logs_str = "最近无交易记录"
+    if account["logs"]:
+        logs_str = ""
+        for log in account["logs"][:5]:
+            logs_str += f"- [{log['time']}] {log['action']} {log['name']} {log['vol']}股 @ {log['price']}元 (原因: {log['reason']})\n"
+            
+    # 获取热点
+    hot_sectors_str = "暂无数据"
+    try:
+        import akshare as ak
+        sector_df = ak.stock_sector_spot(indicator='新浪行业')
+        if not sector_df.empty:
+            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(3)
+            hot_sectors_str = ""
+            for _, row in hot_sectors.iterrows():
+                hot_sectors_str += f"- {row['板块']}: 涨跌幅 {row['涨跌幅']}%, 领涨股 {row['股票名称']}\n"
+    except Exception as e:
+        pass
+        
+    # 调用 LLM
+    from api.llm_assistant import generate_ai_analysis
+    report_html = generate_ai_analysis(portfolio, logs_str, hot_sectors_str)
+    
+    return jsonify({"status": "success", "html": report_html})
