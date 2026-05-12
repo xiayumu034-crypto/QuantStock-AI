@@ -183,7 +183,7 @@ def get_ml_predict_all():
 
     results = []
     all_returns = [pred.get("predicted_return", 0) for pred in predictions.values()]
-    if all_returns and version == "v18":
+    if all_returns and version in ("v18", "v19"):
         all_returns_sorted = sorted(all_returns)
         n = len(all_returns_sorted)
         p90 = all_returns_sorted[int(n * 0.9)] if n > 0 else 0.015
@@ -208,6 +208,7 @@ def get_ml_predict_all():
         elif pred_val <= p30:
             signal = "看跌"
             
+        # 对于 v19 (分类概率)，将返回概率作为 predicted_return，如果是回归则保留收益率
         results.append({
             "code": code,
             "name": name,
@@ -222,6 +223,6 @@ def get_ml_predict_all():
             
     return jsonify({
         "status": "success",
-        "meta": {"model": meta.get("model_version", "Qlib v18" if version == "v18" else "Qlib v17"), "stocks": len(results), "sample": is_sample},
+        "meta": {"model": meta.get("model_version", f"Qlib {version}"), "stocks": len(results), "sample": is_sample},
         "data": results
     })

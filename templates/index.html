@@ -236,7 +236,8 @@
                         <div class="d-flex align-items-center">
                             <select id="modelVersionSelect" class="form-select form-select-sm bg-dark text-white border-secondary me-2" style="width: auto; cursor: pointer;" onchange="switchModelVersion(this.value)">
                                 <option value="v17">v17 (稳健)</option>
-                                <option value="v18" selected>v18 (激进)</option>
+                                <option value="v18">v18 (激进)</option>
+                                <option value="v19" selected>v19 (集成高胜率)</option>
                             </select>
                             <span class="badge text-info me-2" id="modelReportBadge" style="font-size: 0.75rem; cursor: help;">状态检测中</span>
                             <span class="badge text-white me-2" id="mlModelInfo">加载中...</span>
@@ -823,7 +824,7 @@
         }
     }
 
-    let currentMLVersion = 'v18';
+    let currentMLVersion = 'v19';
 
     function switchModelVersion(ver) {
         currentMLVersion = ver;
