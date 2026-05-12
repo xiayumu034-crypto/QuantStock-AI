@@ -5,7 +5,7 @@ from openai import OpenAI
 
 def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
     api_key = "sk-cqvvnuhso706lj6njtjfl76gfhozwjqpv379ilmbbabgsqwv"
-    base_url = "https://token-plan-cn.xiaomimimo.com/v1"
+    base_url = "https://api.xiaomimimo.com/v1"
     model = "mimo-v2.5-pro"
 
     system_prompt = """你是一位精通 A 股市场的资深量化交易员和宏观分析师，现在担任用户的「AI 模拟操盘大脑」。
