@@ -282,11 +282,11 @@ def ai_analyze():
     else:
         portfolio += "当前空仓\n"
         
-    # 提取日志(最近5条)
+    # 提取日志(最近10条)
     logs_str = "最近无交易记录"
     if account["logs"]:
         logs_str = ""
-        for log in account["logs"][:5]:
+        for log in account["logs"][:10]:
             logs_str += f"- [{log['time']}] {log['action']} {log['name']} {log['vol']}股 @ {log['price']}元 (原因: {log['reason']})\n"
             
     # 获取热点
@@ -295,10 +295,10 @@ def ai_analyze():
         import akshare as ak
         sector_df = ak.stock_sector_spot(indicator='新浪行业')
         if not sector_df.empty:
-            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(3)
+            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(5)
             hot_sectors_str = ""
             for _, row in hot_sectors.iterrows():
-                hot_sectors_str += f"- {row['板块']}: 涨跌幅 {row['涨跌幅']}%, 领涨股 {row['股票名称']}\n"
+                hot_sectors_str += f"- {row['板块']}: 涨跌幅 {row['涨跌幅']}%, 领涨股 {row['股票名称']}({row['股票代码']})\n"
     except Exception as e:
         pass
         
