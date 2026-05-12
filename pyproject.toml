@@ -17,7 +17,8 @@ dependencies = [
     "lxml>=4.9.0",
     "beautifulsoup4>=4.11.0",
     "setuptools<=69.5.1",
-    "protobuf<=3.20.3"
+    "protobuf<=3.20.3",
+    "markdown>=3.10.2",
 ]
 
 [project.optional-dependencies]
