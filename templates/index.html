@@ -1033,21 +1033,21 @@
                 const color = isBuy ? '#ef4444' : '#10b981';
                 const displayDir = isBuy ? '买入' : '卖出';
 
-                const pnl = log.pnl !== undefined && log.pnl !== null ? `<span style="color: ${log.pnl >= 0 ? '#ef4444' : '#10b981'}">¥${log.pnl.toFixed(2)}</span>` : '--';
-                const duration = log.duration ? log.duration : '--';
+                const pnl = !isBuy && log.pnl !== undefined && log.pnl !== null ? `<span style="color: ${log.pnl >= 0 ? '#ef4444' : '#10b981'}">¥${log.pnl.toFixed(2)}</span>` : '';
+                const duration = !isBuy && log.duration ? log.duration : '';
                 const amount = log.amount ? `¥${log.amount.toFixed(0)}` : '--';
 
                 html += `<tr>
                     <td>${log.time}</td>
                     <td style="color:${color}; font-weight:bold">${displayDir}</td>
-                    <td>${log.name} (${log.code})</td>
+                    <td>${log.name}<br><small class="text-secondary">${log.code}</small></td>
                     <td>¥${log.price.toFixed(2)}</td>
                     <td>${log.vol}</td>
                     <td>${amount}</td>
                     <td style="color:#fbbf24">¥${log.fee ? log.fee.toFixed(2) : '0.00'}</td>
-                    <td>${pnl}</td>
-                    <td>${duration}</td>
-                    <td class="text-white-50 small">${log.reason}</td>
+                    <td style="font-weight: 500">${pnl}</td>
+                    <td class="small">${duration}</td>
+                    <td class="text-white-50 small" style="max-width: 200px; white-space: normal;">${log.reason}</td>
                 </tr>`;
             });
             tbody.innerHTML = html;
@@ -1460,7 +1460,7 @@
     </div>
     <!-- 交易日志模态框 -->
     <div class="modal fade" id="tradeLogModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content bg-dark text-white" style="border: 1px solid #10b981;">
           <div class="modal-header border-secondary d-flex justify-content-between align-items-center">
             <h5 class="modal-title" style="color:#10b981">📜 模拟炒股交易流水</h5>
@@ -1473,9 +1473,9 @@
             <table class="table table-dark table-striped table-hover mb-0" style="font-size: 0.85rem;">
                 <thead>
                     <tr>
-                        <th>时间</th>
+                        <th style="min-width: 140px;">时间</th>
                         <th>方向</th>
-                        <th>标的</th>
+                        <th style="min-width: 100px;">标的</th>
                         <th>成交价</th>
                         <th>股数</th>
                         <th>成交额</th>

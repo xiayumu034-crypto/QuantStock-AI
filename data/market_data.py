@@ -30,21 +30,25 @@ class StockDataAPI:
                 if match:
                     parts = match.group(1).split(",")
                     if len(parts) > 31:
-                        current = float(parts[3])
-                        yesterday_close = float(parts[2])
-                        change = current - yesterday_close
-                        change_pct = (change / yesterday_close) * 100 if yesterday_close else 0
-                        return {
-                            "name": parts[0], "code": stock_code,
-                            "open": float(parts[1]), "yesterday_close": yesterday_close,
-                            "current": current, "high": float(parts[4]), "low": float(parts[5]),
-                            "volume": int(parts[8]), "amount": float(parts[9]),
-                            "ask1": float(parts[20]), "ask1_vol": int(parts[21]),
-                            "bid1": float(parts[10]), "bid1_vol": int(parts[11]),
-                            "time": f"{parts[30]} {parts[31]}",
-                            "change": round(change, 2), "change_percent": round(change_pct, 2),
-                            "status": "success"
-                        }
+                        try:
+                            current = float(parts[3])
+                            yesterday_close = float(parts[2])
+                            change = current - yesterday_close
+                            change_pct = (change / yesterday_close) * 100 if yesterday_close else 0
+                            return {
+                                "name": parts[0], "code": stock_code,
+                                "open": float(parts[1]), "yesterday_close": yesterday_close,
+                                "current": current, "high": float(parts[4]), "low": float(parts[5]),
+                                "volume": int(float(parts[8])), "amount": float(parts[9]),
+                                "ask1": float(parts[20]), "ask1_vol": int(float(parts[21])),
+                                "bid1": float(parts[10]), "bid1_vol": int(float(parts[11])),
+                                "time": f"{parts[30]} {parts[31]}",
+                                "change": round(change, 2), "change_percent": round(change_pct, 2),
+                                "status": "success"
+                            }
+                        except (ValueError, IndexError) as e:
+                            logger.error(f"Error parsing parts for {stock_code}: {e}")
+                            return {"status": "error", "message": f"Parse error: {e}"}
         except Exception as e:
             return {"status": "error", "message": str(e)}
         return {"status": "error", "message": "数据获取失败"}

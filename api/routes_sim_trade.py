@@ -272,6 +272,15 @@ def sim_step():
         if pos.get("buy_date") == today_str and not is_manual:
             continue
 
+        # --- 【新增核心规则】涨停不卖：强势股封板必有溢价，封死涨停时绝不抛售 ---
+        is_up_limited, _ = check_trade_limit(
+            code, prices[code]["current"], prices[code]["yesterday_close"], "buy", 
+            ask1_price=prices[code].get("ask1")
+        )
+        if is_up_limited and not is_manual:
+            logging.info(f"Strong hold on {code}: Limit-up detected. Waiting for tomorrow's premium.")
+            continue
+
         pred_val = predictions.get(code, {}).get("predicted_return", 0)
         
         # 卖出条件：
@@ -289,7 +298,7 @@ def sim_step():
         if code not in prices or prices[code]["current"] <= 0:
             continue
             
-        # --- 新增：跌停板校验 (加入盘口档位判断) ---
+        # --- 跌停板校验 (加入盘口档位判断) ---
         is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "sell", bid1_price=prices[code].get("bid1"))
         if is_limited:
             logging.info(f"Skip selling {code} due to limit: {limit_msg}")
@@ -327,7 +336,8 @@ def sim_step():
                 pass
 
         name = pos.get("name", prices[code]["name"])
-        reason = f"V19评分跌出安全区"
+        # 修正：根据标的类型记录准确的卖出原因
+        reason = "V19评分跌出安全区" if code in predictions else "事件驱动热点退潮/板块轮动"
         log_trade(account, "sell", code, name, sell_price, vol, fee, reason, pnl=pnl, duration=duration_str)
         actions_taken.append(f"卖出 {name}({code})")
 

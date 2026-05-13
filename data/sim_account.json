@@ -1,156 +1,118 @@
 {
     "auto_trade": true,
-    "cash": 14423.19824,
+    "cash": 13063.130890000008,
     "holdings": {
-        "000975": {
-            "cost_price": 28.06,
-            "current_price": 27.83,
-            "name": "山金国际",
-            "vol": 700,
-            "buy_date": "2026-05-12",
-            "buy_time": "2026-05-12 17:09:03",
-            "buy_fee": 5.2
-        },
-        "000977": {
-            "cost_price": 73.13,
-            "current_price": 75.64,
-            "name": "浪潮信息",
-            "vol": 200,
-            "buy_date": "2026-05-12",
-            "buy_time": "2026-05-12 17:09:03",
-            "buy_fee": 5.15
-        },
-        "002179": {
-            "cost_price": 40.85,
-            "current_price": 41.4,
-            "name": "中航光电",
-            "vol": 400,
-            "buy_date": "2026-05-12",
-            "buy_time": "2026-05-12 17:09:03",
-            "buy_fee": 5.16
-        },
-        "002498": {
-            "cost_price": 11.01,
-            "current_price": 11.01,
-            "name": "汉缆股份",
-            "vol": 1800,
-            "buy_date": "2026-05-13",
-            "buy_time": "2026-05-13 09:47:07",
-            "buy_fee": 5.2
-        },
         "603268": {
-            "cost_price": 166.36,
-            "current_price": 167.91,
             "name": "松发股份",
             "vol": 100,
+            "cost_price": 167.73,
+            "current_price": 167.41,
             "buy_date": "2026-05-13",
-            "buy_time": "2026-05-13 09:47:07",
-            "buy_fee": 5.17
+            "buy_time": "2026-05-13 10:22:07",
+            "buy_fee": 5.16773
+        },
+        "002179": {
+            "name": "中航光电",
+            "vol": 400,
+            "cost_price": 41.51,
+            "current_price": 41.48,
+            "buy_date": "2026-05-13",
+            "buy_time": "2026-05-13 10:22:07",
+            "buy_fee": 5.16604
+        },
+        "000975": {
+            "name": "山金国际",
+            "vol": 700,
+            "cost_price": 27.9,
+            "current_price": 27.98,
+            "buy_date": "2026-05-13",
+            "buy_time": "2026-05-13 10:22:07",
+            "buy_fee": 5.1953
+        },
+        "000977": {
+            "name": "浪潮信息",
+            "vol": 200,
+            "cost_price": 75.82,
+            "current_price": 75.73,
+            "buy_date": "2026-05-13",
+            "buy_time": "2026-05-13 10:22:07",
+            "buy_fee": 5.15164
+        },
+        "000938": {
+            "name": "紫光股份",
+            "vol": 600,
+            "cost_price": 31.4,
+            "current_price": 31.38,
+            "buy_date": "2026-05-13",
+            "buy_time": "2026-05-13 10:22:07",
+            "buy_fee": 5.1884
         }
     },
     "logs": [
         {
+            "time": "2026-05-13 10:22:08",
             "action": "buy",
-            "amount": 16636,
-            "code": "603268",
-            "fee": 5.17,
-            "name": "松发股份",
-            "price": 166.36,
-            "reason": "新闻热点驱动: [陶瓷行业]板块强势领涨",
-            "time": "2026-05-13 09:47:07",
-            "vol": 100
-        },
-        {
-            "action": "buy",
-            "amount": 19818,
-            "code": "002498",
-            "fee": 5.2,
-            "name": "汉缆股份",
-            "price": 11.01,
-            "reason": "新闻热点驱动: [发电设备]板块强势领涨",
-            "time": "2026-05-13 09:47:07",
-            "vol": 1800
-        },
-        {
-            "action": "sell",
-            "amount": 14422,
-            "code": "300395",
-            "fee": 12.36,
-            "name": "菲利华",
-            "price": 144.22,
-            "reason": "V19评分跌出安全区",
-            "time": "2026-05-13 09:47:07",
-            "vol": 100,
-            "pnl": -399.15,
-            "duration": "0天16时"
-        },
-        {
-            "action": "sell",
-            "amount": 21360,
-            "code": "000601",
-            "fee": 16.23,
-            "name": "韶能股份",
-            "price": 8.9,
-            "reason": "V19评分跌出安全区",
-            "time": "2026-05-13 09:47:07",
-            "vol": 2400,
-            "pnl": 1927.58,
-            "duration": "0天16时"
-        },
-        {
-            "action": "buy",
-            "amount": 14626,
-            "code": "000977",
-            "fee": 5.15,
-            "name": "浪潮信息",
-            "price": 73.13,
-            "reason": "V19强共振买入信号",
-            "time": "2026-05-12 17:09:03",
-            "vol": 200
-        },
-        {
-            "action": "buy",
-            "amount": 19642,
-            "code": "000975",
-            "fee": 5.2,
-            "name": "山金国际",
-            "price": 28.06,
-            "reason": "V19强共振买入信号",
-            "time": "2026-05-12 17:09:03",
-            "vol": 700
-        },
-        {
-            "action": "buy",
-            "amount": 16340,
-            "code": "002179",
-            "fee": 5.16,
-            "name": "中航光电",
-            "price": 40.85,
-            "reason": "V19强共振买入信号",
-            "time": "2026-05-12 17:09:03",
-            "vol": 400
-        },
-        {
-            "action": "buy",
-            "amount": 14816,
-            "code": "300395",
-            "fee": 5.15,
-            "name": "菲利华",
-            "price": 148.16,
-            "reason": "新闻热点驱动: [玻璃行业]板块强势领涨",
-            "time": "2026-05-12 17:09:03",
-            "vol": 100
-        },
-        {
-            "action": "buy",
-            "amount": 19416,
-            "code": "000601",
+            "code": "000938",
+            "name": "紫光股份",
+            "price": 31.4,
+            "vol": 600,
+            "amount": 18840.0,
             "fee": 5.19,
-            "name": "韶能股份",
-            "price": 8.09,
-            "reason": "新闻热点驱动: [电力行业]板块强势领涨",
-            "time": "2026-05-12 17:09:03",
-            "vol": 2400
+            "reason": "V19强共振买入信号",
+            "pnl": null,
+            "duration": null
+        },
+        {
+            "time": "2026-05-13 10:22:08",
+            "action": "buy",
+            "code": "000977",
+            "name": "浪潮信息",
+            "price": 75.82,
+            "vol": 200,
+            "amount": 15163.999999999998,
+            "fee": 5.15,
+            "reason": "V19强共振买入信号",
+            "pnl": null,
+            "duration": null
+        },
+        {
+            "time": "2026-05-13 10:22:08",
+            "action": "buy",
+            "code": "000975",
+            "name": "山金国际",
+            "price": 27.9,
+            "vol": 700,
+            "amount": 19530.0,
+            "fee": 5.2,
+            "reason": "V19强共振买入信号",
+            "pnl": null,
+            "duration": null
+        },
+        {
+            "time": "2026-05-13 10:22:08",
+            "action": "buy",
+            "code": "002179",
+            "name": "中航光电",
+            "price": 41.51,
+            "vol": 400,
+            "amount": 16604.0,
+            "fee": 5.17,
+            "reason": "V19强共振买入信号",
+            "pnl": null,
+            "duration": null
+        },
+        {
+            "time": "2026-05-13 10:22:08",
+            "action": "buy",
+            "code": "603268",
+            "name": "松发股份",
+            "price": 167.73,
+            "vol": 100,
+            "amount": 16773.0,
+            "fee": 5.17,
+            "reason": "新闻热点驱动: [陶瓷行业]板块强势领涨",
+            "pnl": null,
+            "duration": null
         }
     ]
 }
