@@ -15,7 +15,7 @@ def download_data():
     elif os.path.exists('data/stock_names.json'):
         with open('data/stock_names.json', 'r', encoding='utf-8') as f:
             stocks = json.load(f)
-            stock_pool = list(stocks.keys())[:54] # fall back
+            stock_pool = list(stocks.keys()) # 使用全部 300 只股票
             
     print(f"准备下载 {len(stock_pool)} 只股票数据...")
     

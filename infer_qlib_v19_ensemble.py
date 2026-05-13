@@ -20,9 +20,10 @@ def main():
     stock_list = D.list_instruments(instruments=instruments, as_list=True)
 
     stock_pool = []
-    if os.path.exists('data/curated_stocks_v12.json'):
-        with open('data/curated_stocks_v12.json', 'r', encoding='utf-8') as f:
-            stock_pool = json.load(f)
+    if os.path.exists('data/stock_names.json'):
+        with open('data/stock_names.json', 'r', encoding='utf-8') as f:
+            stock_pool = list(json.load(f).keys())
+    
     if stock_pool:
         clean_pool = [code[-6:] for code in stock_pool]
         valid_stocks = [s for s in stock_list if s[-6:] in clean_pool]
