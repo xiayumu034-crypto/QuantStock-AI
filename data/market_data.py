@@ -217,11 +217,21 @@ class StockDataAPI:
         else:
             signals.append(f"RSI={rsi:.0f} → 中性区域")
 
-        vol_ratio = volumes[-1] / np.mean(volumes[-10:])
-        if vol_ratio > 1.5:
-            signals.append("放量 → 资金活跃"); strength += 1
-        elif vol_ratio < 0.5:
-            signals.append("缩量 → 观望")
+        # ---------------- 动能与趋势修正 (Trend Bias) ----------------
+        # 抓取日线级别的实时涨跌幅
+        rt_info = self.get_realtime_data(stock_code)
+        if rt_info['status'] == 'success':
+            change_pct = rt_info.get('change_percent', 0)
+            if change_pct > 2.0:
+                signals.append(f"日线强劲 (+{change_pct}%) → 动能占优"); strength += 1
+            elif change_pct < -2.0:
+                signals.append(f"日线走弱 ({change_pct}%) → 抛压沉重"); strength -= 1
+            
+            # 价格与开盘价对比
+            if current > rt_info.get('open', 0):
+                signals.append("处于分时均线上方 → 日内多头"); strength += 0.5
+            else:
+                signals.append("处于分时均线下方 → 日内空头"); strength -= 0.5
 
         # ---------------- 补充前端所需的全部关键指标 ----------------
         closes_s = pd.Series(closes)
@@ -267,12 +277,12 @@ class StockDataAPI:
         # ATR
         atr = tr.rolling(14).mean()
 
-        up_prob = min(max(50 + strength * 8, 5), 95)
+        up_prob = min(max(50 + strength * 10, 5), 95)
         down_prob = 100 - up_prob
-        if strength >= 2: action, action_class = "强烈看涨", "positive"
-        elif strength >= 1: action, action_class = "看涨", "positive"
-        elif strength <= -2: action, action_class = "强烈看跌", "negative"
-        elif strength <= -1: action, action_class = "看跌", "negative"
+        if strength >= 1.5: action, action_class = "强烈看涨", "positive"
+        elif strength >= 0.5: action, action_class = "看涨", "positive"
+        elif strength <= -1.5: action, action_class = "强烈看跌", "negative"
+        elif strength <= -0.5: action, action_class = "看跌", "negative"
         else: action, action_class = "震荡", "neutral"
 
         return {

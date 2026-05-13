@@ -242,33 +242,45 @@ def sim_step():
     p90_val = sorted_preds[int(n*0.1)]["pred"] if n >= 10 else 0.6
     p30_val = sorted_preds[int(n*0.7)]["pred"] if n >= 10 else 0.4
 
-    top_codes = [p["code"] for p in sorted_preds if p["pred"] >= p90_val]
+    # --- 【新增空仓信号逻辑】 ---
+    # 1. 绝对收益阈值：即便排名前10%，如果预测收益为负，说明市场整体极差，不买入。
+    top_codes = [p["code"] for p in sorted_preds if p["pred"] >= p90_val and p["pred"] > 0]
     
-    # 2.5 接入【新闻与国家大事驱动】逻辑（超越原本监控池）
+    # 2. 市场整体环境评估 (Market Sentiment)
+    # 计算全池平均预测收益，如果均值为负，视为大盘风险期
+    avg_pred = sum([p["pred"] for p in sorted_preds]) / n
+    is_market_risky = avg_pred < -0.01  # 均值亏损超过1%视为极高风险
+    
+    if is_market_risky:
+        logging.warning(f"Market Sentiment Risk detected (Avg Pred: {avg_pred:.4f}). AI will tilt towards cash (Empty Position).")
+        top_codes = [] # 风险期停止一切新开仓动作
+    
+    # 2.5 接入【新闻与国家大事驱动】逻辑
     event_driven_info = {}
-    try:
-        import akshare as ak
-        sector_df = ak.stock_sector_spot(indicator='新浪行业')
-        if not sector_df.empty:
-            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(3)
-            for _, row in hot_sectors.iterrows():
-                sector_name = row['板块']
-                leader_code = str(row['股票代码']) 
-                leader_name = str(row['股票名称'])
-                leader_change = float(row['个股-涨跌幅'])
-                
-                pure_code = leader_code[2:] if leader_code[:2] in ['sh', 'sz', 'bj'] else leader_code
-                
-                # 寻找有动能的票，排除封死20%涨停的极端情况
-                if 2.0 < leader_change < 19.5:
-                    if pure_code not in top_codes:
-                        top_codes.insert(0, pure_code) # 优先买入热点
-                    event_driven_info[pure_code] = {
-                        "name": leader_name,
-                        "reason": f"新闻热点驱动: [{sector_name}]板块强势领涨"
-                    }
-    except Exception as e:
-        logging.error(f"Error fetching event driven stocks: {e}")
+    if not is_market_risky: # 大盘风险期同样暂停热点博弈，保住本金
+        try:
+            import akshare as ak
+            sector_df = ak.stock_sector_spot(indicator='新浪行业')
+            if not sector_df.empty:
+                hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(3)
+                for _, row in hot_sectors.iterrows():
+                    sector_name = row['板块']
+                    leader_code = str(row['股票代码']) 
+                    leader_name = str(row['股票名称'])
+                    leader_change = float(row['个股-涨跌幅'])
+                    
+                    pure_code = leader_code[2:] if leader_code[:2] in ['sh', 'sz', 'bj'] else leader_code
+                    
+                    # 寻找有动能的票，排除封死20%涨停的极端情况
+                    if 2.0 < leader_change < 19.5:
+                        if pure_code not in top_codes:
+                            top_codes.insert(0, pure_code) # 优先买入热点
+                        event_driven_info[pure_code] = {
+                            "name": leader_name,
+                            "reason": f"新闻热点驱动: [{sector_name}]板块强势领涨"
+                        }
+        except Exception as e:
+            logging.error(f"Error fetching event driven stocks: {e}")
 
     names_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "stock_names.json")
     stock_names = {}
@@ -447,10 +459,14 @@ def sim_step():
 
     save_account(account)
     
+    msg = f"已执行 {len(actions_taken)} 项交易动作。" if actions_taken else "市场环境稳健，维持当前持仓。"
+    if is_market_risky:
+        msg = "检测到全市场系统性风险，AI 已执行空仓避险保护。" if not account["holdings"] else "检测到市场风险，停止新开仓，执行防御性策略。"
+
     return jsonify({
         "status": "success", 
         "actions": actions_taken, 
-        "msg": f"Step completed. {len(actions_taken)} actions taken." if actions_taken else "No actions taken."
+        "msg": msg
     })
 
 @sim_trade_bp.route('/analyze', methods=['GET'])
