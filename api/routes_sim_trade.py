@@ -117,11 +117,59 @@ def get_logs():
     date_filter = request.args.get('date') # YYYY-MM-DD
     account = load_account()
     logs = account.get("logs", [])
+    holdings = account.get("holdings", {})
+    now = datetime.now()
     
+    # 获取实时价格以计算浮动盈亏
+    prices = {}
+    if holdings:
+        try:
+            from data.market_data import StockDataAPI
+            api_client = StockDataAPI()
+            for code in holdings.keys():
+                rt = api_client.get_realtime_data(code)
+                if rt and "current" in rt:
+                    prices[code] = rt["current"]
+        except:
+            pass
+
+    # 动态增强 Buy 日志的实时状态
+    display_logs = []
+    for l in logs:
+        new_log = l.copy()
+        # 如果是买入日志，且该股票目前还在持仓中，计算实时浮盈和持仓时长
+        if l['action'] == 'buy' and l['code'] in holdings:
+            code = l['code']
+            pos = holdings[code]
+            
+            # 实时时长
+            try:
+                buy_time = datetime.strptime(l['time'], "%Y-%m-%d %H:%M:%S")
+                delta = now - buy_time
+                if delta.days > 0:
+                    new_log['duration'] = f"{delta.days}天{delta.seconds//3600}时"
+                elif delta.seconds >= 3600:
+                    new_log['duration'] = f"{delta.seconds//3600}小时"
+                else:
+                    new_log['duration'] = f"{delta.seconds//60}分钟"
+            except:
+                pass
+            
+            # 实时浮盈 (浮动盈亏 = 当前市值 - 买入成本 - 预估卖出手续费)
+            if code in prices:
+                current_price = prices[code]
+                amount = current_price * l['vol']
+                # 预估卖出手续费
+                est_fee = max(amount * 0.00025, 5.0) + (amount * 0.00001) + (amount * 0.0005)
+                # 浮盈 = 当前价值 - (买入成交额 + 买入手续费) - 预估卖出手续费
+                new_log['pnl'] = (amount - est_fee) - (l['amount'] + l.get('fee', 0))
+        
+        display_logs.append(new_log)
+
     if date_filter:
-        logs = [l for l in logs if l['time'].startswith(date_filter)]
+        display_logs = [l for l in display_logs if l['time'].startswith(date_filter)]
     
-    return jsonify({"status": "success", "data": logs})
+    return jsonify({"status": "success", "data": display_logs})
 
 @sim_trade_bp.route('/ai_advice', methods=['GET'])
 def ai_advice():

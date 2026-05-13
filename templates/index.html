@@ -1033,21 +1033,28 @@
                 const color = isBuy ? '#ef4444' : '#10b981';
                 const displayDir = isBuy ? '买入' : '卖出';
 
-                const pnl = !isBuy && log.pnl !== undefined && log.pnl !== null ? `<span style="color: ${log.pnl >= 0 ? '#ef4444' : '#10b981'}">¥${log.pnl.toFixed(2)}</span>` : '';
-                const duration = !isBuy && log.duration ? log.duration : '';
+                const isFloating = isBuy && log.pnl !== undefined;
+                const pnlColor = log.pnl >= 0 ? '#ef4444' : '#10b981';
+                const pnl = (log.pnl !== undefined && log.pnl !== null) 
+                    ? `<span style="color: ${pnlColor}">${log.pnl >= 0 ? '+' : ''}${log.pnl.toFixed(2)}</span>${isFloating ? '<br><small class="opacity-50" style="font-size:0.7rem">浮动</small>' : ''}` 
+                    : '<span class="opacity-25">--</span>';
+                
+                const duration = log.duration 
+                    ? `${log.duration}${isFloating ? '<br><small class="opacity-50" style="font-size:0.7rem">已持</small>' : ''}` 
+                    : '<span class="opacity-25">--</span>';
                 const amount = log.amount ? `¥${log.amount.toFixed(0)}` : '--';
 
                 html += `<tr>
-                    <td>${log.time}</td>
+                    <td style="padding-left: 1.5rem;">${log.time}</td>
                     <td style="color:${color}; font-weight:bold">${displayDir}</td>
-                    <td>${log.name}<br><small class="text-secondary">${log.code}</small></td>
+                    <td><span class="fw-bold">${log.name}</span><br><small class="text-secondary">${log.code}</small></td>
                     <td>¥${log.price.toFixed(2)}</td>
                     <td>${log.vol}</td>
                     <td>${amount}</td>
                     <td style="color:#fbbf24">¥${log.fee ? log.fee.toFixed(2) : '0.00'}</td>
                     <td style="font-weight: 500">${pnl}</td>
-                    <td class="small">${duration}</td>
-                    <td class="text-white-50 small" style="max-width: 200px; white-space: normal;">${log.reason}</td>
+                    <td>${duration}</td>
+                    <td class="text-white-50 small" style="max-width: 300px; white-space: normal; padding-right: 1.5rem;">${log.reason}</td>
                 </tr>`;
             });
             tbody.innerHTML = html;
@@ -1458,10 +1465,9 @@
             </div>
         </div>
     </div>
-    <!-- 交易日志模态框 -->
     <div class="modal fade" id="tradeLogModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content bg-dark text-white" style="border: 1px solid #10b981;">
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="min-width: 90vw;">
+        <div class="modal-content bg-dark text-white" style="border: 1px solid #10b981; box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);">
           <div class="modal-header border-secondary d-flex justify-content-between align-items-center">
             <h5 class="modal-title" style="color:#10b981">📜 模拟炒股交易流水</h5>
             <div class="d-flex align-items-center gap-2">
@@ -1470,19 +1476,19 @@
             </div>
           </div>
           <div class="modal-body p-0">
-            <table class="table table-dark table-striped table-hover mb-0" style="font-size: 0.85rem;">
+            <table class="table table-dark table-striped table-hover mb-0" style="font-size: 0.9rem; width: 100%; table-layout: auto;">
                 <thead>
-                    <tr>
-                        <th style="min-width: 140px;">时间</th>
-                        <th>方向</th>
-                        <th style="min-width: 100px;">标的</th>
-                        <th>成交价</th>
-                        <th>股数</th>
-                        <th>成交额</th>
-                        <th>手续费</th>
-                        <th>盈亏</th>
-                        <th>持仓时长</th>
-                        <th>操作原因</th>
+                    <tr class="text-nowrap">
+                        <th style="width: 160px; padding-left: 1.5rem;">成交时间</th>
+                        <th style="width: 80px;">方向</th>
+                        <th style="width: 140px;">交易标的</th>
+                        <th style="width: 100px;">成交价</th>
+                        <th style="width: 100px;">股数</th>
+                        <th style="width: 120px;">成交额</th>
+                        <th style="width: 100px;">手续费</th>
+                        <th style="width: 100px;">盈亏</th>
+                        <th style="width: 110px;">持仓时长</th>
+                        <th style="padding-right: 1.5rem;">操作原因</th>
                     </tr>
                 </thead>
                 <tbody id="tradeLogTableBody">
