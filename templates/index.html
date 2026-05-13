@@ -1134,9 +1134,12 @@
             const importantBadge = isImportant ? '<span class="badge bg-danger ms-1" style="font-size:0.55rem">重要</span>' : '';
             
             html += `
-            <div class="news-item ${cls}">
-                <div style="font-size:0.8rem;font-weight:600">${icon} ${title.substring(0,45)}${importantBadge}</div>
-                <div style="font-size:0.65rem;color:#888">[${source}] ${time}${stockTag}</div>
+            <div class="news-item ${cls}" style="cursor: pointer;" onclick="window.open('${news.url || '#'}', '_blank')">
+                <div style="font-size:0.8rem;font-weight:600">${icon} ${title}${importantBadge}</div>
+                <div style="font-size:0.65rem;color:#888;display:flex;justify-content:space-between;align-items:center;">
+                    <span>[${source}] ${time}${stockTag}</span>
+                    <span class="text-primary-emphasis" style="font-size:0.6rem">详情 ></span>
+                </div>
             </div>`;
         });
         container.innerHTML = html || '<div class="text-muted small">暂无匹配新闻</div>';

@@ -150,7 +150,7 @@ def ai_analyze_stock(code):
 def get_news():
     try:
         # 使用新浪财经7x24小时全球实时财经新闻播报
-        url = "https://zhibo.sina.com.cn/api/zhibo/feed?page=1&page_size=10&zhibo_id=152"
+        url = "https://zhibo.sina.com.cn/api/zhibo/feed?page=1&page_size=20&zhibo_id=152"
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
@@ -162,17 +162,25 @@ def get_news():
                 news_list = []
                 for item in data['result']['data']['feed']['list']:
                     # 清理HTML标签
-                    content = re.sub(r'<[^>]+>', '', item.get('rich_text', ''))
-                    # 截取前100个字符作为摘要
-                    summary = content[:100] + '...' if len(content) > 100 else content
+                    raw_content = item.get('rich_text', '')
+                    content = re.sub(r'<[^>]+>', '', raw_content)
+                    
+                    # 寻找标题：通常加粗或者前两句
+                    title = item.get('title')
+                    if not title:
+                        title = content.split('。')[0][:50]
+                    
+                    # 跳转链接
+                    doc_url = item.get('docurl') or f"https://finance.sina.com.cn/7x24/{item.get('create_date', '').replace('-','')}/zc{item.get('id')}.shtml"
                     
                     news_list.append({
                         'id': item.get('id'),
-                        'title': summary[:30] + '...',  # 用摘要前30字作为标题
-                        'content': summary,
+                        'title': title,
+                        'content': content,
                         'time': item.get('create_time'),
+                        'url': doc_url,
                         'source': '新浪财经',
-                        'is_important': True if '重要' in summary or '快讯' in summary else False,
+                        'is_important': True if item.get('tag') == '1' else False,
                         'sentiment': '中性'
                     })
                 return jsonify({"status": "success", "data": news_list})
