@@ -1017,7 +1017,7 @@
         const tbody = document.getElementById('tradeLogTableBody');
         
         if (!allTradeLogs || allTradeLogs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center opacity-50">暂无历史交易记录</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center opacity-50">暂无历史交易记录</td></tr>';
             return;
         }
 
@@ -1032,19 +1032,27 @@
                 const isBuy = log.action === 'buy';
                 const color = isBuy ? '#ef4444' : '#10b981';
                 const displayDir = isBuy ? '买入' : '卖出';
+
+                const pnl = log.pnl !== undefined && log.pnl !== null ? `<span style="color: ${log.pnl >= 0 ? '#ef4444' : '#10b981'}">¥${log.pnl.toFixed(2)}</span>` : '--';
+                const duration = log.duration ? log.duration : '--';
+                const amount = log.amount ? `¥${log.amount.toFixed(0)}` : '--';
+
                 html += `<tr>
                     <td>${log.time}</td>
                     <td style="color:${color}; font-weight:bold">${displayDir}</td>
                     <td>${log.name} (${log.code})</td>
                     <td>¥${log.price.toFixed(2)}</td>
                     <td>${log.vol}</td>
+                    <td>${amount}</td>
                     <td style="color:#fbbf24">¥${log.fee ? log.fee.toFixed(2) : '0.00'}</td>
-                    <td class="text-white-50">${log.reason}</td>
+                    <td>${pnl}</td>
+                    <td>${duration}</td>
+                    <td class="text-white-50 small">${log.reason}</td>
                 </tr>`;
             });
             tbody.innerHTML = html;
         } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center opacity-50">该日期无交易记录</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center opacity-50">${dateFilter} 暂无历史交易记录</td></tr>`;
         }
     }
 
@@ -1470,12 +1478,15 @@
                         <th>标的</th>
                         <th>成交价</th>
                         <th>股数</th>
+                        <th>成交额</th>
                         <th>手续费</th>
+                        <th>盈亏</th>
+                        <th>持仓时长</th>
                         <th>操作原因</th>
                     </tr>
                 </thead>
                 <tbody id="tradeLogTableBody">
-                    <tr><td colspan="7" class="text-center opacity-50">加载中...</td></tr>
+                    <tr><td colspan="10" class="text-center opacity-50">加载中...</td></tr>
                 </tbody>
             </table>
           </div>

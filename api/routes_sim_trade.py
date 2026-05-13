@@ -55,7 +55,7 @@ def check_trade_limit(code, current_price, yesterday_close, action):
     
     return False, ""
 
-def log_trade(account, action, code, name, price, vol, fee, reason="系统自动"):
+def log_trade(account, action, code, name, price, vol, fee, reason="系统自动", pnl=None, duration=None):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     amount = price * vol
     log_msg = {
@@ -67,7 +67,9 @@ def log_trade(account, action, code, name, price, vol, fee, reason="系统自动
         "vol": vol,
         "amount": amount,
         "fee": round(fee, 2),
-        "reason": reason
+        "reason": reason,
+        "pnl": round(pnl, 2) if pnl is not None else None,
+        "duration": duration
     }
     account["logs"].insert(0, log_msg)
     # 保留最近 500 条操作记录
@@ -86,6 +88,9 @@ def get_info():
                 rt_data = api_client.get_realtime_data(code)
                 if rt_data and "current" in rt_data:
                     account["holdings"][code]["current_price"] = rt_data["current"]
+                    # 如果持仓里没名字，补一下
+                    if not account["holdings"][code].get("name") or account["holdings"][code]["name"] == code:
+                        account["holdings"][code]["name"] = rt_data.get("name", code)
         except Exception as e:
             logging.error(f"Error updating prices in info: {e}")
 
@@ -150,6 +155,7 @@ def sim_step():
 
     # 1. 严格判断是否在交易时间内 (09:30-11:30, 13:00-15:00)
     now = datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
     is_weekday = now.weekday() < 5
     is_open = is_weekday and (("09:30" <= time_str <= "11:30") or ("13:00" <= time_str <= "15:00"))
@@ -213,7 +219,7 @@ def sim_step():
 
     # 3. 抓取实时行情
     codes_to_fetch = list(set(list(account["holdings"].keys()) + top_codes[:10]))
-    prices = {} # 存储 {code: {"current": price, "yesterday_close": price}}
+    prices = {} # 存储 {code: {"current": price, "yesterday_close": price, "name": name}}
     try:
         from data.market_data import StockDataAPI
         api_client = StockDataAPI()
@@ -222,7 +228,8 @@ def sim_step():
             if rt_data and "current" in rt_data:
                 prices[code] = {
                     "current": rt_data["current"],
-                    "yesterday_close": rt_data.get("yesterday_close", 0)
+                    "yesterday_close": rt_data.get("yesterday_close", 0),
+                    "name": rt_data.get("name", code)
                 }
     except Exception as e:
         logging.error(f"Error fetching prices for sim: {e}")
@@ -248,6 +255,10 @@ def sim_step():
         if code in prices:
             pos["current_price"] = prices[code]["current"]
         
+        # --- A股 T+1 规则：今天买的不能今天卖 ---
+        if pos.get("buy_date") == today_str and not is_manual:
+            continue
+
         pred_val = predictions.get(code, {}).get("predicted_return", 0)
         
         # 卖出条件：
@@ -276,6 +287,9 @@ def sim_step():
         vol = pos["vol"]
         amount = sell_price * vol
         
+        # 成本计算 (如果旧持仓没存 buy_fee，设为 0)
+        buy_total_cost = pos["cost_price"] * vol + pos.get("buy_fee", 0)
+        
         # 东财标准手续费：佣金万2.5(单笔最低5元) + 过户费万0.1 + 印花税万5
         commission = max(amount * 0.00025, 5.0)
         transfer_fee = amount * 0.00001
@@ -284,9 +298,24 @@ def sim_step():
         
         revenue = amount - fee
         account["cash"] += revenue
-        name = stock_names.get(code, code)
+        
+        # 计算盈利与持有时间
+        pnl = revenue - buy_total_cost
+        duration_str = "未知"
+        if "buy_time" in pos:
+            try:
+                buy_time = datetime.strptime(pos["buy_time"], "%Y-%m-%d %H:%M:%S")
+                duration_delta = now - buy_time
+                days = duration_delta.days
+                hours = duration_delta.seconds // 3600
+                duration_str = f"{days}天{hours}时" if days > 0 else f"{hours}小时"
+                if days == 0 and hours == 0: duration_str = f"{duration_delta.seconds // 60}分钟"
+            except:
+                pass
+
+        name = pos.get("name", prices[code]["name"])
         reason = f"V19评分跌出安全区"
-        log_trade(account, "sell", code, name, sell_price, vol, fee, reason)
+        log_trade(account, "sell", code, name, sell_price, vol, fee, reason, pnl=pnl, duration=duration_str)
         actions_taken.append(f"卖出 {name}({code})")
 
     # 5. 买入逻辑 (排名前10%)
@@ -329,14 +358,18 @@ def sim_step():
                     name = event_driven_info[code]["name"]
                     reason = event_driven_info[code]["reason"]
                 else:
-                    name = stock_names.get(code, code)
+                    # 优先取实时接口返回的名字，如果失败才查本地
+                    name = prices[code].get("name") or stock_names.get(code, code)
                     reason = f"V19强共振买入信号"
                 
                 account["holdings"][code] = {
                     "name": name,
                     "vol": vol,
                     "cost_price": buy_price,
-                    "current_price": buy_price
+                    "current_price": buy_price,
+                    "buy_date": today_str,
+                    "buy_time": now.strftime("%Y-%m-%d %H:%M:%S"),
+                    "buy_fee": fee
                 }
                 log_trade(account, "buy", code, name, buy_price, vol, fee, reason)
                 actions_taken.append(f"买入 {name}({code})")
