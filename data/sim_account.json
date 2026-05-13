@@ -5,7 +5,7 @@
             "name": "中航光电",
             "vol": 400,
             "cost_price": 40.85,
-            "current_price": 41.17
+            "current_price": 41.36
         },
         "000975": {
             "name": "山金国际",
@@ -17,7 +17,7 @@
             "name": "浪潮信息",
             "vol": 200,
             "cost_price": 73.13,
-            "current_price": 74.94
+            "current_price": 74.77
         },
         "002498": {
             "name": "汉缆股份",
@@ -29,7 +29,7 @@
             "name": "松发股份",
             "vol": 100,
             "cost_price": 166.36,
-            "current_price": 166.36
+            "current_price": 166.77
         }
     },
     "logs": [

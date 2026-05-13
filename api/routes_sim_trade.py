@@ -29,6 +29,32 @@ def save_account(account):
     with open(ACCOUNT_FILE, 'w', encoding='utf-8') as f:
         json.dump(account, f, ensure_ascii=False, indent=4)
 
+def check_trade_limit(code, current_price, yesterday_close, action):
+    """
+    判断 A 股涨跌停是否限制交易
+    action: 'buy' or 'sell'
+    """
+    if not yesterday_close or not current_price:
+        return False, ""
+    
+    # 涨跌停幅度逻辑
+    limit_pct = 0.10
+    if code.startswith(('30', '68')):
+        limit_pct = 0.20
+    elif code.startswith(('8', '9', '4')):
+        limit_pct = 0.30
+    
+    # 计算涨跌停价格 (A股通常保留两位小数)
+    up_limit = round(yesterday_close * (1 + limit_pct) + 0.0001, 2)
+    down_limit = round(yesterday_close * (1 - limit_pct) + 0.0001, 2)
+    
+    if action == 'buy' and current_price >= up_limit:
+        return True, f"涨停限制买入 ({current_price} >= {up_limit})"
+    if action == 'sell' and current_price <= down_limit:
+        return True, f"跌停限制卖出 ({current_price} <= {down_limit})"
+    
+    return False, ""
+
 def log_trade(account, action, code, name, price, vol, fee, reason="系统自动"):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     amount = price * vol
@@ -187,14 +213,17 @@ def sim_step():
 
     # 3. 抓取实时行情
     codes_to_fetch = list(set(list(account["holdings"].keys()) + top_codes[:10]))
-    prices = {}
+    prices = {} # 存储 {code: {"current": price, "yesterday_close": price}}
     try:
         from data.market_data import StockDataAPI
         api_client = StockDataAPI()
         for code in codes_to_fetch:
             rt_data = api_client.get_realtime_data(code)
             if rt_data and "current" in rt_data:
-                prices[code] = rt_data["current"]
+                prices[code] = {
+                    "current": rt_data["current"],
+                    "yesterday_close": rt_data.get("yesterday_close", 0)
+                }
     except Exception as e:
         logging.error(f"Error fetching prices for sim: {e}")
 
@@ -217,13 +246,13 @@ def sim_step():
 
     for code, pos in account["holdings"].items():
         if code in prices:
-            pos["current_price"] = prices[code]
+            pos["current_price"] = prices[code]["current"]
         
         pred_val = predictions.get(code, {}).get("predicted_return", 0)
         
         # 卖出条件：
         # 1. 如果是 V19 信号标的：评分跌出前 70% (p30_val)
-        # 2. 如果是 事件驱动标的 (不在 V19 里的)：如果该股不再是当前热门板块领涨股，且 pred_val 也不高
+        # 2. 如果是 事件驱动标的 (不在 V19 里的)：如果该股不再是当前热门板块领涨股
         if code in predictions:
             if pred_val < p30_val:
                 codes_to_sell.append(code)
@@ -233,10 +262,17 @@ def sim_step():
                 codes_to_sell.append(code)
 
     for code in codes_to_sell:
-        if code not in prices or prices[code] <= 0:
+        if code not in prices or prices[code]["current"] <= 0:
             continue
+            
+        # --- 新增：跌停板校验 ---
+        is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "sell")
+        if is_limited:
+            logging.info(f"Skip selling {code} due to limit: {limit_msg}")
+            continue
+
         pos = account["holdings"].pop(code)
-        sell_price = prices[code]
+        sell_price = prices[code]["current"]
         vol = pos["vol"]
         amount = sell_price * vol
         
@@ -261,10 +297,16 @@ def sim_step():
             break
         if code in account["holdings"]:
             continue
-        if code not in prices or prices[code] <= 0:
+        if code not in prices or prices[code]["current"] <= 0:
             continue
             
-        buy_price = prices[code]
+        # --- 新增：涨停板校验 ---
+        is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "buy")
+        if is_limited:
+            logging.info(f"Skip buying {code} due to limit: {limit_msg}")
+            continue
+
+        buy_price = prices[code]["current"]
         
         # 预估最高可买金额，预留5元保底佣金
         max_invest = min(account["cash"] - 5.0, target_pos_value)
