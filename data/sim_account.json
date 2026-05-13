@@ -4,7 +4,7 @@
     "holdings": {
         "000975": {
             "cost_price": 28.06,
-            "current_price": 27.74,
+            "current_price": 27.83,
             "name": "山金国际",
             "vol": 700,
             "buy_date": "2026-05-12",
@@ -13,7 +13,7 @@
         },
         "000977": {
             "cost_price": 73.13,
-            "current_price": 75.58,
+            "current_price": 75.64,
             "name": "浪潮信息",
             "vol": 200,
             "buy_date": "2026-05-12",
@@ -22,7 +22,7 @@
         },
         "002179": {
             "cost_price": 40.85,
-            "current_price": 41.39,
+            "current_price": 41.4,
             "name": "中航光电",
             "vol": 400,
             "buy_date": "2026-05-12",
@@ -40,7 +40,7 @@
         },
         "603268": {
             "cost_price": 166.36,
-            "current_price": 167.6,
+            "current_price": 167.91,
             "name": "松发股份",
             "vol": 100,
             "buy_date": "2026-05-13",

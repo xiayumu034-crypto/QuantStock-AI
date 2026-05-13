@@ -29,22 +29,33 @@ def save_account(account):
     with open(ACCOUNT_FILE, 'w', encoding='utf-8') as f:
         json.dump(account, f, ensure_ascii=False, indent=4)
 
-def check_trade_limit(code, current_price, yesterday_close, action):
+def check_trade_limit(code, current_price, yesterday_close, action, ask1_price=None, bid1_price=None):
     """
     判断 A 股涨跌停是否限制交易
+    逻辑：1. 价格计算校验 2. 盘口档位校验(最准)
     action: 'buy' or 'sell'
     """
     if not yesterday_close or not current_price:
         return False, ""
     
-    # 涨跌停幅度逻辑
+    # --- 1. 盘口档位深度校验 (Realtime Depth Check) ---
+    # 涨停时，卖一价格为0或成交价已经封死且卖一挂单为0
+    if action == 'buy':
+        if ask1_price is not None and ask1_price <= 0:
+            return True, "涨停封死，买入失败 (卖一队列为空)"
+    # 跌停时，买一价格为0或成交价已经封死且买一挂单为0
+    if action == 'sell':
+        if bid1_price is not None and bid1_price <= 0:
+            return True, "跌停封死，卖出失败 (买一队列为空)"
+
+    # --- 2. 传统价格区间校验 ---
     limit_pct = 0.10
     if code.startswith(('30', '68')):
         limit_pct = 0.20
     elif code.startswith(('8', '9', '4')):
         limit_pct = 0.30
     
-    # 计算涨跌停价格 (A股通常保留两位小数)
+    # 容差处理
     up_limit = round(yesterday_close * (1 + limit_pct) + 0.0001, 2)
     down_limit = round(yesterday_close * (1 - limit_pct) + 0.0001, 2)
     
@@ -219,7 +230,7 @@ def sim_step():
 
     # 3. 抓取实时行情
     codes_to_fetch = list(set(list(account["holdings"].keys()) + top_codes[:10]))
-    prices = {} # 存储 {code: {"current": price, "yesterday_close": price, "name": name}}
+    prices = {} # 存储深度行情
     try:
         from data.market_data import StockDataAPI
         api_client = StockDataAPI()
@@ -229,7 +240,9 @@ def sim_step():
                 prices[code] = {
                     "current": rt_data["current"],
                     "yesterday_close": rt_data.get("yesterday_close", 0),
-                    "name": rt_data.get("name", code)
+                    "name": rt_data.get("name", code),
+                    "ask1": rt_data.get("ask1"),
+                    "bid1": rt_data.get("bid1")
                 }
     except Exception as e:
         logging.error(f"Error fetching prices for sim: {e}")
@@ -276,8 +289,8 @@ def sim_step():
         if code not in prices or prices[code]["current"] <= 0:
             continue
             
-        # --- 新增：跌停板校验 ---
-        is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "sell")
+        # --- 新增：跌停板校验 (加入盘口档位判断) ---
+        is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "sell", bid1_price=prices[code].get("bid1"))
         if is_limited:
             logging.info(f"Skip selling {code} due to limit: {limit_msg}")
             continue
@@ -329,8 +342,8 @@ def sim_step():
         if code not in prices or prices[code]["current"] <= 0:
             continue
             
-        # --- 新增：涨停板校验 ---
-        is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "buy")
+        # --- 新增：涨停板校验 (加入盘口档位判断，最准) ---
+        is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "buy", ask1_price=prices[code].get("ask1"))
         if is_limited:
             logging.info(f"Skip buying {code} due to limit: {limit_msg}")
             continue
