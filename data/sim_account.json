@@ -1,38 +1,82 @@
 {
-    "cash": 15134.151600000007,
+    "cash": 14423.198240000009,
     "holdings": {
-        "000601": {
-            "name": "韶能股份",
-            "vol": 2400,
-            "cost_price": 8.09,
-            "current_price": 8.09
-        },
-        "300395": {
-            "name": "菲利华",
-            "vol": 100,
-            "cost_price": 148.16,
-            "current_price": 148.16
-        },
         "002179": {
             "name": "中航光电",
             "vol": 400,
             "cost_price": 40.85,
-            "current_price": 40.85
+            "current_price": 41.17
         },
         "000975": {
             "name": "山金国际",
             "vol": 700,
             "cost_price": 28.06,
-            "current_price": 28.06
+            "current_price": 27.8
         },
         "000977": {
             "name": "浪潮信息",
             "vol": 200,
             "cost_price": 73.13,
-            "current_price": 73.13
+            "current_price": 74.94
+        },
+        "002498": {
+            "name": "汉缆股份",
+            "vol": 1800,
+            "cost_price": 11.01,
+            "current_price": 11.01
+        },
+        "603268": {
+            "name": "松发股份",
+            "vol": 100,
+            "cost_price": 166.36,
+            "current_price": 166.36
         }
     },
     "logs": [
+        {
+            "time": "2026-05-13 09:47:07",
+            "action": "buy",
+            "code": "603268",
+            "name": "松发股份",
+            "price": 166.36,
+            "vol": 100,
+            "amount": 16636.0,
+            "fee": 5.17,
+            "reason": "新闻热点驱动: [陶瓷行业]板块强势领涨"
+        },
+        {
+            "time": "2026-05-13 09:47:07",
+            "action": "buy",
+            "code": "002498",
+            "name": "汉缆股份",
+            "price": 11.01,
+            "vol": 1800,
+            "amount": 19818.0,
+            "fee": 5.2,
+            "reason": "新闻热点驱动: [发电设备]板块强势领涨"
+        },
+        {
+            "time": "2026-05-13 09:47:07",
+            "action": "sell",
+            "code": "300395",
+            "name": "300395",
+            "price": 144.22,
+            "vol": 100,
+            "amount": 14422.0,
+            "fee": 12.36,
+            "reason": "V19评分跌出安全区"
+        },
+        {
+            "time": "2026-05-13 09:47:07",
+            "action": "sell",
+            "code": "000601",
+            "name": "000601",
+            "price": 8.9,
+            "vol": 2400,
+            "amount": 21360.0,
+            "fee": 16.23,
+            "reason": "V19评分跌出安全区"
+        },
         {
             "time": "2026-05-12 17:09:03",
             "action": "buy",
@@ -89,5 +133,5 @@
             "reason": "新闻热点驱动: [电力行业]板块强势领涨"
         }
     ],
-    "auto_trade": false
+    "auto_trade": true
 }

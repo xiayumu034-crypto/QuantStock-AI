@@ -50,6 +50,19 @@ def log_trade(account, action, code, name, price, vol, fee, reason="系统自动
 @sim_trade_bp.route('/info', methods=['GET'])
 def get_info():
     account = load_account()
+    
+    # 获取持仓的最新实时价格，以计算最新净资产
+    if account["holdings"]:
+        try:
+            from data.market_data import StockDataAPI
+            api_client = StockDataAPI()
+            for code in list(account["holdings"].keys()):
+                rt_data = api_client.get_realtime_data(code)
+                if rt_data and "current" in rt_data:
+                    account["holdings"][code]["current_price"] = rt_data["current"]
+        except Exception as e:
+            logging.error(f"Error updating prices in info: {e}")
+
     total_asset = account["cash"]
     for code, pos in account["holdings"].items():
         total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
@@ -105,7 +118,9 @@ def sim_step():
     """Execute one step of AI auto trading (sell bad, buy good)"""
     account = load_account()
     
-    is_manual = request.json and request.json.get("force", False)
+    # 兼容非 JSON 请求或空请求体
+    data = request.get_json(silent=True) or {}
+    is_manual = data.get("force", False)
 
     # 1. 严格判断是否在交易时间内 (09:30-11:30, 13:00-15:00)
     now = datetime.now()
@@ -185,15 +200,37 @@ def sim_step():
 
     actions_taken = []
 
-    # 4. 卖出逻辑 (排名跌出前70%)
+    # 4. 卖出逻辑
     codes_to_sell = []
+    
+    # 获取当前热门板块（用于校验事件驱动标的是否过期）
+    current_hot_codes = []
+    try:
+        import akshare as ak
+        sector_df = ak.stock_sector_spot(indicator='新浪行业')
+        if not sector_df.empty:
+            current_hot_df = sector_df.sort_values(by='涨跌幅', ascending=False).head(5)
+            for c in current_hot_df['股票代码'].tolist():
+                current_hot_codes.append(c[2:] if c[:2] in ['sh', 'sz', 'bj'] else c)
+    except:
+        pass
+
     for code, pos in account["holdings"].items():
         if code in prices:
             pos["current_price"] = prices[code]
         
         pred_val = predictions.get(code, {}).get("predicted_return", 0)
-        if pred_val < p30_val:
-            codes_to_sell.append(code)
+        
+        # 卖出条件：
+        # 1. 如果是 V19 信号标的：评分跌出前 70% (p30_val)
+        # 2. 如果是 事件驱动标的 (不在 V19 里的)：如果该股不再是当前热门板块领涨股，且 pred_val 也不高
+        if code in predictions:
+            if pred_val < p30_val:
+                codes_to_sell.append(code)
+        else:
+            # 事件驱动股逻辑：如果不再热门，或者涨幅转负/走弱
+            if code not in current_hot_codes:
+                codes_to_sell.append(code)
 
     for code in codes_to_sell:
         if code not in prices or prices[code] <= 0:
