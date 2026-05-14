@@ -404,8 +404,14 @@ def sim_step():
                     "yesterday_close": rt_data.get("yesterday_close", 0),
                     "name": rt_data.get("name", code),
                     "ask1": rt_data.get("ask1"),
-                    "bid1": rt_data.get("bid1")
+                    "bid1": rt_data.get("bid1"),
+                    "volume": rt_data.get("volume", 0),
+                    "amount": rt_data.get("amount", 0)
                 }
+                if prices[code]["volume"] > 0:
+                    prices[code]["vwap"] = prices[code]["amount"] / prices[code]["volume"]
+                else:
+                    prices[code]["vwap"] = prices[code]["current"]
     except Exception as e:
         logging.error(f"Error fetching prices for sim: {e}")
 
@@ -455,19 +461,32 @@ def sim_step():
             high_p = prices[code].get("high", pos["current_price"])
             high_pct = (high_p - y_close) / y_close
             
-            # 若盘中最高涨幅超过 6%，启动回落监控
+            # 若盘中最高涨幅超过 6%，启动多维回落监控 (防洗盘进阶版)
             if high_pct > 0.06:
                 is_20_pct_limit = code.startswith(('30', '68'))
                 limit_threshold = 0.18 if is_20_pct_limit else 0.085
                 
-                # 冲板保护：如果主力正在冲刺涨停板（逼近阈值），必须给予极大的宽容度（防止烂板/开板洗盘）
+                # 1. 获取动态分时均价 (VWAP)
+                vwap = prices[code].get("vwap", pos["current_price"])
+                is_above_vwap = pos["current_price"] > vwap
+                
+                # 2. 设定基础回撤容忍度 (根据板块特性)
+                base_tolerance = 0.04 if is_20_pct_limit else 0.025
+                
+                # 3. 冲板保护：逼近涨停时，说明处于极强博弈区，容忍度翻倍防烂板洗盘
                 if high_pct >= limit_threshold:
-                    tolerance = 0.045  # 涨停附近，回撤超过 4.5% 才判定为彻底炸板出货
-                else:
-                    tolerance = 0.025  # 普通冲高，回撤超过 2.5% 落袋为安
+                    base_tolerance *= 2.0  # 主板 5%，创业板 8%
                     
-                if (high_p - pos["current_price"]) / high_p > tolerance:
-                    sl_tp_reason = f"冲高回落止盈 (最高 +{high_pct*100:.1f}%, 跌破容忍度)"
+                # 4. 分时均价保护：只要价格在分时均线上方运行，说明全天买盘强势，极大可能是洗盘，容忍度再放大1.5倍
+                if is_above_vwap:
+                    base_tolerance *= 1.5
+                    
+                # 5. 计算实际回撤，并执行严格的多维判定
+                pullback_rate = (high_p - pos["current_price"]) / high_p
+                
+                # 只有当回撤极大，【并且】跌破了全天分时均价(VWAP)时，才判定主力是真的在出货！
+                if pullback_rate > base_tolerance and not is_above_vwap:
+                    sl_tp_reason = f"冲高回落破位 (跌穿均价且回撤 {pullback_rate*100:.1f}%)"
                     if code not in codes_to_sell:
                         codes_to_sell.append(code)
 
