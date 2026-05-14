@@ -97,11 +97,15 @@ def get_info():
             api_client = StockDataAPI()
             for code in list(account["holdings"].keys()):
                 rt_data = api_client.get_realtime_data(code)
-                if rt_data and "current" in rt_data:
+                if rt_data and rt_data.get("current", 0) > 0:
                     account["holdings"][code]["current_price"] = rt_data["current"]
                     # 如果持仓里没名字，补一下
                     if not account["holdings"][code].get("name") or account["holdings"][code]["name"] == code:
                         account["holdings"][code]["name"] = rt_data.get("name", code)
+                else:
+                    # 如果获取失败或价格为0，保留上一次的价格，或者使用成本价
+                    if "current_price" not in account["holdings"][code]:
+                        account["holdings"][code]["current_price"] = account["holdings"][code]["cost_price"]
         except Exception as e:
             logging.error(f"Error updating prices in info: {e}")
 

@@ -33,6 +33,11 @@ class StockDataAPI:
                         try:
                             current = float(parts[3])
                             yesterday_close = float(parts[2])
+                            
+                            # --- 容错处理：如果当前价为0（未开盘或停牌），使用昨收盘价作为参考 ---
+                            if current <= 0:
+                                current = yesterday_close
+                            
                             change = current - yesterday_close
                             change_pct = (change / yesterday_close) * 100 if yesterday_close else 0
                             return {
