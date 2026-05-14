@@ -2,7 +2,9 @@ from flask import Blueprint, jsonify, request, render_template
 import requests
 import pandas as pd
 import re
+import akshare as ak
 from data.market_data import StockDataAPI
+from api.llm_assistant import generate_stock_ai_analysis
 
 market_bp = Blueprint('market', __name__)
 stock_api = StockDataAPI()
@@ -146,6 +148,98 @@ def ai_analyze_stock(code):
     
     return jsonify({"status": "success", "data": analysis})
 
+@market_bp.route('/api/rank_analysis/<code>')
+def rank_analysis(code):
+    clean_code = code[-6:]
+    name = request.args.get('name', '未知股票')
+    use_ai = request.args.get('use_ai', 'false').lower() == 'true'
+    is_monster = request.args.get('is_monster', 'false').lower() == 'true'
+    
+    # 尝试抓取基本面
+    info_dict = {}
+    try:
+        df = ak.stock_profile_cninfo(symbol=clean_code)
+        if not df.empty:
+            info_dict = {
+                "所属行业": df.iloc[0].get('所属行业', '未知'),
+                "主营业务": df.iloc[0].get('主营业务', '未知'),
+                "经营范围": df.iloc[0].get('经营范围', '未知')[:200] + '...',
+                "机构简介": df.iloc[0].get('机构简介', '未知')[:200] + '...'
+            }
+            
+        # 抓取财报基本数据
+        df_fin = ak.stock_financial_abstract(symbol=clean_code)
+        if not df_fin.empty:
+            latest_period = df_fin.columns[2]
+            def get_val(key):
+                row = df_fin[df_fin['指标'] == key]
+                if not row.empty:
+                    val = row.iloc[0][latest_period]
+                    try:
+                        return float(val) if pd.notna(val) else 0.0
+                    except:
+                        return 0.0
+                return 0.0
+            
+            revenue = get_val('营业总收入')
+            net_profit = get_val('归母净利润')
+            gross_margin = get_val('毛利率')
+            debt_ratio = get_val('资产负债率')
+            goodwill = get_val('商誉')
+            net_assets = get_val('股东权益合计(净资产)')
+            
+            risk_warnings = []
+            if net_profit < 0:
+                risk_warnings.append("⚠️ 最新报告期归母净利润为负，存在亏损风险。")
+            if debt_ratio > 80:
+                risk_warnings.append("⚠️ 资产负债率超过80%，杠杆风险较高。")
+            if net_assets > 0 and goodwill > (net_assets * 0.2):
+                risk_warnings.append("⚠️ 商誉占净资产比例超20%，需警惕商誉减值爆雷。")
+            if revenue > 0 and net_profit > 0 and (net_profit / revenue) < 0.02:
+                risk_warnings.append("⚠️ 净利率低于2%，盈利能力较弱。")
+            
+            if not risk_warnings:
+                risk_warnings.append("✅ 基础财报数据未见明显重大排雷项。")
+                
+            info_dict["最新财报期"] = latest_period
+            info_dict["营业总收入"] = f"{revenue / 100000000:.2f} 亿元" if revenue else "--"
+            info_dict["归母净利润"] = f"{net_profit / 100000000:.2f} 亿元" if net_profit else "--"
+            info_dict["毛利率"] = f"{gross_margin:.2f}%" if gross_margin else "--"
+            info_dict["财务排雷"] = "<br/>".join(risk_warnings)
+            
+    except Exception as e:
+        info_dict["财报信息"] = f"提取失败: {str(e)}"
+
+    # 如果不使用AI，直接返回基本数据格式
+    if not use_ai:
+        html = f"""
+        <div class="mb-3">
+            <h6 class="text-primary border-bottom border-secondary pb-2"><i class="bi bi-building"></i> 基本面概览 (标准模式)</h6>
+            <div class="small">
+                <p><strong>所属行业：</strong>{info_dict.get('所属行业', '--')}</p>
+                <p><strong>最新财报：</strong>{info_dict.get('最新财报期', '--')} | <strong>营收：</strong>{info_dict.get('营业总收入', '--')} | <strong>净利润：</strong>{info_dict.get('归母净利润', '--')} | <strong>毛利率：</strong>{info_dict.get('毛利率', '--')}</p>
+                <div class="p-2 mb-2" style="background: rgba(255,255,255,0.05); border-radius: 5px;">
+                    <strong>财务排雷系统：</strong><br/>
+                    {info_dict.get('财务排雷', '--')}
+                </div>
+                <p><strong>主营业务：</strong>{info_dict.get('主营业务', '--')}</p>
+                <p><strong>公司简介：</strong>{info_dict.get('机构简介', '--')}</p>
+            </div>
+        </div>
+        """
+        if is_monster:
+            html += """
+            <div class="alert alert-warning small">
+                <strong>妖股提示：</strong>该股近期表现为连板形态。标准模式不包含成妖逻辑分析，若需深入挖掘其背后的情绪溢价和题材驱动，请点击 [AI 深度分析] 按钮。
+            </div>
+            """
+        return jsonify({"status": "success", "data": html})
+    
+    # 否则调用AI
+    info_str = "\n".join([f"{k}: {v}" for k, v in info_dict.items()])
+    ai_html = generate_stock_ai_analysis(clean_code, name, info_str, is_monster)
+    return jsonify({"status": "success", "data": ai_html})
+
 @market_bp.route('/api/news')
 def get_news():
     try:
@@ -197,3 +291,7 @@ def get_news():
             {"id": "1", "title": "系统提示：行情数据正常，新闻接口波动", "content": "实时新闻抓取稍有延迟，AI模型研判不受影响", "time": now_str, "source": "系统", "is_important": True, "sentiment": "中性"}
         ]
     })
+
+@market_bp.route('/api/market_rankings')
+def get_market_rankings():
+    return jsonify({"status": "success", "data": stock_api.get_market_rankings()})

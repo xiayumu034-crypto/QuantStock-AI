@@ -93,6 +93,8 @@
         .stock-chip.active { background: #1a1a2e; color: white; }
         .stock-chip:not(.active) { background: #e9ecef; color: #333; }
         
+        .btn-xs { padding: 0.1rem 0.4rem; font-size: 0.7rem; border-radius: 0.2rem; }
+        
         .positive { color: #ff4b4b; }
         .negative { color: #00d56b; }
         .refresh-btn { background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.85rem; }
@@ -229,7 +231,7 @@
 
         <!-- 第二行：ML预测信号 & 实盘交易监控 -->
         <div class="row mb-3">
-            <div class="col-md-8">
+            <div class="col-md-5">
                 <div class="ml-card" style="margin-bottom: 0;">
                     <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseML">
                         <div class="title" style="margin-bottom: 0;" id="mlPanelTitle">🤖 Qlib 信号集</div>
@@ -246,7 +248,7 @@
                     </div>
                     
                     <!-- 默认外露的 Top 3 卡片 -->
-                    <div class="row row-cols-1 row-cols-md-3 g-3 mt-2" id="mlSignalPreview">
+                    <div class="row row-cols-1 row-cols-md-2 g-3 mt-2" id="mlSignalPreview">
                         <div class="col-12 text-center py-4 opacity-50">正在准备顶级信号...</div>
                     </div>
 
@@ -282,7 +284,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-7">
                 <div class="ml-card" style="height: 100%; margin-bottom: 0; background: linear-gradient(135deg, #111827, #1f2937); border: 1px solid #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); display: flex; flex-direction: column;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div class="title" style="color: #10b981; font-weight: bold; margin-bottom: 0;">🤖 AI 自动模拟炒股</div>
@@ -304,9 +306,9 @@
                                 <div class="text-white" style="font-weight: bold;" id="simCash">--</div>
                             </div>
                         </div>
-                        <div class="mt-2" style="font-size: 0.75rem;">
+                        <div class="mt-2" style="font-size: 0.85rem;">
                             <div class="text-white-50 mb-1">持仓明细:</div>
-                            <div id="simHoldings" style="max-height: 80px; overflow-y: auto; color: #a7f3d0;">
+                            <div id="simHoldings" style="max-height: 250px; overflow-y: auto; color: #a7f3d0; padding-right: 5px;">
                                 <div class="text-center opacity-50">加载中...</div>
                             </div>
                         </div>
@@ -317,8 +319,17 @@
                         </div>
                     </div>
 
-                    <div id="tradeLogsContent" style="flex-grow: 1; margin-top: 10px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; color: #9ca3af;">
-                        <div class="text-center py-2" style="opacity: 0.7;">暂无交易记录</div>
+                    <!-- 交易日志区域：默认折叠，通过头部点击展开 -->
+                    <div style="margin-top: 10px; border-top: 1px dashed rgba(16, 185, 129, 0.3); padding-top: 5px;">
+                        <div class="d-flex justify-content-between align-items-center" style="cursor: pointer; padding: 5px 0;" data-bs-toggle="collapse" data-bs-target="#collapseTradeLogs">
+                            <span class="text-white-50 small">📝 近期交易记录</span>
+                            <span class="collapse-icon text-white-50 small">▼</span>
+                        </div>
+                        <div class="collapse" id="collapseTradeLogs">
+                            <div id="tradeLogsContent" style="max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; color: #9ca3af; padding-top: 5px;">
+                                <div class="text-center py-2" style="opacity: 0.7;">暂无交易记录</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -400,6 +411,56 @@
                     </div>
                     <div id="newsContent" style="max-height:300px; overflow-y:auto;">
                         <div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 市场榜单 (妖股榜 + 首板榜) -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="news-card" style="height: 380px; overflow-y: auto;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="title mb-0">🔥 妖股榜 (连板梯队)</div>
+                        <span class="badge bg-danger">3连板+</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-dark table-hover mb-0" style="font-size: 0.75rem;">
+                            <thead class="sticky-top bg-dark">
+                                <tr>
+                                    <th>名称</th>
+                                    <th>连板</th>
+                                    <th>所属行业</th>
+                                    <th>分析</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monsterRankingBody">
+                                <tr><td colspan="4" class="text-center py-4"><div class="spinner-border spinner-border-sm"></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="news-card" style="height: 380px; overflow-y: auto;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="title mb-0">🌟 首板榜 (潜力先锋)</div>
+                        <span class="badge bg-primary">今日首板</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-dark table-hover mb-0" style="font-size: 0.75rem;">
+                            <thead class="sticky-top bg-dark">
+                                <tr>
+                                    <th>名称</th>
+                                    <th>成交额</th>
+                                    <th>所属行业</th>
+                                    <th>分析</th>
+                                </tr>
+                            </thead>
+                            <tbody id="firstLimitRankingBody">
+                                <tr><td colspan="4" class="text-center py-4"><div class="spinner-border spinner-border-sm"></div></td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -498,6 +559,26 @@
                     </thead>
                     <tbody id="dataTable"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个股分析模态框 -->
+    <div class="modal fade" id="rankAnalysisModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="rankAnalysisTitle">个股分析</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="rankAnalysisContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <div class="mt-2 text-muted">正在深度挖掘基本面与逻辑，请稍候...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -919,10 +1000,21 @@
                         const h = acc.holdings[k];
                         const pl = (h.current_price - h.cost_price) / h.cost_price * 100;
                         const color = pl > 0 ? '#ef4444' : (pl < 0 ? '#10b981' : '#9ca3af');
-                        holdingsHtml += `<div class="d-flex justify-content-between mb-1" style="border-bottom: 1px dashed rgba(255,255,255,0.1);">
-                            <span>${h.name}(${k})</span>
-                            <span>${h.vol}股</span>
-                            <span style="color:${color}">${pl > 0 ? '+' : ''}${pl.toFixed(2)}%</span>
+                        
+                        const sl = h.stop_loss ? h.stop_loss.toFixed(2) : '--';
+                        const tp = h.take_profit ? h.take_profit.toFixed(2) : '--';
+                        
+                        holdingsHtml += `<div class="mb-1 pb-1" style="border-bottom: 1px dashed rgba(255,255,255,0.1);">
+                            <div class="d-flex justify-content-between">
+                                <span>${h.name}(${k})</span>
+                                <span>${h.vol}股</span>
+                                <span style="color:${color}">${pl > 0 ? '+' : ''}${pl.toFixed(2)}%</span>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1" style="font-size: 0.8rem; opacity: 0.8;">
+                                <span><span style="color:#10b981">止损: ${sl}</span></span>
+                                <span><span style="color:#ef4444">止盈: ${tp}</span></span>
+                                <span>当前: ${h.current_price.toFixed(2)}</span>
+                            </div>
                         </div>`;
                     });
                 }
@@ -1161,6 +1253,78 @@
     }
     loadNews();
     setInterval(loadNews, 2 * 60 * 1000);
+
+    // ========== 市场榜单 logic ==========
+    function updateRankings() {
+        fetch('/api/market_rankings')
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'success') {
+                    const monsterBody = document.getElementById('monsterRankingBody');
+                    const firstBody = document.getElementById('firstLimitRankingBody');
+                    
+                    if (d.data.monster && d.data.monster.length > 0) {
+                        monsterBody.innerHTML = d.data.monster.map(s => `
+                            <tr onclick="selectStock('${s['代码']}')" style="cursor:pointer">
+                                <td><span class="text-warning fw-bold">${s['名称']}</span><br/><small class="text-muted">${s['代码']}</small></td>
+                                <td><span class="badge bg-danger">${s['连板数']}连板</span></td>
+                                <td><small>${s['所属行业']}</small></td>
+                                <td onclick="event.stopPropagation()">
+                                    <button class="btn btn-xs btn-outline-secondary" onclick="analyzeRankStock('${s['代码']}', '${s['名称']}', true, false)">基本面</button>
+                                    <button class="btn btn-xs btn-outline-danger" onclick="analyzeRankStock('${s['代码']}', '${s['名称']}', true, true)">AI分析</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        monsterBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">暂无符合条件的妖股</td></tr>';
+                    }
+                    
+                    if (d.data.first_limit && d.data.first_limit.length > 0) {
+                        firstBody.innerHTML = d.data.first_limit.map(s => `
+                            <tr onclick="selectStock('${s['代码']}')" style="cursor:pointer">
+                                <td><span class="text-info fw-bold">${s['名称']}</span><br/><small class="text-muted">${s['代码']}</small></td>
+                                <td>${(s['成交额']/100000000).toFixed(1)}亿</td>
+                                <td><small>${s['所属行业']}</small></td>
+                                <td onclick="event.stopPropagation()">
+                                    <button class="btn btn-xs btn-outline-secondary" onclick="analyzeRankStock('${s['代码']}', '${s['名称']}', false, false)">基本面</button>
+                                    <button class="btn btn-xs btn-outline-primary" onclick="analyzeRankStock('${s['代码']}', '${s['名称']}', false, true)">AI分析</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        firstBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">暂无首板股</td></tr>';
+                    }
+                }
+            })
+            .catch(e => console.error('Rankings error:', e));
+    }
+    updateRankings();
+    setInterval(updateRankings, 5 * 60 * 1000); // 5分钟更新一次，避免请求太频繁被封
+
+    // ========== 个股榜单分析 ==========
+    function analyzeRankStock(code, name, isMonster, useAI) {
+        const modal = new bootstrap.Modal(document.getElementById('rankAnalysisModal'));
+        document.getElementById('rankAnalysisTitle').innerHTML = `${name} (${code}) - ${useAI ? '<i class="bi bi-robot text-danger"></i> AI深度分析' : '基本面简报'}`;
+        document.getElementById('rankAnalysisContent').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border ${useAI ? 'text-danger' : 'text-primary'}" role="status"></div>
+                <div class="mt-2 text-muted">${useAI ? '正在调用 MiMo-Quant 深度推理基本面与逻辑...' : '正在获取最新基本面数据...'}</div>
+            </div>`;
+        modal.show();
+
+        fetch(`/api/rank_analysis/${code}?name=${encodeURIComponent(name)}&is_monster=${isMonster}&use_ai=${useAI}`)
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'success') {
+                    document.getElementById('rankAnalysisContent').innerHTML = `<div class="analysis-result">${d.data}</div>`;
+                } else {
+                    document.getElementById('rankAnalysisContent').innerHTML = `<div class="alert alert-danger">分析失败: ${d.message}</div>`;
+                }
+            })
+            .catch(e => {
+                document.getElementById('rankAnalysisContent').innerHTML = `<div class="alert alert-danger">网络请求失败</div>`;
+            });
+    }
 
     // ========== 股票搜索 ==========
     let customStocks = JSON.parse(localStorage.getItem('customStocks') || '[]');

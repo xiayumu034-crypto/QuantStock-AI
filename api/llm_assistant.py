@@ -6,10 +6,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
+def get_llm_client():
     api_key = os.getenv("XIAOMI_API_KEY", "")
     base_url = "https://token-plan-cn.xiaomimimo.com/v1"
     model = "mimo-v2.5-pro"
+    return api_key, base_url, model
+
+def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
+    api_key, base_url, model = get_llm_client()
 
     system_prompt = """你是一位处于内测阶段的顶尖 AI 投资总监（代号：MiMo-Quant）。
 你拥有强大的多维推理能力，精通 A 股市场（T+1、涨跌停板机制），擅长将【量化因子】与【宏观逻辑】和【市场情绪】相融合。
@@ -80,3 +84,64 @@ def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
             
         logging.error(f"AI Analysis failed: {e}")
         return f"<div class='alert alert-danger'>AI 分析暂时罢工了: {str(e)}</div>"
+
+def generate_stock_ai_analysis(code, name, info_dict, is_monster=False):
+    """单只股票的AI深度分析（基本面+成妖逻辑）"""
+    api_key, base_url, model = get_llm_client()
+    
+    system_prompt = """你是一位顶尖的 A 股游资和基本面分析师双栖专家。
+你的任务是对单只个股进行极其犀利、一针见血的分析。
+不要罗列枯燥的数据，你要把数据翻译成“人话”和“操盘逻辑”。
+必须采用 Markdown 格式排版。"""
+
+    monster_req = ""
+    if is_monster:
+        monster_req = "\n**特别要求**：这是一只【连板妖股】。你需要重点分析它【为什么能成妖】？背后的炒作暗线、政策预期或情绪溢价是什么？以及目前连板后的博弈风险提示。"
+
+    user_prompt = f"""请分析以下股票：
+【代码】：{code}
+【名称】：{name}
+【基本面数据】：
+{info_dict}
+
+要求：
+1. **行业地位与核心产品**：公司是干嘛的？在产业链中是龙头还是边缘跟风？
+2. **年报/业绩亮点（或隐患）**：有没有业绩雷？或者有没有困境反转的预期？
+3. **资金面与博弈逻辑**：结合上述信息，当前市场资金为什么选择它？{monster_req}
+4. **后市推演**：给出简短有力的短线及中线推演。"""
+
+    try:
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=2048
+        )
+        ai_text = response.choices[0].message.content
+        return markdown.markdown(ai_text, extensions=['extra', 'codehilite'])
+    except Exception as e:
+        error_str = str(e).lower()
+        if "401" in error_str or "invalid_key" in error_str or "unauthorized" in error_str:
+            mock_text = f"""### 🤖 {name} ({code}) 深度研判 (体验模式)
+> **⚠️ 提示**: API Key 无效，以下为离线模拟生成。
+
+**1. 行业地位与产品**：
+主营业务覆盖相关赛道，在近期风口中表现活跃。属于资金青睐的高弹性品种。
+
+**2. 业绩简评**：
+营收及利润呈现一定波动，短期内基本面退居次位，资金主要博弈的是预期差。
+
+**3. 博弈逻辑与成妖探讨**：
+该股近期获得游资爆炒，主要因沾边热门概念。接力情绪浓厚，但也累积了庞大的获利盘。
+
+**4. 后市推演**：
+短线：不进则退，若断板容易遭遇核按钮，需观察承接力度。
+中线：题材炒作结束后将回归基本面，建议控制仓位。"""
+            return markdown.markdown(mock_text, extensions=['extra', 'codehilite'])
+        
+        logging.error(f"Stock AI Analysis failed: {e}")
+        return f"<div class='alert alert-danger'>AI 个股分析失败: {str(e)}</div>"

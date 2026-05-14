@@ -180,18 +180,23 @@ class StockDataAPI:
         if not is_trading:
             return {
                 "action": "⏸️ 已收盘", "action_class": "neutral",
-                "prediction_time": "非交易时段", "up_probability": 0, "down_probability": 0,
+                "prediction_time": "非交易时段", 
+                "up_probability": 50, "down_probability": 50,
                 "signal_strength": 0,
                 "signals": ["当前非交易时间", "技术面信号仅供参考", "实际走势以开盘后为准"],
                 "indicators": {}, "is_market_closed": True,
             }
 
         minute_data = self.get_minute_data(stock_code, scale=5, datalen=48)
-        if minute_data['status'] != 'success':
-            return {"action": "数据不足", "action_class": "neutral", "signals": ["无法获取数据"]}
+        if minute_data['status'] != 'success' or not minute_data.get('data') or len(minute_data['data']) < 10:
+            return {
+                "action": "数据不足", "action_class": "neutral", 
+                "prediction_time": dt.now().strftime("%H:%M:%S"),
+                "up_probability": 50, "down_probability": 50,
+                "signal_strength": 0, "signals": ["暂无足够分时数据进行技术面评估"],
+                "indicators": {}, "is_market_closed": False, "current_price": 0
+            }
         data = minute_data['data']
-        if len(data) < 10:
-            return {"action": "数据不足", "action_class": "neutral", "signals": ["数据不足"]}
 
         closes = [float(d['close']) for d in data]
         volumes = [float(d['volume']) for d in data]
@@ -282,6 +287,9 @@ class StockDataAPI:
         # ATR
         atr = tr.rolling(14).mean()
 
+        # VOL_RATIO
+        vol_ratio = volumes[-1] / np.mean(volumes[-10:]) if len(volumes) >= 10 else 1.0
+
         up_prob = min(max(50 + strength * 10, 5), 95)
         down_prob = 100 - up_prob
         if strength >= 1.5: action, action_class = "强烈看涨", "positive"
@@ -312,5 +320,37 @@ class StockDataAPI:
             "is_market_closed": False,
             "current_price": current
         }
+
+    def get_market_rankings(self):
+        """获取市场榜单：妖股榜、首板榜"""
+        try:
+            # 获取最近一个交易日的涨停池数据
+            # 为简单起见，使用今天的日期。如果没数据，akshare通常会返回空或报错，我们可以尝试往前推。
+            today = datetime.datetime.now().strftime('%Y%m%d')
+            df_zt = ak.stock_zt_pool_em(date=today)
+            
+            # 如果没数据（比如开盘前），尝试昨天的
+            if df_zt.empty:
+                yesterday = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y%m%d')
+                df_zt = ak.stock_zt_pool_em(date=yesterday)
+                
+            if df_zt.empty:
+                return {"monster": [], "first_limit": []}
+                
+            # 妖股榜：连板数 >= 3
+            monster_df = df_zt[df_zt['连板数'] >= 3].sort_values('连板数', ascending=False)
+            monster_list = monster_df.head(10).to_dict('records')
+            
+            # 首板榜：连板数 == 1
+            first_limit_df = df_zt[df_zt['连板数'] == 1].sort_values('成交额', ascending=False)
+            first_limit_list = first_limit_df.head(10).to_dict('records')
+            
+            return {
+                "monster": monster_list,
+                "first_limit": first_limit_list
+            }
+        except Exception as e:
+            logger.error(f"Error getting market rankings: {e}")
+            return {"monster": [], "first_limit": []}
 
 

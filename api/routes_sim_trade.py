@@ -86,6 +86,39 @@ def log_trade(account, action, code, name, price, vol, fee, reason="系统自动
     # 保留最近 500 条操作记录
     account["logs"] = account["logs"][:500]
 
+def calc_dynamic_sl_tp(code):
+    """
+    基于过去20个交易日的数据计算动态止损和止盈点 (ATR与通道算法)
+    如果股价跌破 (10日均线 - 1.2倍ATR) 则止损
+    如果股价突破 (当前收盘 + 2.5倍ATR) 且动能走弱则止盈
+    """
+    try:
+        import akshare as ak
+        import pandas as pd
+        symbol = code
+        df = ak.stock_zh_a_hist(symbol=symbol, period="daily")
+        if not df.empty and len(df) >= 20:
+            df = df.tail(20)
+            close_prices = df['收盘'].astype(float)
+            high_prices = df['最高'].astype(float)
+            low_prices = df['最低'].astype(float)
+            
+            sma10 = close_prices.tail(10).mean()
+            
+            tr1 = high_prices - low_prices
+            tr2 = (high_prices - close_prices.shift(1)).abs()
+            tr3 = (low_prices - close_prices.shift(1)).abs()
+            tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+            atr = tr.tail(10).mean()
+            
+            stop_loss = round(sma10 - 1.2 * atr, 2)
+            take_profit = round(close_prices.iloc[-1] + 2.5 * atr, 2)
+            return stop_loss, take_profit
+    except Exception as e:
+        import logging
+        logging.error(f"Error calculating SL/TP for {code}: {e}")
+    return None, None
+
 @sim_trade_bp.route('/info', methods=['GET'])
 def get_info():
     account = load_account()
@@ -110,10 +143,28 @@ def get_info():
             logging.error(f"Error updating prices in info: {e}")
 
     total_asset = account["cash"]
+    need_save = False
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    
     for code, pos in account["holdings"].items():
         total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+        
+        # 补充计算止盈止损以便前端展示 (引入文件缓存机制，防止频繁调用akshare导致IP被封与闪烁)
+        if pos.get("sl_tp_date") != today_str or "stop_loss" not in pos:
+            sl, tp = calc_dynamic_sl_tp(code)
+            if sl is not None: 
+                pos["stop_loss"] = float(sl)
+                need_save = True
+            if tp is not None: 
+                pos["take_profit"] = float(tp)
+                need_save = True
+            pos["sl_tp_date"] = today_str
+            need_save = True
+            
+    if need_save:
+        save_account(account)
     
-    account["total_asset"] = total_asset
+    account["total_asset"] = float(total_asset)
     return jsonify({"status": "success", "data": account})
 
 @sim_trade_bp.route('/logs', methods=['GET'])
@@ -250,6 +301,18 @@ def sim_step():
     # 1. 绝对收益阈值：即便排名前10%，如果预测收益为负，说明市场整体极差，不买入。
     top_codes = [p["code"] for p in sorted_preds if p["pred"] >= p90_val and p["pred"] > 0]
     
+    # --- 新增: 早盘禁追高与全天仓位分散 ---
+    today_buys = [log for log in account.get("logs", []) if log["action"] == "buy" and log["time"].startswith(today_str)]
+    can_buy_today = (len(today_buys) < 1)  # 每天最多建仓1只
+    is_morning_danger = "09:30" <= time_str <= "09:45"
+    
+    if not can_buy_today or is_morning_danger:
+        if is_morning_danger:
+            logging.info("Morning danger period (09:30-09:45). Blocked all buying to avoid traps.")
+        elif not can_buy_today:
+            logging.info("Daily buy limit reached (1/day). Time-distributed position building active.")
+        top_codes = []
+        
     # 2. 市场整体环境评估 (Market Sentiment)
     # 计算全池平均预测收益，如果均值为负，视为大盘风险期
     avg_pred = sum([p["pred"] for p in sorted_preds]) / n
@@ -261,7 +324,7 @@ def sim_step():
     
     # 2.5 接入【新闻与国家大事驱动】逻辑
     event_driven_info = {}
-    if not is_market_risky: # 大盘风险期同样暂停热点博弈，保住本金
+    if not is_market_risky and not is_morning_danger and can_buy_today: # 安全期且在允许买入时间内才追热点
         try:
             import akshare as ak
             sector_df = ak.stock_sector_spot(indicator='新浪行业')
@@ -347,16 +410,35 @@ def sim_step():
 
         pred_val = predictions.get(code, {}).get("predicted_return", 0)
         
-        # 卖出条件：
-        # 1. 如果是 V19 信号标的：评分跌出前 70% (p30_val)
-        # 2. 如果是 事件驱动标的 (不在 V19 里的)：如果该股不再是当前热门板块领涨股
-        if code in predictions:
-            if pred_val < p30_val:
+        # --- 动态止损与止盈判定 ---
+        stop_loss, take_profit = calc_dynamic_sl_tp(code)
+        sl_tp_reason = None
+        
+        # 1. 触发动态止损 (跌破 10日均线 - 1.2倍ATR)
+        if stop_loss and pos["current_price"] < stop_loss:
+            sl_tp_reason = f"触发动态止损 (当前价跌破支撑线 {stop_loss})"
+            if code not in codes_to_sell:
                 codes_to_sell.append(code)
+            
+        # 2. 触发动态止盈 (高于 收盘价 + 2.5倍ATR 且 V19评分下降，防止强势股被轻易卖飞)
+        elif take_profit and pos["current_price"] > take_profit and pred_val < p30_val:
+            sl_tp_reason = f"触发动态止盈 (达到目标区间 {take_profit} 且动能衰退)"
+            if code not in codes_to_sell:
+                codes_to_sell.append(code)
+            
+        # 3. 正常轮动卖出
+        elif code in predictions:
+            if pred_val < p30_val:
+                if code not in codes_to_sell:
+                    codes_to_sell.append(code)
         else:
             # 事件驱动股逻辑：如果不再热门，或者涨幅转负/走弱
             if code not in current_hot_codes:
-                codes_to_sell.append(code)
+                if code not in codes_to_sell:
+                    codes_to_sell.append(code)
+                    
+        if sl_tp_reason and code in codes_to_sell:
+            pos["sl_tp_reason"] = sl_tp_reason
 
     for code in codes_to_sell:
         if code not in prices or prices[code]["current"] <= 0:
@@ -401,7 +483,10 @@ def sim_step():
 
         name = pos.get("name", prices[code]["name"])
         # 修正：根据标的类型记录准确的卖出原因
-        reason = "V19评分跌出安全区" if code in predictions else "事件驱动热点退潮/板块轮动"
+        if "sl_tp_reason" in pos:
+            reason = pos["sl_tp_reason"]
+        else:
+            reason = "V19评分跌出安全区" if code in predictions else "事件驱动热点退潮/板块轮动"
         log_trade(account, "sell", code, name, sell_price, vol, fee, reason, pnl=pnl, duration=duration_str)
         actions_taken.append(f"卖出 {name}({code})")
 
