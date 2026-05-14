@@ -88,35 +88,68 @@ def log_trade(account, action, code, name, price, vol, fee, reason="系统自动
 
 def calc_dynamic_sl_tp(code):
     """
-    基于过去20个交易日的数据计算动态止损和止盈点 (ATR与通道算法)
-    如果股价跌破 (10日均线 - 1.2倍ATR) 则止损
-    如果股价突破 (当前收盘 + 2.5倍ATR) 且动能走弱则止盈
+    基于过去40个交易日的数据计算动态止损和止盈点 (ATR与半衰期动态通道算法)
+    吸取 Ernie Chan《Quantitative Trading》中 Half-Life 思想：
+    通过对价格序列进行线性回归，计算其回归均值的半衰期，以此作为动态均线的窗口期。
     """
     try:
         import akshare as ak
         import pandas as pd
+        import numpy as np
+        import math
+        import scipy.stats
+        
         symbol = code
-        df = ak.stock_zh_a_hist(symbol=symbol, period="daily")
-        if not df.empty and len(df) >= 20:
-            df = df.tail(20)
-            close_prices = df['收盘'].astype(float)
+        df = pd.DataFrame()
+        import time
+        for _ in range(3):
+            try:
+                df = ak.stock_zh_a_hist(symbol=symbol, period="daily")
+                if not df.empty:
+                    break
+            except Exception:
+                time.sleep(1)
+                
+        if not df.empty and len(df) >= 40:
+            df = df.tail(40)
+            close_prices = df['收盘'].astype(float).values
+            
+            # --- Ernie Chan Half-Life 算法 ---
+            ts = close_prices
+            diff = np.diff(ts)
+            # 对 ts[:-1] 和 diff 做线性回归，求斜率 rho
+            slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(ts[:-1], diff)
+            
+            # 如果 slope < 0，说明存在均值回归特性，可以计算半衰期
+            if slope < -0.01: 
+                half_life = int(-math.log(2) / slope)
+                # 限制半衰期在 5 到 20 之间，避免极值导致均线失效
+                half_life = max(5, min(20, half_life))
+            else:
+                # 如果 slope >= 0 或者趋近于0，说明呈现极强趋势性（非平稳），退化为默认的趋势追踪窗口 10
+                half_life = 10
+                
+            # print(f"[{code}] Computed Half-Life: {half_life} days (slope: {slope:.4f})")
+            
+            # 根据半衰期动态提取数据
+            close_series = pd.Series(close_prices)
             high_prices = df['最高'].astype(float)
             low_prices = df['最低'].astype(float)
             
-            sma10 = close_prices.tail(10).mean()
+            sma_dynamic = close_series.tail(half_life).mean()
             
             tr1 = high_prices - low_prices
-            tr2 = (high_prices - close_prices.shift(1)).abs()
-            tr3 = (low_prices - close_prices.shift(1)).abs()
+            tr2 = (high_prices - df['收盘'].astype(float).shift(1)).abs()
+            tr3 = (low_prices - df['收盘'].astype(float).shift(1)).abs()
             tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-            atr = tr.tail(10).mean()
+            atr = tr.tail(half_life).mean()
             
-            stop_loss = round(sma10 - 1.2 * atr, 2)
-            take_profit = round(close_prices.iloc[-1] + 2.5 * atr, 2)
+            stop_loss = round(sma_dynamic - 1.2 * atr, 2)
+            take_profit = round(close_prices[-1] + 2.5 * atr, 2)
             return stop_loss, take_profit
     except Exception as e:
         import logging
-        logging.error(f"Error calculating SL/TP for {code}: {e}")
+        logging.error(f"Error calculating Half-Life SL/TP for {code}: {e}")
     return None, None
 
 @sim_trade_bp.route('/info', methods=['GET'])
