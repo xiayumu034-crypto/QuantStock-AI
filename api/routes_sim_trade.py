@@ -454,11 +454,22 @@ def sim_step():
         if y_close > 0:
             high_p = prices[code].get("high", pos["current_price"])
             high_pct = (high_p - y_close) / y_close
-            # 若盘中最高涨幅超过 6%，且目前从高点回落超过 1.5%，执行高位止盈保住利润
-            if high_pct > 0.06 and (high_p - pos["current_price"]) / high_p > 0.015:
-                sl_tp_reason = f"冲高回落止盈 (今日最高涨幅 +{high_pct*100:.1f}%)"
-                if code not in codes_to_sell:
-                    codes_to_sell.append(code)
+            
+            # 若盘中最高涨幅超过 6%，启动回落监控
+            if high_pct > 0.06:
+                is_20_pct_limit = code.startswith(('30', '68'))
+                limit_threshold = 0.18 if is_20_pct_limit else 0.085
+                
+                # 冲板保护：如果主力正在冲刺涨停板（逼近阈值），必须给予极大的宽容度（防止烂板/开板洗盘）
+                if high_pct >= limit_threshold:
+                    tolerance = 0.045  # 涨停附近，回撤超过 4.5% 才判定为彻底炸板出货
+                else:
+                    tolerance = 0.025  # 普通冲高，回撤超过 2.5% 落袋为安
+                    
+                if (high_p - pos["current_price"]) / high_p > tolerance:
+                    sl_tp_reason = f"冲高回落止盈 (最高 +{high_pct*100:.1f}%, 跌破容忍度)"
+                    if code not in codes_to_sell:
+                        codes_to_sell.append(code)
 
         # 1. 触发动态止损 (跌破 10日均线 - 1.2倍ATR)
         if not sl_tp_reason and stop_loss and pos["current_price"] < stop_loss:
