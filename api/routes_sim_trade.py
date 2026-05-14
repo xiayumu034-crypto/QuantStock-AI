@@ -366,6 +366,8 @@ def sim_step():
             if rt_data and "current" in rt_data:
                 prices[code] = {
                     "current": rt_data["current"],
+                    "high": rt_data.get("high", rt_data["current"]),
+                    "low": rt_data.get("low", rt_data["current"]),
                     "yesterday_close": rt_data.get("yesterday_close", 0),
                     "name": rt_data.get("name", code),
                     "ask1": rt_data.get("ask1"),
@@ -414,24 +416,45 @@ def sim_step():
         stop_loss, take_profit = calc_dynamic_sl_tp(code)
         sl_tp_reason = None
         
+        # --- 0. 新增：冲高回落动态止盈 (盘中做T机制) ---
+        y_close = prices[code].get("yesterday_close", 0)
+        if y_close > 0:
+            high_p = prices[code].get("high", pos["current_price"])
+            high_pct = (high_p - y_close) / y_close
+            # 若盘中最高涨幅超过 6%，且目前从高点回落超过 1.5%，执行高位止盈保住利润
+            if high_pct > 0.06 and (high_p - pos["current_price"]) / high_p > 0.015:
+                sl_tp_reason = f"冲高回落止盈 (今日最高涨幅 +{high_pct*100:.1f}%)"
+                if code not in codes_to_sell:
+                    codes_to_sell.append(code)
+
         # 1. 触发动态止损 (跌破 10日均线 - 1.2倍ATR)
-        if stop_loss and pos["current_price"] < stop_loss:
-            sl_tp_reason = f"触发动态止损 (当前价跌破支撑线 {stop_loss})"
-            if code not in codes_to_sell:
-                codes_to_sell.append(code)
+        if not sl_tp_reason and stop_loss and pos["current_price"] < stop_loss:
+            # --- 新增：洗盘甄别器 (长下影线判定) ---
+            low_p = prices[code].get("low", pos["current_price"])
+            high_p = prices[code].get("high", pos["current_price"])
+            shadow_ratio = (pos["current_price"] - low_p) / (high_p - low_p) if high_p > low_p else 0
+            
+            if shadow_ratio > 0.6:
+                import logging
+                logging.info(f"Wash-out detected for {code}: Long lower shadow. Ignoring stop loss temporarily.")
+                pos["sl_tp_reason"] = "主力疑似洗盘 (长下影线)，暂缓止损"
+            else:
+                sl_tp_reason = f"触发动态止损 (当前价跌破支撑线 {stop_loss})"
+                if code not in codes_to_sell:
+                    codes_to_sell.append(code)
             
         # 2. 触发动态止盈 (高于 收盘价 + 2.5倍ATR 且 V19评分下降，防止强势股被轻易卖飞)
-        elif take_profit and pos["current_price"] > take_profit and pred_val < p30_val:
+        elif not sl_tp_reason and take_profit and pos["current_price"] > take_profit and pred_val < p30_val:
             sl_tp_reason = f"触发动态止盈 (达到目标区间 {take_profit} 且动能衰退)"
             if code not in codes_to_sell:
                 codes_to_sell.append(code)
             
         # 3. 正常轮动卖出
-        elif code in predictions:
+        elif not sl_tp_reason and code in predictions:
             if pred_val < p30_val:
                 if code not in codes_to_sell:
                     codes_to_sell.append(code)
-        else:
+        elif not sl_tp_reason:
             # 事件驱动股逻辑：如果不再热门，或者涨幅转负/走弱
             if code not in current_hot_codes:
                 if code not in codes_to_sell:
