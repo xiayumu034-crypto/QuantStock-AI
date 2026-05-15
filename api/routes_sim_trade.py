@@ -668,7 +668,8 @@ def sim_step():
             continue
             
         # --- 新增全局黑名单：严禁买入 ST、*ST 和退市股 ---
-        stock_name = prices[code].get("name", "")
+        # 必须综合 event_driven_info, stock_names 和 prices 中的名字，防止某个数据源遗漏 ST 标识
+        stock_name = event_driven_info.get(code, {}).get("name", stock_names.get(code, prices[code].get("name", "")))
         if any(x in stock_name.upper() for x in ["ST", "*ST", "退"]):
             logging.info(f"Blacklist filter blocked buying {stock_name} ({code})")
             continue
