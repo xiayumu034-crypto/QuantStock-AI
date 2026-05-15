@@ -46,7 +46,9 @@ def main():
         with open('data/stock_names.json', 'r', encoding='utf-8') as f:
             stock_pool = json.load(f)
             
-    valid_stocks = [s for s in D.instruments(market='all') if s[-6:] in [k[-6:] for k in stock_pool.keys()]]
+    instruments = D.instruments(market='all')
+    stock_list = D.list_instruments(instruments=instruments, as_list=True)
+    valid_stocks = [s for s in stock_list if s[-6:] in [k[-6:] for k in stock_pool.keys()]]
     
     print(f"📦 [AFML V20] 开始提取 {len(valid_stocks)} 只标的最新高维特征...")
     end_date = pd.Timestamp.now().strftime("%Y-%m-%d")
@@ -74,9 +76,10 @@ def main():
     df_latest['stock_code'] = df_latest.index
     
     # 4. 元模型 (V20) 进行二次阻击拦截
-    # 仅允许 V19 预测值 > 0.005 的标的进入元模型雷达
-    candidates = df_latest[df_latest['Primary_Pred'] > 0.005].copy()
-    print(f"🔍 [AFML V20] 初筛发现 {len(candidates)} 只主模型看涨标的，启动元模型 (Meta-Model) 狙击网...")
+    # 动态阈值：选取预测收益率排名前 15% 的标的进入元模型雷达
+    threshold = np.percentile(df_latest['Primary_Pred'], 85)
+    candidates = df_latest[df_latest['Primary_Pred'] >= threshold].copy()
+    print(f"🔍 [AFML V20] 动态阈值 ({threshold:.4f}) 初筛发现 {len(candidates)} 只主模型看涨标的，启动元模型 (Meta-Model) 狙击网...")
     
     if len(candidates) > 0:
         meta_X = candidates[meta_features]
@@ -112,9 +115,18 @@ def main():
     # 按 AFML 元置信度 (Meta_Score) 降序排列
     sorted_results = {k: v for k, v in sorted(results.items(), key=lambda item: item[1]['meta_score'], reverse=True)}
     
+    # 封装为前端需要的格式
+    output_data = {
+        "data": sorted_results,
+        "_meta": {
+            "model_version": "AFML v20",
+            "stocks": len(sorted_results)
+        }
+    }
+    
     out_file = "model_output/daily_predictions_v20.json"
     with open(out_file, 'w', encoding='utf-8') as f:
-        json.dump(sorted_results, f, ensure_ascii=False, indent=4)
+        json.dump(output_data, f, ensure_ascii=False, indent=4)
         
     print(f"✅ [AFML V20] 在线推理完成，拦截无效信号，最终剩余 {len(sorted_results)} 只绝佳标的！")
     print(f"📄 结果已保存至: {out_file}")

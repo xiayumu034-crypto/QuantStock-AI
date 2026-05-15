@@ -131,8 +131,8 @@ def main():
     with open(model_path, 'wb') as f:
         pickle.dump(models, f) # 存入模型列表
     
-    with open(features_path, 'w') as f:
-        json.dump(list(features.keys()), f, ensure_ascii=False, indent=4)
+    with open(features_path, 'w', encoding='utf-8') as f:
+        json.dump(features, f, ensure_ascii=False, indent=4)
         
     print(f"\n[Train v19 Ensemble] 训练完成！集成模型已保存至: {model_path}")
 

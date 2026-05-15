@@ -94,17 +94,23 @@ def main():
         
     df['Primary_Pred'] = preds
     
-    # 设定主模型触发阈值 (过滤出潜在的做多机会)
-    t_events_mask = df['Primary_Pred'] > 0.015
+    # 设定主模型触发阈值 (过滤出潜在的做多机会) - 使用 85 分位数
+    threshold = np.percentile(df['Primary_Pred'], 85)
+    t_events_mask = df['Primary_Pred'] > threshold
     events_df = df[t_events_mask].copy()
-    print(f"🎯 [AFML V20] V19 主模型在历史期间共发出 {len(events_df)} 次【强看涨】信号。")
+    print(f"🎯 [AFML V20] V19 主模型在历史期间共发出 {len(events_df)} 次【强看涨】信号 (阈值: {threshold:.4f})。")
     
     if len(events_df) < 100:
          print("⚠️ 信号数量过少，降低主模型置信度阈值...")
-         t_events_mask = df['Primary_Pred'] > 0.005
+         threshold = np.percentile(df['Primary_Pred'], 70)
+         t_events_mask = df['Primary_Pred'] > threshold
          events_df = df[t_events_mask].copy()
-         print(f"🎯 调整后共提取 {len(events_df)} 次主信号。")
+         print(f"🎯 调整后共提取 {len(events_df)} 次主信号 (阈值: {threshold:.4f})。")
          
+    if len(events_df) == 0:
+        print("❌ [致命错误] 依然没有提取到任何有效信号。")
+        return
+        
     # 6. Apply Triple Barrier
     print("🚧 [AFML V20] 启动三重屏障打标器 (Triple Barrier Labeling)... 正在重铸盈亏真实面貌")
     meta_labels = pd.Series(index=events_df.index, dtype=int)
