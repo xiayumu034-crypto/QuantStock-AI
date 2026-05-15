@@ -58,6 +58,38 @@ class StockDataAPI:
             return {"status": "error", "message": str(e)}
         return {"status": "error", "message": "数据获取失败"}
 
+    def get_daily_history(self, stock_code):
+        """获取日线历史数据（带自动回退机制：东财 -> 新浪）"""
+        try:
+            # 1. 尝试东财接口 (ak.stock_zh_a_hist)
+            df = ak.stock_zh_a_hist(symbol=stock_code, period="daily")
+            if not df.empty:
+                return df
+        except Exception as e:
+            logger.warning(f"获取东财历史数据失败 {stock_code}: {e}，尝试切换新浪接口...")
+            
+        try:
+            # 2. 尝试新浪接口 (ak.stock_zh_a_daily)
+            prefix = 'sh' if stock_code.startswith(('6', '8', '9')) else 'sz'
+            start_date = (datetime.datetime.now() - datetime.timedelta(days=180)).strftime("%Y%m%d")
+            df = ak.stock_zh_a_daily(symbol=prefix+stock_code, start_date=start_date)
+            if not df.empty:
+                # 重命名列以兼容原有逻辑
+                df = df.rename(columns={
+                    'date': '日期',
+                    'open': '开盘',
+                    'close': '收盘',
+                    'high': '最高',
+                    'low': '最低',
+                    'volume': '成交量',
+                    'amount': '成交额'
+                })
+                return df
+        except Exception as e:
+            logger.error(f"获取新浪历史数据也失败 {stock_code}: {e}")
+            
+        return pd.DataFrame()
+
     def get_minute_data(self, stock_code, scale=5, datalen=200):
         """获取分时K线数据"""
         prefix = 'sh' if stock_code.startswith('6') else 'sz'

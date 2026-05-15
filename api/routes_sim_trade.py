@@ -102,13 +102,17 @@ def calc_dynamic_sl_tp(code):
         symbol = code
         df = pd.DataFrame()
         import time
+        from data.market_data import StockDataAPI
+        api_client = StockDataAPI()
+        
         for _ in range(3):
             try:
-                df = ak.stock_zh_a_hist(symbol=symbol, period="daily")
+                df = api_client.get_daily_history(stock_code=symbol)
                 if not df.empty:
                     break
             except Exception:
-                time.sleep(1)
+                pass
+            time.sleep(1)
                 
         if not df.empty and len(df) >= 40:
             df = df.tail(40)
@@ -452,7 +456,24 @@ def sim_step():
         pred_val = predictions.get(code, {}).get("predicted_return", 0)
         
         # --- 动态止损与止盈判定 ---
-        stop_loss, take_profit = calc_dynamic_sl_tp(code)
+        # 1. 优先读取当天的缓存 (减少 API 请求并防止 None 崩溃)
+        if pos.get("sl_tp_date") == today_str and "stop_loss" in pos:
+            stop_loss = pos["stop_loss"]
+            take_profit = pos.get("take_profit")
+        else:
+            stop_loss, take_profit = calc_dynamic_sl_tp(code)
+            if stop_loss is not None:
+                pos["stop_loss"] = float(stop_loss)
+                if take_profit is not None:
+                    pos["take_profit"] = float(take_profit)
+                pos["sl_tp_date"] = today_str
+        
+        # 2. 极限兜底：如果所有接口全部挂掉且无缓存，使用成本价进行硬性容错，绝不返回 None
+        if stop_loss is None:
+            stop_loss = pos.get("stop_loss", pos.get("cost_price", 0) * 0.9)
+        if take_profit is None:
+            take_profit = pos.get("take_profit", pos.get("cost_price", 0) * 1.1)
+            
         sl_tp_reason = None
         
         # --- 0. 新增：冲高回落动态止盈 (盘中做T机制) ---
