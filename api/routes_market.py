@@ -195,15 +195,13 @@ def ai_analyze_stock(code):
         client = OpenAI(api_key=api_key, base_url=base_url)
         
         prompt = f"""你是一个资深的A股量化分析师。请针对股票代码 {clean_code} 给出简短研判。
-返回严格的JSON格式，包含以下字段：
-{{
-    "action": "看涨/看跌/震荡",
-    "support_level": "下方支撑位说明（简短）",
-    "resistance_level": "上方压力位说明（简短）",
-    "expected_open": "次日预期开盘说明",
-    "ai_conclusion": "50字以内的深度一句话结论，需结合A股博弈逻辑"
-}}
-绝不输出任何多余的话，直接输出用花括号包裹的 JSON。"""
+请严格使用以下固定格式输出（不要输出任何其他客套话）：
+
+动作：[看涨/看跌/震荡]
+支撑：[下方支撑位说明]
+压力：[上方压力位说明]
+开盘：[次日预期开盘说明]
+结论：[一句话结论]"""
         
         import time
         llm_data = None
@@ -217,20 +215,23 @@ def ai_analyze_stock(code):
                 )
                 llm_text = response.choices[0].message.content.strip()
                 
-                # 尝试修复截断的 JSON (如果没有结束的右括号)
-                if '{' in llm_text and '}' not in llm_text:
-                    llm_text += '"}'
-                    
-                # 强制正则提取 JSON
-                json_match = re.search(r'\{.*\}', llm_text, re.DOTALL)
-                if json_match:
-                    parsed_text = json_match.group(0)
-                    # 替换掉可能导致 JSON 解析失败的换行符
-                    parsed_text = parsed_text.replace('\n', '')
-                    llm_data = json.loads(parsed_text)
-                    break # 成功则跳出循环
+                if not llm_text:
+                    raise ValueError("LLM returned empty string")
+                
+                # 解析文本
+                llm_data = {}
+                for line in llm_text.split('\n'):
+                    line = line.strip()
+                    if line.startswith('动作：'): llm_data['action'] = line.replace('动作：', '').strip()
+                    elif line.startswith('支撑：'): llm_data['support_level'] = line.replace('支撑：', '').strip()
+                    elif line.startswith('压力：'): llm_data['resistance_level'] = line.replace('压力：', '').strip()
+                    elif line.startswith('开盘：'): llm_data['expected_open'] = line.replace('开盘：', '').strip()
+                    elif line.startswith('结论：'): llm_data['ai_conclusion'] = line.replace('结论：', '').strip()
+                
+                if 'action' in llm_data and 'ai_conclusion' in llm_data:
+                    break
                 else:
-                    raise ValueError(f"No JSON matched. Raw: {repr(llm_text)}")
+                    raise ValueError(f"Failed to parse required fields. Raw text: {repr(llm_text)}")
             except Exception as e:
                 print(f"LLM Call Attempt {attempt+1} failed: {e}")
                 if attempt == 2:
