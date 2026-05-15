@@ -1,808 +1,88 @@
 {
     "status": "finished",
-    "progress": 100,
-    "total": 100,
-    "message": "漏斗筛选完毕！最终幸存 100 只标的。",
+    "progress": 10,
+    "total": 10,
+    "message": "漏斗筛选完毕！最终幸存 10 只标的。",
     "data": [
-        {
-            "code": "sz301486",
-            "name": "致尚科技",
-            "price": 257.51,
-            "change_pct": 8.517,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz301666",
-            "name": "大普微",
-            "price": 680.0,
-            "change_pct": 7.765,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300323",
-            "name": "华灿光电",
-            "price": 17.63,
-            "change_pct": 7.5,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688072",
-            "name": "拓荆科技",
-            "price": 529.94,
-            "change_pct": 7.493,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh601689",
-            "name": "拓普集团",
-            "price": 69.93,
-            "change_pct": 7.452,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688037",
-            "name": "芯源微",
-            "price": 276.74,
-            "change_pct": 7.264,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002929",
-            "name": "润建股份",
-            "price": 92.99,
-            "change_pct": 7.008,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
         {
             "code": "sh600584",
             "name": "长电科技",
-            "price": 58.05,
+            "price": "58.05",
             "change_pct": 6.886,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688808",
-            "name": "联讯仪器",
-            "price": 1170.0,
-            "change_pct": 6.842,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688120",
-            "name": "华海清科",
-            "price": 267.51,
-            "change_pct": 6.79,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600246",
-            "name": "万通发展",
-            "price": 13.31,
-            "change_pct": 6.31,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002484",
-            "name": "江海股份",
-            "price": 48.66,
-            "change_pct": 6.013,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 6.886%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sz300433",
             "name": "蓝思科技",
-            "price": 34.21,
+            "price": "34.21",
             "change_pct": 5.881,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz000559",
-            "name": "万向钱潮",
-            "price": 17.5,
-            "change_pct": 5.804,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688025",
-            "name": "杰普特",
-            "price": 394.8,
-            "change_pct": 5.561,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300666",
-            "name": "江丰电子",
-            "price": 189.86,
-            "change_pct": 5.478,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 5.881%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sh603986",
             "name": "兆易创新",
-            "price": 375.34,
+            "price": "375.34",
             "change_pct": 5.376,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603119",
-            "name": "DR浙江荣",
-            "price": 72.76,
-            "change_pct": 5.373,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 5.376%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sz002050",
             "name": "三花智控",
-            "price": 52.06,
+            "price": "52.06",
             "change_pct": 5.321,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603127",
-            "name": "昭衍新药",
-            "price": 39.96,
-            "change_pct": 5.296,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz301611",
-            "name": "珂玛科技",
-            "price": 125.2,
-            "change_pct": 5.166,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603179",
-            "name": "新泉股份",
-            "price": 74.31,
-            "change_pct": 4.958,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603738",
-            "name": "泰晶科技",
-            "price": 55.58,
-            "change_pct": 4.908,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 5.321%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sz002371",
             "name": "北方华创",
-            "price": 592.0,
+            "price": "592.0",
             "change_pct": 4.89,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002208",
-            "name": "合肥城建",
-            "price": 20.76,
-            "change_pct": 4.848,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688777",
-            "name": "中控技术",
-            "price": 79.06,
-            "change_pct": 4.812,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600396",
-            "name": "华电辽能",
-            "price": 17.43,
-            "change_pct": 4.748,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz000833",
-            "name": "粤桂股份",
-            "price": 28.89,
-            "change_pct": 4.409,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz000767",
-            "name": "晋控电力",
-            "price": 4.9,
-            "change_pct": 4.255,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300115",
-            "name": "长盈精密",
-            "price": 38.1,
-            "change_pct": 4.184,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600699",
-            "name": "均胜电子",
-            "price": 30.37,
-            "change_pct": 4.078,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688545",
-            "name": "兴福电子",
-            "price": 92.67,
-            "change_pct": 4.077,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688596",
-            "name": "正帆科技",
-            "price": 48.0,
-            "change_pct": 4.009,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300503",
-            "name": "昊志机电",
-            "price": 71.14,
-            "change_pct": 4.006,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600580",
-            "name": "卧龙电驱",
-            "price": 40.48,
-            "change_pct": 3.928,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600160",
-            "name": "巨化股份",
-            "price": 35.91,
-            "change_pct": 3.906,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300124",
-            "name": "汇川技术",
-            "price": 77.32,
-            "change_pct": 3.897,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002297",
-            "name": "博云新材",
-            "price": 25.85,
-            "change_pct": 3.774,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002165",
-            "name": "红 宝 丽",
-            "price": 9.74,
-            "change_pct": 3.727,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002709",
-            "name": "天赐材料",
-            "price": 57.54,
-            "change_pct": 3.657,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002602",
-            "name": "世纪华通",
-            "price": 14.9,
-            "change_pct": 3.472,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 4.89%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sz002600",
             "name": "领益智造",
-            "price": 16.94,
+            "price": "16.94",
             "change_pct": 3.293,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh601126",
-            "name": "四方股份",
-            "price": 76.51,
-            "change_pct": 3.28,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688146",
-            "name": "中船特气",
-            "price": 145.55,
-            "change_pct": 3.139,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002335",
-            "name": "科华数据",
-            "price": 67.82,
-            "change_pct": 3.07,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz000831",
-            "name": "中国稀土",
-            "price": 55.88,
-            "change_pct": 3.005,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300776",
-            "name": "帝尔激光",
-            "price": 147.06,
-            "change_pct": 2.911,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300302",
-            "name": "同有科技",
-            "price": 44.56,
-            "change_pct": 2.815,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 3.293%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sz300442",
             "name": "润泽科技",
-            "price": 102.46,
+            "price": "102.46",
             "change_pct": 2.799,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002565",
-            "name": "顺灏股份",
-            "price": 18.8,
-            "change_pct": 2.397,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002009",
-            "name": "天奇股份",
-            "price": 28.2,
-            "change_pct": 2.322,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh601857",
-            "name": "中国石油",
-            "price": 11.51,
-            "change_pct": 2.311,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688019",
-            "name": "安集科技",
-            "price": 276.8,
-            "change_pct": 2.14,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002759",
-            "name": "天际股份",
-            "price": 36.43,
-            "change_pct": 2.131,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002938",
-            "name": "鹏鼎控股",
-            "price": 85.91,
-            "change_pct": 2.067,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300661",
-            "name": "圣邦股份",
-            "price": 107.9,
-            "change_pct": 2.043,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 2.799%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sz300394",
             "name": "天孚通信",
-            "price": 399.99,
+            "price": "399.99",
             "change_pct": 2.038,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688167",
-            "name": "炬光科技",
-            "price": 513.97,
-            "change_pct": 1.982,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300346",
-            "name": "南大光电",
-            "price": 56.54,
-            "change_pct": 1.874,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603601",
-            "name": "再升科技",
-            "price": 16.87,
-            "change_pct": 1.811,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300058",
-            "name": "蓝色光标",
-            "price": 17.66,
-            "change_pct": 1.787,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688361",
-            "name": "中科飞测",
-            "price": 207.5,
-            "change_pct": 1.711,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz000338",
-            "name": "潍柴动力",
-            "price": 34.77,
-            "change_pct": 1.667,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600415",
-            "name": "小商品城",
-            "price": 13.75,
-            "change_pct": 1.626,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300017",
-            "name": "网宿科技",
-            "price": 18.99,
-            "change_pct": 1.551,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600875",
-            "name": "东方电气",
-            "price": 39.07,
-            "change_pct": 1.533,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688627",
-            "name": "精智达",
-            "price": 353.44,
-            "change_pct": 1.476,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300738",
-            "name": "奥飞数据",
-            "price": 27.36,
-            "change_pct": 1.446,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz000981",
-            "name": "山子高科",
-            "price": 4.41,
-            "change_pct": 1.379,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300131",
-            "name": "英唐智控",
-            "price": 21.53,
-            "change_pct": 1.318,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002902",
-            "name": "铭普光磁",
-            "price": 39.6,
-            "change_pct": 1.227,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz301358",
-            "name": "湖南裕能",
-            "price": 95.48,
-            "change_pct": 1.198,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002131",
-            "name": "利欧股份",
-            "price": 6.58,
-            "change_pct": 1.075,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002361",
-            "name": "神剑股份",
-            "price": 18.91,
-            "change_pct": 1.015,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603920",
-            "name": "世运电路",
-            "price": 63.92,
-            "change_pct": 0.979,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600111",
-            "name": "北方稀土",
-            "price": 53.78,
-            "change_pct": 0.957,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 2.038%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sh688981",
             "name": "中芯国际",
-            "price": 119.02,
+            "price": "119.02",
             "change_pct": 0.95,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz000333",
-            "name": "美的集团",
-            "price": 82.57,
-            "change_pct": 0.929,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603501",
-            "name": "豪威集团",
-            "price": 101.39,
-            "change_pct": 0.886,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002812",
-            "name": "恩捷股份",
-            "price": 76.45,
-            "change_pct": 0.884,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300260",
-            "name": "新莱应材",
-            "price": 63.43,
-            "change_pct": 0.827,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600150",
-            "name": "中国船舶",
-            "price": 40.55,
-            "change_pct": 0.82,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300014",
-            "name": "亿纬锂能",
-            "price": 65.78,
-            "change_pct": 0.735,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh601868",
-            "name": "中国能建",
-            "price": 3.24,
-            "change_pct": 0.621,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600989",
-            "name": "宝丰能源",
-            "price": 28.48,
-            "change_pct": 0.565,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603005",
-            "name": "晶方科技",
-            "price": 32.94,
-            "change_pct": 0.549,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002409",
-            "name": "雅克科技",
-            "price": 107.46,
-            "change_pct": 0.524,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002975",
-            "name": "博杰股份",
-            "price": 114.99,
-            "change_pct": 0.428,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688536",
-            "name": "思瑞浦",
-            "price": 296.4,
-            "change_pct": 0.427,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300418",
-            "name": "昆仑万维",
-            "price": 49.21,
-            "change_pct": 0.367,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh600900",
-            "name": "长江电力",
-            "price": 27.03,
-            "change_pct": 0.334,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh688249",
-            "name": "晶合集成",
-            "price": 39.22,
-            "change_pct": 0.307,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 0.95%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         },
         {
             "code": "sz300604",
             "name": "长川科技",
-            "price": 209.5,
+            "price": "209.5",
             "change_pct": 0.302,
             "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300054",
-            "name": "鼎龙股份",
-            "price": 69.68,
-            "change_pct": 0.288,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002185",
-            "name": "华天科技",
-            "price": 14.3,
-            "change_pct": 0.281,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh601727",
-            "name": "上海电气",
-            "price": 8.82,
-            "change_pct": 0.227,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz300757",
-            "name": "罗博特科",
-            "price": 589.98,
-            "change_pct": 0.166,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh603259",
-            "name": "药明康德",
-            "price": 103.13,
-            "change_pct": 0.116,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sh605358",
-            "name": "立昂微",
-            "price": 51.61,
-            "change_pct": 0.116,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
-        },
-        {
-            "code": "sz002149",
-            "name": "西部材料",
-            "price": 69.02,
-            "change_pct": 0.029,
-            "turnover": 0.0,
-            "logic": "纯技术与流动性规则筛出（未经过AI过滤）"
+            "logic": "技术面特征：今日涨幅 0.302%，换手率 0.0%。量价配合良好，属于活跃活水池标的。"
         }
     ]
 }

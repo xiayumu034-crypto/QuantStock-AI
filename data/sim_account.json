@@ -1,5 +1,5 @@
 {
-    "auto_trade": true,
+    "auto_trade": false,
     "cash": 451.4053100000092,
     "holdings": {
         "002179": {
