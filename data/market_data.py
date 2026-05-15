@@ -232,48 +232,63 @@ class StockDataAPI:
 
         closes = [float(d['close']) for d in data]
         volumes = [float(d['volume']) for d in data]
-        sma5 = np.mean(closes[-5:])
-        sma20 = np.mean(closes[-20:]) if len(closes) >= 20 else sma5
-        ema12 = pd.Series(closes).ewm(span=12).mean().iloc[-1]
-        ema26 = pd.Series(closes).ewm(span=26).mean().iloc[-1]
-        dif = ema12 - ema26
-        deltas = np.diff(closes[-15:])
-        gains = np.mean(deltas[deltas > 0]) if any(deltas > 0) else 0
-        losses = -np.mean(deltas[deltas < 0]) if any(deltas < 0) else 0.001
-        rsi = 100 - (100 / (1 + gains / losses))
-
-        signals, strength = [], 0
+        
         current = closes[-1]
-        if current > sma20:
-            signals.append("价格在均线上方 → 向上趋势"); strength += 1
-        else:
-            signals.append("价格在均线下方 → 向下趋势"); strength -= 1
-        if dif > 0:
-            signals.append("MACD金叉区域 → 多头"); strength += 1
-        else:
-            signals.append("MACD死叉区域 → 空头"); strength -= 1
-        if rsi < 30:
-            signals.append("RSI超卖 → 反弹信号"); strength += 2
-        elif rsi > 70:
-            signals.append("RSI超买 → 回调风险"); strength -= 2
-        else:
-            signals.append(f"RSI={rsi:.0f} → 中性区域")
-
-        # ---------------- 动能与趋势修正 (Trend Bias) ----------------
-        # 抓取日线级别的实时涨跌幅
+        current_vol = volumes[-1]
+        avg_vol = np.mean(volumes[-20:]) if len(volumes) >= 20 else np.mean(volumes)
+        
+        # 抓取日线级别的实时涨跌幅与日内数据
         rt_info = self.get_realtime_data(stock_code)
+        vwap = current
+        high_p = current
+        low_p = current
+        change_pct = 0
         if rt_info['status'] == 'success':
+            if rt_info.get('volume', 0) > 0:
+                vwap = rt_info.get('amount', 0) / rt_info.get('volume', 1)
+            high_p = rt_info.get('high', current)
+            low_p = rt_info.get('low', current)
             change_pct = rt_info.get('change_percent', 0)
-            if change_pct > 2.0:
-                signals.append(f"日线强劲 (+{change_pct}%) → 动能占优"); strength += 1
-            elif change_pct < -2.0:
-                signals.append(f"日线走弱 ({change_pct}%) → 抛压沉重"); strength -= 1
             
-            # 价格与开盘价对比
-            if current > rt_info.get('open', 0):
-                signals.append("处于分时均线上方 → 日内多头"); strength += 0.5
-            else:
-                signals.append("处于分时均线下方 → 日内空头"); strength -= 0.5
+        signals, strength = [], 0
+        
+        # 1. 核心护城河：分时均价 (VWAP) 支撑
+        if current > vwap:
+            signals.append("价格运行在均价线上方 → 资金护盘"); strength += 2
+        else:
+            signals.append("价格跌破分时均线 → 弱势震荡"); strength -= 1
+            
+        # 2. 游资洗盘甄别器 (长下影线)
+        shadow_ratio = 0
+        if high_p > low_p:
+            shadow_ratio = (current - low_p) / (high_p - low_p)
+            
+        if shadow_ratio > 0.6:
+            signals.append(f"探底回升 (下影线比例 {shadow_ratio*100:.0f}%) → 主力强洗盘"); strength += 3
+            
+        # 3. 量价背离分析 (缩量下杀大概率假摔)
+        if current < closes[-2] if len(closes)>1 else current:
+            if current_vol < avg_vol * 0.7:
+                signals.append("无量下跌 (缩量 >30%) → 恐慌抛盘/假摔"); strength += 1.5
+            elif current_vol > avg_vol * 1.5:
+                signals.append("放量下杀 → 主力真出货"); strength -= 2
+        elif current > closes[-2] if len(closes)>1 else current:
+            if current_vol > avg_vol * 1.5:
+                signals.append("放量上攻 → 真实拉升"); strength += 2
+
+        # 4. 日内趋势
+        if change_pct > 2.0:
+            signals.append(f"日线强劲 (+{change_pct}%) → 动能占优"); strength += 1
+        elif change_pct < -2.0 and shadow_ratio < 0.6:
+            # 如果跌幅大，但不是长下影线，才是真抛压
+            signals.append(f"日线走弱 ({change_pct}%) → 抛压沉重"); strength -= 1
+
+        # 传统指标极度降权处理 (仅作参考)
+        sma20 = np.mean(closes[-20:]) if len(closes) >= 20 else current
+        if current < sma20 and shadow_ratio < 0.5:
+            signals.append("跌破20均线"); strength -= 0.5
+        elif current > sma20:
+            signals.append("20均线上方"); strength += 0.5
 
         # ---------------- 补充前端所需的全部关键指标 ----------------
         closes_s = pd.Series(closes)
