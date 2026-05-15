@@ -173,7 +173,7 @@ def get_watchlist():
             sorted_preds = sorted([
                 {"code": k, **v} for k, v in preds.items()
                 if v.get("predicted_return", 0) > 0 and 
-                   not any(x in v.get("name", "").upper() for x in ["ST", "*ST", "退"])
+                   not any(x in v.get("name", "").upper() for x in ["ST", "*ST", "退", "S"])
             ], key=lambda x: x.get("predicted_return", 0), reverse=True)
             
             from data.market_data import StockDataAPI
@@ -214,7 +214,7 @@ def get_watchlist():
                 
                 pure_code = leader_code[2:] if leader_code[:2] in ['sh', 'sz', 'bj'] else leader_code
                 
-                if 2.0 < leader_change < 19.5 and not any(x in leader_name.upper() for x in ["ST", "*ST", "退"]):
+                if 2.0 < leader_change < 19.5 and not any(x in leader_name.upper() for x in ["ST", "*ST", "退", "S"]):
                     if not any(w["code"] == pure_code for w in watchlist):
                         is_chuang = pure_code.startswith('30') or pure_code.startswith('68')
                         if leader_change >= 10.0 and is_chuang:
@@ -693,7 +693,7 @@ def sim_step():
         # --- 新增全局黑名单：严禁买入 ST、*ST 和退市股 ---
         # 必须综合 event_driven_info, stock_names 和 prices 中的名字，防止某个数据源遗漏 ST 标识
         stock_name = event_driven_info.get(code, {}).get("name", stock_names.get(code, prices[code].get("name", "")))
-        if any(x in stock_name.upper() for x in ["ST", "*ST", "退"]):
+        if any(x in stock_name.upper() for x in ["ST", "*ST", "退", "S"]):
             logging.info(f"Blacklist filter blocked buying {stock_name} ({code})")
             continue
             
