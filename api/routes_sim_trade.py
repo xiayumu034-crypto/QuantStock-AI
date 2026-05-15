@@ -178,10 +178,12 @@ def get_watchlist():
             ], key=lambda x: x.get("predicted_return", 0), reverse=True)
             
             for p in sorted_preds[:3]:
+                # 增加深度逻辑描述
+                logic_detail = f"【入选逻辑】：底层 V19 (LightGBM 5模型集成) 发出强看涨信号。<br>【数据支撑】：盘前特征计算其胜率高达 {p.get('up_probability',50):.1f}%，预期绝对收益 {p.get('predicted_return',0)*100:.1f}%。<br>【风控判定】：已通过基础 ST 与退市股过滤黑名单，量价齐升概率大。"
                 watchlist.append({
                     "code": p["code"],
                     "name": p.get("name", p["code"]),
-                    "reason": f"V19 强共振 (预测收益 +{p.get('predicted_return',0)*100:.1f}%, 胜率 {p.get('up_probability',50):.1f}%)",
+                    "reason": logic_detail,
                     "type": "ml"
                 })
     except Exception as e:
@@ -204,10 +206,11 @@ def get_watchlist():
                 
                 if 2.0 < leader_change < 19.5 and not any(x in leader_name.upper() for x in ["ST", "*ST", "退"]):
                     if not any(w["code"] == pure_code for w in watchlist):
+                        logic_detail = f"【入选逻辑】：事件驱动/游资热点打板模型触发。<br>【动能追踪】：今日资金大幅流入 [{sector_name}] 板块，且该股作为日内龙头已领涨 {leader_change:.1f}%。<br>【交易博弈】：由于其涨幅处于 2% - 19.5% 之间，未彻底封死涨停，存在上车博弈涨停溢价的机会。"
                         watchlist.append({
                             "code": pure_code,
                             "name": leader_name,
-                            "reason": f"[{sector_name}] 板块龙头 (盘中领涨 {leader_change:.1f}%)",
+                            "reason": logic_detail,
                             "type": "event"
                         })
     except Exception as e:

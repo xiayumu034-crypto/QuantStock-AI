@@ -1069,7 +1069,7 @@
             const container = document.getElementById('watchlistContent');
             container.innerHTML = '<div class="text-center opacity-50 my-4"><i class="fas fa-spinner fa-spin"></i> 正在加载潜力标的...</div>';
             
-            fetch('/api/sim_trade/watchlist')
+            fetch('/api/sim/watchlist')
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'success' && data.data.length > 0) {
