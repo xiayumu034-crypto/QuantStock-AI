@@ -1077,10 +1077,17 @@
                         data.data.forEach(item => {
                             const icon = item.type === 'ml' ? '🤖' : '🔥';
                             const color = item.type === 'ml' ? '#a7f3d0' : '#fca5a5';
+                            const changePct = item.change_pct || 0;
+                            const pctColor = changePct >= 0 ? '#ef4444' : '#10b981';
+                            const pctStr = changePct > 0 ? `+${changePct.toFixed(2)}%` : `${changePct.toFixed(2)}%`;
+                            
                             html += `
                                 <div class="p-2 mb-2" style="background: rgba(255,255,255,0.05); border-left: 3px solid ${color}; border-radius: 4px;">
-                                    <div class="d-flex justify-content-between">
-                                        <strong style="color: ${color};">${icon} ${item.name} <span style="font-size:0.75rem; color:#9ca3af;">(${item.code})</span></strong>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong style="color: ${color};">${icon} ${item.name} 
+                                            <span style="font-size:0.75rem; color:#9ca3af; margin-right: 5px;">(${item.code})</span>
+                                            <span style="font-size:0.8rem; color:${pctColor}; font-weight:bold; padding: 2px 4px; background: rgba(0,0,0,0.2); border-radius: 3px;">${pctStr}</span>
+                                        </strong>
                                         <button class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.65rem;" onclick="analyzeFundamentals('${item.code}', '${item.name}')">诊断</button>
                                     </div>
                                     <div class="mt-1" style="font-size: 0.75rem; color: #d1d5db;">${item.reason}</div>

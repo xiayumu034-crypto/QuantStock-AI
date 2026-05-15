@@ -176,14 +176,26 @@ def get_watchlist():
                    not any(x in v.get("name", "").upper() for x in ["ST", "*ST", "退"])
             ], key=lambda x: x.get("predicted_return", 0), reverse=True)
             
+            from data.market_data import StockDataAPI
+            api_client = StockDataAPI()
             for p in sorted_preds[:3]:
                 # 增加深度逻辑描述
                 logic_detail = f"【入选逻辑】：底层 V19 (LightGBM 5模型集成) 发出强看涨信号。<br>【数据支撑】：盘前特征计算其胜率高达 {p.get('up_probability',50):.1f}%，预期绝对收益 {p.get('predicted_return',0)*100:.1f}%。<br>【风控判定】：已通过基础 ST 与退市股过滤黑名单，量价齐升概率大。"
+                
+                change_pct = 0.0
+                try:
+                    rt_data = api_client.get_realtime_data(p["code"])
+                    if rt_data and "change_percent" in rt_data:
+                        change_pct = rt_data["change_percent"]
+                except Exception:
+                    pass
+
                 watchlist.append({
                     "code": p["code"],
                     "name": p.get("name", p["code"]),
                     "reason": logic_detail,
-                    "type": "ml"
+                    "type": "ml",
+                    "change_pct": change_pct
                 })
     except Exception as e:
         logging.error(f"Error getting ML watchlist: {e}")
@@ -209,7 +221,8 @@ def get_watchlist():
                             "code": pure_code,
                             "name": leader_name,
                             "reason": logic_detail,
-                            "type": "event"
+                            "type": "event",
+                            "change_pct": leader_change
                         })
     except Exception as e:
         pass
