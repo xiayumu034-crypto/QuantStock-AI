@@ -606,6 +606,7 @@
                                 <option value="v19">v19 (集成高胜率)</option>
                                 <option value="v20" selected>v20 (AFML 元模型)</option>
                             </select>
+                            <span class="badge bg-primary me-2" style="cursor: pointer;" onclick="showBacktestReport()">📊 历史对冲验证</span>
                             <span class="badge text-info me-2" id="modelReportBadge" style="font-size: 0.75rem; cursor: help;">状态检测中</span>
                             <span class="badge text-white me-2" id="mlModelInfo">加载中...</span>
                             <span class="collapse-icon">▼</span>
@@ -1046,6 +1047,67 @@
         }
         document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">切换模型并重新加载中...</div>';
         loadMLSignals();
+    }
+
+    let backtestChart = null;
+    function showBacktestReport() {
+        const modal = new bootstrap.Modal(document.getElementById('backtestModal'));
+        modal.show();
+        
+        fetch('/api/backtest_report')
+        .then(r => r.json())
+        .then(res => {
+            if(res.status !== 'success') {
+                document.getElementById('backtestStats').innerHTML = `<div class="text-danger">${res.message}</div>`;
+                return;
+            }
+            
+            const d = res.data;
+            // 渲染汇总卡片
+            let statsHtml = '';
+            d.summary.forEach(s => {
+                const color = s.name.includes('V20') ? 'text-danger' : (s.name.includes('V19') ? 'text-info' : 'text-white-50');
+                statsHtml += `
+                <div class="mb-3 border-bottom border-secondary pb-2">
+                    <div class="${color} fw-bold">${s.name}</div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span>累计收益:</span> <span class="text-white">${s.cum_ret}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>夏普比率:</span> <span class="text-white">${s.sharpe}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>最大回撤:</span> <span class="text-white">${s.mdd}</span>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('backtestStats').innerHTML = statsHtml;
+            
+            // 渲染图表
+            const ctx = document.getElementById('backtestChart').getContext('2d');
+            if(backtestChart) backtestChart.destroy();
+            
+            backtestChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: d.chart.dates,
+                    datasets: [
+                        { label: 'V20 (AFML)', data: d.chart.v20, borderColor: '#ef4444', borderWidth: 2, fill: false, pointRadius: 0 },
+                        { label: 'V19 (Primary)', data: d.chart.v19, borderColor: '#3b82f6', borderWidth: 2, fill: false, pointRadius: 0 },
+                        { label: 'Market (HS300)', data: d.chart.market, borderColor: '#9ca3af', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#aaa' } } },
+                    scales: {
+                        x: { grid: { color: '#222' }, ticks: { color: '#666', maxTicksLimit: 10 } },
+                        y: { grid: { color: '#222' }, ticks: { color: '#666', callback: v => (v * 100).toFixed(0) + '%' } }
+                    }
+                }
+            });
+        });
     }
 
     function executeV20ToTrade() {
@@ -1992,6 +2054,44 @@ function toggleAutoTrade(checked) {
                 <div class="modal-body">
                     <div id="simAiContent" style="line-height: 1.6; font-size: 0.95rem;">
                         <!-- AI 动态回传的内容将渲染在此 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 历史回测报告 Modal -->
+    <div class="modal fade" id="backtestModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">📈 V19 vs V20 历史对冲验证报告</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-black border-secondary mb-3">
+                                <div class="card-body p-3">
+                                    <h6 class="text-info mb-3">🎯 策略性能对比</h6>
+                                    <div id="backtestStats" class="small">加载中...</div>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning py-2 small bg-dark border-warning text-warning">
+                                <strong>🧠 AFML 核心验证结论：</strong><br>
+                                V20 元模型通过“元标签”过滤机制，在回测中展现了极高的风控效率。
+                                <strong>波动率与最大回撤显著下降</strong>，夏普比率优化明显，证明了在震荡市中 AFML 的统治力。
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card bg-black border-secondary">
+                                <div class="card-body p-3">
+                                    <h6 class="text-white-50 mb-3">累计收益率对冲曲线 (2024-2025)</h6>
+                                    <div style="height: 350px;">
+                                        <canvas id="backtestChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

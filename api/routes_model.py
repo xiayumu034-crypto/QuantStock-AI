@@ -12,6 +12,14 @@ stock_api = StockDataAPI()
 TRADE_LOGS_FILE = "model_output/trade_logs.json"
 SAMPLE_TRADE_LOGS_FILE = "model_output/sample_trade_logs.json"
 
+@model_bp.route('/api/backtest_report')
+def get_backtest_report():
+    report_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "model_output", "backtest_report_v20.json")
+    if os.path.exists(report_path):
+        with open(report_path, "r", encoding="utf-8") as f:
+            return jsonify({"status": "success", "data": json.load(f)})
+    return jsonify({"status": "error", "message": "回测报告尚未生成"})
+
 @model_bp.route('/api/model_report')
 def get_model_report():
     version = request.args.get('version', 'v18')
