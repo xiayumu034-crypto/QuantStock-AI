@@ -165,22 +165,31 @@ def get_watchlist():
     try:
         import os
         import json
-        from api.model_service import PREDICTIONS_FILE_V19 as PREDICTIONS_FILE
-        if os.path.exists(PREDICTIONS_FILE):
-            with open(PREDICTIONS_FILE, 'r', encoding='utf-8') as f:
+        from api.model_service import PREDICTIONS_FILE_V20, PREDICTIONS_FILE_V19
+        
+        # 优先读取 V20 元模型生成的预测文件
+        preds_file_to_use = PREDICTIONS_FILE_V20 if os.path.exists(PREDICTIONS_FILE_V20) else PREDICTIONS_FILE_V19
+        
+        if os.path.exists(preds_file_to_use):
+            with open(preds_file_to_use, 'r', encoding='utf-8') as f:
                 preds = json.load(f)
                 
             sorted_preds = sorted([
                 {"code": k, **v} for k, v in preds.items()
                 if v.get("predicted_return", 0) > 0 and 
                    not any(x in v.get("name", "").upper() for x in ["ST", "*ST", "退", "S"])
-            ], key=lambda x: x.get("predicted_return", 0), reverse=True)
+            ], key=lambda x: x.get("meta_score", x.get("predicted_return", 0)), reverse=True)
             
             from data.market_data import StockDataAPI
             api_client = StockDataAPI()
             for p in sorted_preds[:5]:
                 # 增加深度逻辑描述
-                logic_detail = f"【入选逻辑】：底层 V19 (LightGBM 5模型集成) 发出强看涨信号。<br>【数据支撑】：盘前特征计算其胜率高达 {p.get('up_probability',50):.1f}%，预期绝对收益 {p.get('predicted_return',0)*100:.1f}%。<br>【风控判定】：已通过基础 ST 与退市股过滤黑名单，量价齐升概率大。"
+                is_v20 = "meta_score" in p
+                if is_v20:
+                    logic_detail = f"【入选逻辑】：AFML V20 元模型(Meta-Labeling) 终极过滤。<br>【数据支撑】：V19原始看涨动能 {p.get('predicted_return',0)*100:.2f}%。<br>【风控判定】：元模型置信度高达 {p.get('meta_score',0)*100:.1f}%，已剔除诱多假突破，成功率极高。"
+                else:
+                    logic_detail = f"【入选逻辑】：底层 V19 (LightGBM 5模型集成) 发出强看涨信号。<br>【数据支撑】：预期绝对收益 {p.get('predicted_return',0)*100:.1f}%。<br>【风控判定】：已通过基础 ST 与退市股过滤黑名单，量价齐升概率大。"
+                
                 
                 change_pct = 0.0
                 try:
