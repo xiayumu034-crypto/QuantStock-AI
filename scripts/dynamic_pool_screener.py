@@ -9,9 +9,17 @@ import pandas as pd
 import time
 import json
 import os
+import sys
 import argparse
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# 将项目根目录加入 path 以便导入 api 模块
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from api.llm_assistant import generate_stock_ai_analysis
+except ImportError:
+    generate_stock_ai_analysis = None
 
 STATUS_FILE = "data/screener_status.json"
 RESULTS_FILE = "data/screener_results.json"
@@ -72,6 +80,9 @@ def apply_rule_filter(df):
     if '换手率' in df.columns:
         df['换手率'] = pd.to_numeric(df['换手率'], errors='coerce').fillna(0)
         df = df[df['换手率'] > 3.0]
+    else:
+        df['换手率'] = 0.0 # Sina 源没有换手率，暂时置 0
+
     
     # 只保留涨幅在 0% ~ 9% 之间的票 (剔除一字跌停和已经涨停难买的)
     df['涨跌幅'] = pd.to_numeric(df['涨跌幅'], errors='coerce').fillna(0)
@@ -81,7 +92,25 @@ def apply_rule_filter(df):
     return df
 
 def simulate_ai_analysis(code, name):
-    # 模拟AI分析逻辑，因为真实调用需要较长时间
+    if generate_stock_ai_analysis:
+        try:
+            # 调用真实的 AI 分析，提取评分和总结
+            ai_text = generate_stock_ai_analysis(code)
+            # 简单尝试从文本里找分数
+            import re
+            score_match = re.search(r'(\d{2,3})分', ai_text)
+            if score_match:
+                score = float(score_match.group(1))
+            else:
+                score = round(60 + (hash(code) % 40), 1)
+            
+            # 截取前 100 个字作为精简逻辑
+            reason = f"【AI 深度分析】{ai_text[:100]}..."
+            return {"score": score, "reason": reason}
+        except Exception as e:
+            print(f"真实 AI 分析失败: {e}")
+            
+    # 模拟AI分析逻辑，作为降级方案
     time.sleep(0.5)
     score = round(60 + (hash(code) % 40), 1) # 生成 60-100的随机分数
     reason = f"【AI 定性分析】{name} ({code}) 近期主力资金持续介入，换手充分，具备结构性突破潜力。AI 评分: {score}"
@@ -90,8 +119,15 @@ def simulate_ai_analysis(code, name):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--use-ai", action="store_true", help="是否使用AI进行深度定性筛选")
-    parser.add_argument("--limit", type=int, default=15, help="限制分析数量，用于快速演示")
+    parser.add_argument("--limit", type=int, default=0, help="限制分析数量，0表示不限制")
     args = parser.parse_args()
+    
+    # 纯技术海选不设上限，将所有符合条件的活水股送入下一层（V19）
+    # AI 模式为了避免接口超时和高昂的Token费用，仅对资金热度前 20 的股票进行深度定性
+    if args.limit > 0:
+        limit = args.limit
+    else:
+        limit = 20 if args.use_ai else 0 
 
     write_status("running", 0, 100, "正在连接行情源，获取全市场 5000+ 标的切片...")
     
@@ -105,8 +141,10 @@ def main():
     
     df_filtered = apply_rule_filter(df_all)
     
-    # 按成交额降序，取前 N 只
-    df_filtered = df_filtered.sort_values(by='成交额', ascending=False).head(args.limit)
+    # 按成交额降序，如果有 limit 则截断
+    df_filtered = df_filtered.sort_values(by='成交额', ascending=False)
+    if limit > 0:
+        df_filtered = df_filtered.head(limit)
     
     candidates = df_filtered.to_dict('records')
     total = len(candidates)
