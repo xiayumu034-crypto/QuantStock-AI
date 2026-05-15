@@ -127,6 +127,7 @@ def ai_analyze_stock(code):
     # 1. 抓取真实基本面数据
     try:
         import akshare as ak
+        import pandas as pd
         df_fin = ak.stock_financial_abstract(symbol=clean_code)
         
         pe_ratio = "未知"
@@ -174,6 +175,8 @@ def ai_analyze_stock(code):
                 status = "健康"
                 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         pe_ratio = "获取失败"
         pb_ratio = "获取失败"
         rev_growth = "--"
@@ -186,6 +189,7 @@ def ai_analyze_stock(code):
         from .llm_assistant import get_llm_client
         from openai import OpenAI
         import json
+        import re
         
         api_key, base_url, model = get_llm_client()
         client = OpenAI(api_key=api_key, base_url=base_url)
@@ -199,7 +203,7 @@ def ai_analyze_stock(code):
     "expected_open": "次日预期开盘说明",
     "ai_conclusion": "50字以内的深度一句话结论，需结合A股博弈逻辑"
 }}
-不要输出任何Markdown，只输出JSON。"""
+绝不输出任何多余的话，直接输出用花括号包裹的 JSON。"""
         
         response = client.chat.completions.create(
             model=model,
@@ -208,14 +212,20 @@ def ai_analyze_stock(code):
             max_tokens=500
         )
         llm_text = response.choices[0].message.content.strip()
-        if llm_text.startswith("```json"):
-            llm_text = llm_text[7:-3]
-        elif llm_text.startswith("```"):
-            llm_text = llm_text[3:-3]
+        
+        # 强制正则提取 JSON
+        json_match = re.search(r'\{.*\}', llm_text, re.DOTALL)
+        if json_match:
+            llm_text = json_match.group(0)
+            llm_data = json.loads(llm_text)
+        else:
+            raise ValueError("LLM 未返回有效 JSON 格式")
             
-        import json
-        llm_data = json.loads(llm_text)
     except Exception as e:
+        import traceback
+        print("====== LLM API FAILED ======")
+        traceback.print_exc()
+        print("============================")
         llm_data = {
             "action": "震荡观望",
             "support_level": "近期低点存在一定支撑",

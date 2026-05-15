@@ -152,7 +152,6 @@ def calc_dynamic_sl_tp(code):
             take_profit = round(close_prices[-1] + 2.5 * atr, 2)
             return stop_loss, take_profit
     except Exception as e:
-        import logging
         logging.error(f"Error calculating Half-Life SL/TP for {code}: {e}")
     return None, None
 
@@ -187,7 +186,6 @@ def get_watchlist():
                     "type": "ml"
                 })
     except Exception as e:
-        import logging
         logging.error(f"Error getting ML watchlist: {e}")
 
     # 2. 获取事件驱动/板块龙头
@@ -581,7 +579,6 @@ def sim_step():
             shadow_ratio = (pos["current_price"] - low_p) / (high_p - low_p) if high_p > low_p else 0
             
             if shadow_ratio > 0.6:
-                import logging
                 logging.info(f"Wash-out detected for {code}: Long lower shadow. Ignoring stop loss temporarily.")
                 pos["sl_tp_reason"] = "主力疑似洗盘 (长下影线)，暂缓止损"
             else:
