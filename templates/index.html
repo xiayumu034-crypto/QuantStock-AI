@@ -570,6 +570,16 @@
                                     <tbody id="v0TableBody"></tbody>
                                 </table>
                             </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 border-top border-secondary pt-3" id="v0NextStep" style="display: none !important;">
+                                <span class="text-info small">第一层海选已完成。活水股已装载，可以进行下一步高维量化推演：</span>
+                                <button class="btn btn-sm btn-primary" id="btnRunPipeline" onclick="startPipeline()">
+                                    🚀 启动 V19 + V20 深度联合推演
+                                </button>
+                            </div>
+                            <div class="progress mt-2 bg-dark" style="height: 10px; display: none;" id="pipeProgressContainer">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="pipeProgressBar" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                            <div class="text-success small mt-1" id="pipeProgressMsg" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
@@ -1740,6 +1750,51 @@ function toggleAutoTrade(checked) {
                     document.getElementById('v0ProgressContainer').style.display = 'none';
                     document.getElementById('v0ProgressMsg').style.display = 'none';
                     renderV0Table(d.data);
+                    document.getElementById('v0NextStep').style.setProperty('display', 'flex', 'important');
+                }
+            }
+        }).catch(e => console.error(e));
+    }
+
+    let pipePollInterval = null;
+    function startPipeline() {
+        if(pipePollInterval) clearInterval(pipePollInterval);
+        document.getElementById('pipeProgressContainer').style.display = 'flex';
+        document.getElementById('pipeProgressMsg').style.display = 'block';
+        document.getElementById('btnRunPipeline').disabled = true;
+        
+        fetch('/api/pipeline/start', { method: 'POST' })
+        .then(r => r.json()).then(d => {
+            pipePollInterval = setInterval(pollPipelineStatus, 2000);
+        });
+    }
+
+    function pollPipelineStatus() {
+        fetch('/api/pipeline/status')
+        .then(r => r.json())
+        .then(res => {
+            if(res.status === 'success') {
+                const d = res.data;
+                document.getElementById('pipeProgressBar').style.width = d.progress + '%';
+                document.getElementById('pipeProgressMsg').innerText = d.message;
+                
+                if(d.status === 'error') {
+                    clearInterval(pipePollInterval);
+                    document.getElementById('pipeProgressBar').className = 'progress-bar bg-danger';
+                    document.getElementById('btnRunPipeline').disabled = false;
+                }
+                else if(d.status === 'finished') {
+                    clearInterval(pipePollInterval);
+                    document.getElementById('pipeProgressBar').className = 'progress-bar bg-success';
+                    document.getElementById('btnRunPipeline').disabled = false;
+                    setTimeout(() => {
+                        // 强制折叠 V0 并展开 V20，并刷新数据
+                        document.querySelector('[data-bs-target="#collapseV0"]').click();
+                        document.querySelector('[data-bs-target="#collapseML"]').click();
+                        document.getElementById('modelVersionSelect').value = 'v20';
+                        switchModelVersion('v20');
+                        fetchPredictions(); // 刷新潜力池
+                    }, 2000);
                 }
             }
         }).catch(e => console.error(e));

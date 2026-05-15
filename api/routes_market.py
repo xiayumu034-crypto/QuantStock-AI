@@ -36,6 +36,24 @@ def get_screener_status():
                 return jsonify({"status": "error", "message": str(e)})
     return jsonify({"status": "idle", "data": {"status": "idle", "message": "尚未启动", "progress": 0, "total": 100}})
 
+@market_bp.route('/api/pipeline/start', methods=['POST'])
+def start_pipeline():
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "run_pipeline.py")
+    subprocess.Popen(["uv", "run", "python", script_path])
+    return jsonify({"status": "success", "message": "量化联合推演流水线已在后台启动"})
+
+@market_bp.route('/api/pipeline/status')
+def get_pipeline_status():
+    status_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "pipeline_status.json")
+    if os.path.exists(status_file):
+        with open(status_file, "r", encoding="utf-8") as f:
+            try:
+                data = json.load(f)
+                return jsonify({"status": "success", "data": data})
+            except Exception as e:
+                return jsonify({"status": "error", "message": str(e)})
+    return jsonify({"status": "idle", "data": {"status": "idle", "message": "尚未启动", "progress": 0}})
+
 @market_bp.route('/')
 def index():
     return render_template('index.html')
