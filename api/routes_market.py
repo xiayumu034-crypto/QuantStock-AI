@@ -205,27 +205,44 @@ def ai_analyze_stock(code):
 }}
 绝不输出任何多余的话，直接输出用花括号包裹的 JSON。"""
         
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-            max_tokens=500
-        )
-        llm_text = response.choices[0].message.content.strip()
-        
-        # 强制正则提取 JSON
-        json_match = re.search(r'\{.*\}', llm_text, re.DOTALL)
-        if json_match:
-            llm_text = json_match.group(0)
-            llm_data = json.loads(llm_text)
-        else:
-            raise ValueError("LLM 未返回有效 JSON 格式")
+        import time
+        llm_data = None
+        for attempt in range(3):
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7,
+                    max_tokens=500
+                )
+                llm_text = response.choices[0].message.content.strip()
+                
+                # 尝试修复截断的 JSON (如果没有结束的右括号)
+                if '{' in llm_text and '}' not in llm_text:
+                    llm_text += '"}'
+                    
+                # 强制正则提取 JSON
+                json_match = re.search(r'\{.*\}', llm_text, re.DOTALL)
+                if json_match:
+                    parsed_text = json_match.group(0)
+                    # 替换掉可能导致 JSON 解析失败的换行符
+                    parsed_text = parsed_text.replace('\n', '')
+                    llm_data = json.loads(parsed_text)
+                    break # 成功则跳出循环
+                else:
+                    raise ValueError(f"No JSON matched. Raw: {repr(llm_text)}")
+            except Exception as e:
+                print(f"LLM Call Attempt {attempt+1} failed: {e}")
+                if attempt == 2:
+                    raise e
+                time.sleep(1)
             
     except Exception as e:
         import traceback
-        print("====== LLM API FAILED ======")
-        traceback.print_exc()
-        print("============================")
+        with open("llm_error.log", "a", encoding="utf-8") as err_f:
+            err_f.write("====== LLM API FAILED ======\n")
+            traceback.print_exc(file=err_f)
+            err_f.write("============================\n")
         llm_data = {
             "action": "震荡观望",
             "support_level": "近期低点存在一定支撑",
