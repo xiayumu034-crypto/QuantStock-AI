@@ -162,14 +162,20 @@ def get_ml_predict_all():
     predictions, is_sample, meta = read_daily_predictions(version)
     
     # v18/v19 没有预测数据时，直接返回空列表和提示，不要 fallback 给 v17 的伪装
-    if version in ("v18", "v19", "v19_ensemble") and not predictions:
+    if version in ("v18", "v19", "v19_ensemble", "v20") and not predictions:
+        model_name_map = {
+            "v18": "Qlib v18",
+            "v19": "v19 Ensemble",
+            "v19_ensemble": "v19 Ensemble",
+            "v20": "AFML v20"
+        }
         return jsonify({
             "status": "success",
             "meta": {
-                "model": "v19 Ensemble" if "19" in version else "Qlib v18",
+                "model": model_name_map.get(version, version),
                 "stocks": 0,
                 "sample": False,
-                "warning": f"{version} 模型预测数据不存在，请在服务器上运行对应的训练脚本以生成预测池。"
+                "warning": f"{version} 模型预测数据不存在，请在服务器上运行对应的训练或推理脚本。"
             },
             "data": []
         })
@@ -183,7 +189,7 @@ def get_ml_predict_all():
 
     results = []
     all_returns = [pred.get("predicted_return", 0) for pred in predictions.values()]
-    if all_returns and version in ("v18", "v19"):
+    if all_returns and version in ("v18", "v19", "v19_ensemble", "v20"):
         all_returns_sorted = sorted(all_returns)
         n = len(all_returns_sorted)
         p90 = all_returns_sorted[int(n * 0.9)] if n > 0 else 0.015
@@ -199,22 +205,32 @@ def get_ml_predict_all():
         pred_val = pred.get("predicted_return", 0)
         momentum = pred.get("momentum", 0.8) # 默认动量
         
-        # 动态分位数融合算法（适配不同模型的数值缩放）
-        signal = "中性"
-        if pred_val >= p90:
-            signal = "强烈看涨" if momentum > 0.5 else "看涨"
-        elif pred_val >= p70:
-            signal = "看涨"
-        elif pred_val <= p30:
-            signal = "看跌"
+        # 对于 V20 元模型，直接通过置信度(meta_score)判别信号
+        if version == "v20":
+            meta_score = pred.get("meta_score", 0)
+            if meta_score >= 0.6:
+                signal = "强烈看涨"
+            elif meta_score >= 0.4:
+                signal = "看涨中"
+            else:
+                signal = "中性"
+        else:
+            # 动态分位数融合算法（适配不同模型的数值缩放）
+            signal = "中性"
+            if pred_val >= p90:
+                signal = "强烈看涨" if momentum > 0.5 else "看涨"
+            elif pred_val >= p70:
+                signal = "看涨"
+            elif pred_val <= p30:
+                signal = "看跌"
             
-        # 对于 v19 (分类概率)，将返回概率作为 predicted_return，如果是回归则保留收益率
         results.append({
             "code": code,
             "name": name,
-            "predicted_return": pred_val,
+            "predicted_return": pred.get("meta_score", pred_val) if version == "v20" else pred_val, # 前端按这个排序
+            "raw_return": pred_val,
             "signal": signal,
-            "confidence": "高" if pred_val >= p90 else "中",
+            "confidence": "高" if signal == "强烈看涨" else "中",
             "relative_strength": {"momentum": momentum}
         })
     

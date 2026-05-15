@@ -951,6 +951,7 @@
         const totalPages = Math.ceil(dataToRender.length / mlPageSize);
 
         const generateCardHtml = (s) => {
+            const isV20 = document.getElementById('modelVersionSelect').value === 'v20';
             const icon = s.predicted_return > 0.02 ? '🔥' : s.predicted_return > 0 ? '📈' : s.predicted_return < 0 ? '📉' : '➡️';
             const rsMom = s.relative_strength ? s.relative_strength.momentum : 0;
             const momIcon = rsMom > 0.5 ? '↑' : rsMom < -0.5 ? '↓' : '→';
@@ -960,14 +961,17 @@
             if (s.signal.includes('看涨')) badgeClass = 'bg-danger';
             else if (s.signal === '中性') badgeClass = 'bg-warning text-dark';
             else if (s.signal === '看跌') badgeClass = 'bg-success';
+            
+            // 显示文本: v20 显示胜率，其他显示预期收益率
+            let showText = isV20 ? `${s.predicted_return > 0 ? '+' : ''}${(s.predicted_return * 100).toFixed(1)}% 胜率` : `${s.predicted_return > 0 ? '+' : ''}${(s.predicted_return * 100).toFixed(2)}%`;
 
             return `
             <div class="col">
                 <div class="ml-stock text-center py-3">
                     <div class="name h5 mb-2">${s.name}</div>
-                    <div class="pred h3 mb-2">${s.predicted_return > 0 ? '+' : ''}${(s.predicted_return * 100).toFixed(2)}%</div>
-                    <div class="meta text-white-50 mb-2 small">${icon} 动量${momIcon}${rsMom > 0 ? '+' : ''}${rsMom.toFixed(1)}</div>
-                    <span class="badge ${badgeClass} px-3" style="font-weight:bold">${s.signal}${s.confidence}</span>
+                    <div class="pred h3 mb-2">${showText}</div>
+                    <div class="meta text-white-50 mb-2 small">${isV20 ? '🛡️ AFML元阻击' : icon + ' 动量' + momIcon + (rsMom > 0 ? '+' : '') + rsMom.toFixed(1)}</div>
+                    <span class="badge ${badgeClass} px-3" style="font-weight:bold">${s.signal}</span>
                 </div>
             </div>`;
         };
