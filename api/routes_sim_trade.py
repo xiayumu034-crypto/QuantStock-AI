@@ -178,7 +178,7 @@ def get_watchlist():
             
             from data.market_data import StockDataAPI
             api_client = StockDataAPI()
-            for p in sorted_preds[:3]:
+            for p in sorted_preds[:5]:
                 # 增加深度逻辑描述
                 logic_detail = f"【入选逻辑】：底层 V19 (LightGBM 5模型集成) 发出强看涨信号。<br>【数据支撑】：盘前特征计算其胜率高达 {p.get('up_probability',50):.1f}%，预期绝对收益 {p.get('predicted_return',0)*100:.1f}%。<br>【风控判定】：已通过基础 ST 与退市股过滤黑名单，量价齐升概率大。"
                 
@@ -205,7 +205,7 @@ def get_watchlist():
         import akshare as ak
         sector_df = ak.stock_sector_spot(indicator='新浪行业')
         if not sector_df.empty:
-            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(3)
+            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(5)
             for _, row in hot_sectors.iterrows():
                 sector_name = row['板块']
                 leader_code = str(row['股票代码'])
