@@ -630,6 +630,10 @@
                                         <option value="neutral">中性</option>
                                         <option value="bear">看跌</option>
                                     </select>
+                                    <!-- V20 执行按钮 -->
+                                    <button class="btn btn-sm btn-outline-danger ms-2" id="btnExecuteV20" onclick="executeV20ToTrade()" style="display: none;">
+                                        🎯 执行 V20 信号到模拟盘
+                                    </button>
                                 </div>
                                 <div class="pagination-info small opacity-75" id="mlPaginationInfo">第 1 / 1 页</div>
                             </div>
@@ -1034,8 +1038,43 @@
 
     function switchModelVersion(ver) {
         currentMLVersion = ver;
+        const btnExecute = document.getElementById('btnExecuteV20');
+        if(ver === 'v20') {
+            btnExecute.style.display = 'inline-block';
+        } else {
+            btnExecute.style.display = 'none';
+        }
         document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">切换模型并重新加载中...</div>';
         loadMLSignals();
+    }
+
+    function executeV20ToTrade() {
+        const btn = document.getElementById('btnExecuteV20');
+        const oldText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = '正在执行下单...';
+        
+        fetch('/api/sim/execute_v20', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ mode: 'sim', threshold: 0.50 })
+        })
+        .then(r => r.json())
+        .then(d => {
+            btn.disabled = false;
+            btn.innerText = oldText;
+            if(d.status === 'success') {
+                alert('V20 信号执行成功！\n' + d.message);
+                loadSimAccount(); // 刷新账户
+            } else {
+                alert('执行失败：' + d.message);
+            }
+        })
+        .catch(e => {
+            btn.disabled = false;
+            btn.innerText = oldText;
+            alert('请求异常：' + e.message);
+        });
     }
 
     function loadMLSignals() {

@@ -763,8 +763,28 @@ def sim_step():
         "msg": msg
     })
 
-@sim_trade_bp.route('/analyze', methods=['GET'])
-def ai_analyze():
+@sim_trade_bp.route('/execute_v20', methods=['POST'])
+def execute_v20_signals():
+    """手动触发 V20 信号执行"""
+    mode = request.json.get('mode', 'sim')
+    threshold = float(request.json.get('threshold', 0.50))
+    
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "trade_vnpy_executor.py")
+    cmd = ["uv", "run", "python", script_path, "--mode", mode, "--threshold", str(threshold)]
+    
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    
+    try:
+        import subprocess
+        # 使用 check_output 因为我们想要同步执行并获取日志结果回显给 UI
+        output = subprocess.check_output(cmd, env=env, stderr=subprocess.STDOUT, encoding='utf-8')
+        return jsonify({"status": "success", "message": "V20 信号执行完成", "log": output})
+    except subprocess.CalledProcessError as e:
+        return jsonify({"status": "error", "message": f"执行失败: {e.output}"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
     account = load_account()
     
     # 提取持仓
