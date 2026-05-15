@@ -216,7 +216,17 @@ def get_watchlist():
                 
                 if 2.0 < leader_change < 19.5 and not any(x in leader_name.upper() for x in ["ST", "*ST", "退"]):
                     if not any(w["code"] == pure_code for w in watchlist):
-                        logic_detail = f"【入选逻辑】：事件驱动/游资热点打板模型触发。<br>【动能追踪】：今日资金大幅流入 [{sector_name}] 板块，且该股作为日内龙头已领涨 {leader_change:.1f}%。<br>【交易博弈】：由于其涨幅处于 2% - 19.5% 之间，未彻底封死涨停，存在上车博弈涨停溢价的机会。"
+                        is_chuang = pure_code.startswith('30') or pure_code.startswith('68')
+                        if leader_change >= 10.0 and is_chuang:
+                            game_text = f"【交易博弈】：该股属宽幅震荡标的，当前涨幅 {leader_change:.1f}%，距离20%涨停仍有空间，适合低吸埋伏大长腿。"
+                        elif leader_change >= 9.0 and not is_chuang:
+                            game_text = f"【交易博弈】：当前涨幅 {leader_change:.1f}% 已逼近主板涨停线，随时可能封板，资金承接力度极强，适合打板确认套利。"
+                        elif leader_change >= 5.0:
+                            game_text = f"【交易博弈】：半路接力模式。涨幅 {leader_change:.1f}% 呈现强势单边上扬，适合依托分时均线 (VWAP) 寻找日内回调低吸点。"
+                        else:
+                            game_text = f"【交易博弈】：底部异动模式。涨幅 {leader_change:.1f}% 刚刚脱离成本区，存在潜龙出渊的可能，盈亏比极高。"
+                            
+                        logic_detail = f"【入选逻辑】：事件驱动/游资热点模型。<br>【动能追踪】：资金大幅流入 [{sector_name}] 板块，该股为领涨先锋。<br>{game_text}"
                         watchlist.append({
                             "code": pure_code,
                             "name": leader_name,
