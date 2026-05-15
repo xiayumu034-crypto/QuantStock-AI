@@ -165,7 +165,7 @@ def get_watchlist():
     try:
         import os
         import json
-        from api.routes_model import PREDICTIONS_FILE
+        from api.model_service import PREDICTIONS_FILE_V19 as PREDICTIONS_FILE
         if os.path.exists(PREDICTIONS_FILE):
             with open(PREDICTIONS_FILE, 'r', encoding='utf-8') as f:
                 preds = json.load(f)
