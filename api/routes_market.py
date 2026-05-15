@@ -2,12 +2,39 @@ from flask import Blueprint, jsonify, request, render_template
 import requests
 import pandas as pd
 import re
+import os
+import json
+import subprocess
 import akshare as ak
 from data.market_data import StockDataAPI
 from api.llm_assistant import generate_stock_ai_analysis
 
 market_bp = Blueprint('market', __name__)
 stock_api = StockDataAPI()
+
+@market_bp.route('/api/screener/start', methods=['POST'])
+def start_screener():
+    use_ai = request.json.get('use_ai', False)
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "dynamic_pool_screener.py")
+    
+    cmd = ["uv", "run", "python", script_path]
+    if use_ai:
+        cmd.append("--use-ai")
+        
+    subprocess.Popen(cmd)
+    return jsonify({"status": "success", "message": "全市场漏斗海选已在后台启动"})
+
+@market_bp.route('/api/screener/status')
+def get_screener_status():
+    status_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "screener_status.json")
+    if os.path.exists(status_file):
+        with open(status_file, "r", encoding="utf-8") as f:
+            try:
+                data = json.load(f)
+                return jsonify({"status": "success", "data": data})
+            except Exception as e:
+                return jsonify({"status": "error", "message": str(e)})
+    return jsonify({"status": "idle", "data": {"status": "idle", "message": "尚未启动", "progress": 0, "total": 100}})
 
 @market_bp.route('/')
 def index():

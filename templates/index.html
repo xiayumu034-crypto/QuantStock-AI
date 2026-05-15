@@ -526,6 +526,56 @@
 
     <!-- 个股分析模态框 -->
     
+        <!-- V0 广度雷达 -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="ml-card" style="margin-bottom: 0;">
+                    <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseV0">
+                        <div class="title" style="margin-bottom: 0;">📡 V0 广度雷达 (全市场海选)</div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-secondary me-2" id="v0StatusBadge">就绪</span>
+                            <span class="text-secondary">▼</span>
+                        </div>
+                    </div>
+                    <div class="collapse" id="collapseV0">
+                        <div class="mt-3">
+                            <p class="text-secondary small mb-2">多因子漏斗引擎：从 5000+ 只 A股中过滤 ST/退市/低流动性标的，动态生成主力关注活水池。</p>
+                            <div class="d-flex mb-3">
+                                <button class="btn btn-sm btn-outline-info me-2" onclick="startV0Screener(false)">
+                                    ⚡ 纯技术算法海选 (无AI)
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="startV0Screener(true)">
+                                    🧠 MiMo 深度定性筛查 (含AI)
+                                </button>
+                            </div>
+                            <!-- 进度条 -->
+                            <div class="progress mb-3 bg-dark" style="height: 15px; display: none;" id="v0ProgressContainer">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" id="v0ProgressBar" role="progressbar" style="width: 0%;">0%</div>
+                            </div>
+                            <div class="text-warning small mb-3" id="v0ProgressMsg" style="display: none;">正在启动...</div>
+                            <!-- 结果表格 -->
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-dark table-hover table-sm border-secondary mb-0" id="v0Table" style="display: none;">
+                                    <thead class="sticky-top bg-dark">
+                                        <tr>
+                                            <th>代码</th>
+                                            <th>名称</th>
+                                            <th>最新价</th>
+                                            <th>涨跌幅</th>
+                                            <th>换手率</th>
+                                            <th>AI 评分</th>
+                                            <th style="width: 40%;">入选逻辑</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="v0TableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 最底部：ML预测信号 -->
         <div class="row mb-3">
             <div class="col-md-12">
@@ -1645,6 +1695,80 @@ function toggleAutoTrade(checked) {
     });
 
     updateCustomStocksUI();
+
+    // V0 Screener Logic
+    let v0PollInterval = null;
+    function startV0Screener(useAI) {
+        if(v0PollInterval) clearInterval(v0PollInterval);
+        
+        document.getElementById('v0ProgressContainer').style.display = 'flex';
+        document.getElementById('v0ProgressMsg').style.display = 'block';
+        document.getElementById('v0StatusBadge').className = 'badge bg-warning text-dark me-2';
+        document.getElementById('v0StatusBadge').innerText = '扫描中...';
+        document.getElementById('v0Table').style.display = 'none';
+        
+        fetch('/api/screener/start', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({use_ai: useAI})
+        }).then(r => r.json()).then(d => {
+            v0PollInterval = setInterval(pollV0Status, 2000);
+        });
+    }
+
+    function pollV0Status() {
+        fetch('/api/screener/status')
+        .then(r => r.json())
+        .then(res => {
+            if(res.status === 'success') {
+                const d = res.data;
+                const pct = d.total > 0 ? Math.round((d.progress / d.total) * 100) : 0;
+                
+                document.getElementById('v0ProgressBar').style.width = pct + '%';
+                document.getElementById('v0ProgressBar').innerText = pct + '%';
+                document.getElementById('v0ProgressMsg').innerText = d.message;
+                
+                if(d.status === 'error') {
+                    clearInterval(v0PollInterval);
+                    document.getElementById('v0StatusBadge').className = 'badge bg-danger me-2';
+                    document.getElementById('v0StatusBadge').innerText = '异常中断';
+                }
+                else if(d.status === 'finished') {
+                    clearInterval(v0PollInterval);
+                    document.getElementById('v0StatusBadge').className = 'badge bg-success me-2';
+                    document.getElementById('v0StatusBadge').innerText = '筛选完成';
+                    document.getElementById('v0ProgressContainer').style.display = 'none';
+                    document.getElementById('v0ProgressMsg').style.display = 'none';
+                    renderV0Table(d.data);
+                }
+            }
+        }).catch(e => console.error(e));
+    }
+
+    function renderV0Table(data) {
+        const tbody = document.getElementById('v0TableBody');
+        tbody.innerHTML = '';
+        if(!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary">暂无符合条件的活水标的</td></tr>';
+        } else {
+            let html = '';
+            data.forEach(item => {
+                let aiScoreHtml = item.ai_score ? `<span class="badge ${item.ai_score > 85 ? 'bg-danger' : 'bg-warning text-dark'}">${item.ai_score}</span>` : '<span class="text-secondary">-</span>';
+                let changeColor = item.change_pct > 0 ? 'text-danger' : 'text-success';
+                html += `<tr>
+                    <td>${item.code}</td>
+                    <td>${item.name}</td>
+                    <td class="${changeColor}">${item.price}</td>
+                    <td class="${changeColor}">${item.change_pct}%</td>
+                    <td>${item.turnover}%</td>
+                    <td>${aiScoreHtml}</td>
+                    <td class="text-wrap" style="font-size: 0.8rem; color: #aaa;">${item.logic}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        document.getElementById('v0Table').style.display = 'table';
+    }
     </script>
 
     <!-- 终极强制暗黑补丁 -->
