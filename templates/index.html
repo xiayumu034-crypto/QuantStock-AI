@@ -229,58 +229,19 @@
             </div>
         </div>
 
-        <!-- 第二行：ML预测信号 & 实盘交易监控 -->
+        <!-- 第二行：值得关注 & 实盘交易监控 -->
         <div class="row mb-3">
-            <div class="col-md-5">
-                <div class="ml-card" style="margin-bottom: 0;">
-                    <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseML">
-                        <div class="title" style="margin-bottom: 0;" id="mlPanelTitle">🤖 Qlib 信号集</div>
-                        <div class="d-flex align-items-center">
-                            <select id="modelVersionSelect" class="form-select form-select-sm bg-dark text-white border-secondary me-2" style="width: auto; cursor: pointer;" onchange="switchModelVersion(this.value)">
-                                <option value="v17">v17 (稳健)</option>
-                                <option value="v18">v18 (激进)</option>
-                                <option value="v19" selected>v19 (集成高胜率)</option>
-                            </select>
-                            <span class="badge text-info me-2" id="modelReportBadge" style="font-size: 0.75rem; cursor: help;">状态检测中</span>
-                            <span class="badge text-white me-2" id="mlModelInfo">加载中...</span>
-                            <span class="collapse-icon">▼</span>
-                        </div>
+            <div class="col-md-5 d-flex flex-column">
+                <!-- 值得关注窗口 -->
+                <div class="ml-card flex-grow-1" style="margin-bottom: 0; background: linear-gradient(135deg, #1e3a8a, #111827); border: 1px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); display: flex; flex-direction: column; overflow: hidden;">
+                    <div class="d-flex justify-content-between align-items-center mb-2" style="padding: 0 10px;">
+                        <div class="title" style="color: #60a5fa; font-weight: bold; margin-bottom: 0;">⭐ 潜力关注池</div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="fetchWatchlist()" style="padding: 2px 8px; font-size: 0.75rem;"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    
-                    <!-- 默认外露的 Top 3 卡片 -->
-                    <div class="row row-cols-1 row-cols-md-2 g-3 mt-2" id="mlSignalPreview">
-                        <div class="col-12 text-center py-4 opacity-50">正在准备顶级信号...</div>
-                    </div>
-
-                    <div class="collapse" id="collapseML">
-                        <div class="mt-3 pt-3 border-top border-white-10">
-                            <!-- 筛选与控制 -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="small text-white-50">信号过滤:</span>
-                                    <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: 120px;" id="mlSignalFilter" onchange="handleMLFilterChange()">
-                                        <option value="all">全部信号</option>
-                                        <option value="strong">强烈看涨</option>
-                                        <option value="bull">看涨 (含强烈)</option>
-                                        <option value="neutral">中性</option>
-                                        <option value="bear">看跌</option>
-                                    </select>
-                                </div>
-                                <div class="pagination-info small opacity-75" id="mlPaginationInfo">第 1 / 1 页</div>
-                            </div>
-
-                            <!-- 展开后显示的其余卡片 -->
-                            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3" id="mlSignalContent">
-                            </div>
-                            
-                            <!-- 分页控制 -->
-                            <div class="d-flex justify-content-end align-items-center mt-3 pt-2 border-top border-white-50">
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-light py-0 px-3" onclick="changeMLPage(-1)" id="mlPrevBtn">上一页</button>
-                                    <button class="btn btn-outline-light py-0 px-3" onclick="changeMLPage(1)" id="mlNextBtn">下一页</button>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="manual-trade-box flex-grow-1" style="padding: 10px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); overflow-y: auto; max-height: 380px;">
+                         <div id="watchlistContent" style="color: #bfdbfe; font-size: 0.85rem;">
+                            <div class="text-center opacity-50 my-4">正在从多维共振策略中筛选潜力标的...</div>
+                         </div>
                     </div>
                 </div>
             </div>
@@ -564,7 +525,65 @@
     </div>
 
     <!-- 个股分析模态框 -->
-    <div class="modal fade" id="rankAnalysisModal" tabindex="-1">
+    
+        <!-- 最底部：ML预测信号 -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="ml-card" style="margin-bottom: 0;">
+                    <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapseML">
+                        <div class="title" style="margin-bottom: 0;" id="mlPanelTitle">🤖 Qlib 信号集</div>
+                        <div class="d-flex align-items-center">
+                            <select id="modelVersionSelect" class="form-select form-select-sm bg-dark text-white border-secondary me-2" style="width: auto; cursor: pointer;" onchange="switchModelVersion(this.value)">
+                                <option value="v17">v17 (稳健)</option>
+                                <option value="v18">v18 (激进)</option>
+                                <option value="v19" selected>v19 (集成高胜率)</option>
+                            </select>
+                            <span class="badge text-info me-2" id="modelReportBadge" style="font-size: 0.75rem; cursor: help;">状态检测中</span>
+                            <span class="badge text-white me-2" id="mlModelInfo">加载中...</span>
+                            <span class="collapse-icon">▼</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 默认外露的 Top 3 卡片 -->
+                    <div class="row row-cols-1 row-cols-md-2 g-3 mt-2" id="mlSignalPreview">
+                        <div class="col-12 text-center py-4 opacity-50">正在准备顶级信号...</div>
+                    </div>
+
+                    <div class="collapse" id="collapseML">
+                        <div class="mt-3 pt-3 border-top border-white-10">
+                            <!-- 筛选与控制 -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="small text-white-50">信号过滤:</span>
+                                    <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: 120px;" id="mlSignalFilter" onchange="handleMLFilterChange()">
+                                        <option value="all">全部信号</option>
+                                        <option value="strong">强烈看涨</option>
+                                        <option value="bull">看涨 (含强烈)</option>
+                                        <option value="neutral">中性</option>
+                                        <option value="bear">看跌</option>
+                                    </select>
+                                </div>
+                                <div class="pagination-info small opacity-75" id="mlPaginationInfo">第 1 / 1 页</div>
+                            </div>
+
+                            <!-- 展开后显示的其余卡片 -->
+                            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3" id="mlSignalContent">
+                            </div>
+                            
+                            <!-- 分页控制 -->
+                            <div class="d-flex justify-content-end align-items-center mt-3 pt-2 border-top border-white-50">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-light py-0 px-3" onclick="changeMLPage(-1)" id="mlPrevBtn">上一页</button>
+                                    <button class="btn btn-outline-light py-0 px-3" onclick="changeMLPage(1)" id="mlNextBtn">下一页</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+<div class="modal fade" id="rankAnalysisModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-white border-secondary">
                 <div class="modal-header border-secondary">
@@ -1045,7 +1064,44 @@
         }).catch(e => console.error('Failed to load sim account', e));
     }
 
-    function toggleAutoTrade(checked) {
+    
+        function fetchWatchlist() {
+            const container = document.getElementById('watchlistContent');
+            container.innerHTML = '<div class="text-center opacity-50 my-4"><i class="fas fa-spinner fa-spin"></i> 正在加载潜力标的...</div>';
+            
+            fetch('/api/sim_trade/watchlist')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data.length > 0) {
+                        let html = '';
+                        data.data.forEach(item => {
+                            const icon = item.type === 'ml' ? '🤖' : '🔥';
+                            const color = item.type === 'ml' ? '#a7f3d0' : '#fca5a5';
+                            html += `
+                                <div class="p-2 mb-2" style="background: rgba(255,255,255,0.05); border-left: 3px solid ${color}; border-radius: 4px;">
+                                    <div class="d-flex justify-content-between">
+                                        <strong style="color: ${color};">${icon} ${item.name} <span style="font-size:0.75rem; color:#9ca3af;">(${item.code})</span></strong>
+                                        <button class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.65rem;" onclick="analyzeStock('${item.code}', '${item.name}')">诊断</button>
+                                    </div>
+                                    <div class="mt-1" style="font-size: 0.75rem; color: #d1d5db;">${item.reason}</div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<div class="text-center opacity-50 my-4">暂无高确定性标的</div>';
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    container.innerHTML = '<div class="text-center text-danger my-4">加载失败</div>';
+                });
+        }
+        
+        // Auto load on page load
+        setTimeout(fetchWatchlist, 1000);
+
+function toggleAutoTrade(checked) {
         simAutoTrade = checked;
         document.getElementById('autoTradeLabel').innerText = checked ? '已开启' : '已暂停';
         fetch('/api/sim/toggle_auto', {

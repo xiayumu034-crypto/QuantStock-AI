@@ -156,6 +156,65 @@ def calc_dynamic_sl_tp(code):
         logging.error(f"Error calculating Half-Life SL/TP for {code}: {e}")
     return None, None
 
+
+@sim_trade_bp.route('/watchlist', methods=['GET'])
+def get_watchlist():
+    # 动态生成值得关注的潜力股池
+    watchlist = []
+    
+    # 1. 获取机器学习 Top 预测
+    try:
+        import os
+        import json
+        from api.routes_model import PREDICTIONS_FILE
+        if os.path.exists(PREDICTIONS_FILE):
+            with open(PREDICTIONS_FILE, 'r', encoding='utf-8') as f:
+                preds = json.load(f)
+                
+            sorted_preds = sorted([
+                {"code": k, **v} for k, v in preds.items()
+                if v.get("predicted_return", 0) > 0 and 
+                   not any(x in v.get("name", "").upper() for x in ["ST", "*ST", "退"])
+            ], key=lambda x: x.get("predicted_return", 0), reverse=True)
+            
+            for p in sorted_preds[:3]:
+                watchlist.append({
+                    "code": p["code"],
+                    "name": p.get("name", p["code"]),
+                    "reason": f"V19 强共振 (预测收益 +{p.get('predicted_return',0)*100:.1f}%, 胜率 {p.get('up_probability',50):.1f}%)",
+                    "type": "ml"
+                })
+    except Exception as e:
+        import logging
+        logging.error(f"Error getting ML watchlist: {e}")
+
+    # 2. 获取事件驱动/板块龙头
+    try:
+        import akshare as ak
+        sector_df = ak.stock_sector_spot(indicator='新浪行业')
+        if not sector_df.empty:
+            hot_sectors = sector_df.sort_values(by='涨跌幅', ascending=False).head(3)
+            for _, row in hot_sectors.iterrows():
+                sector_name = row['板块']
+                leader_code = str(row['股票代码'])
+                leader_name = str(row['股票名称'])
+                leader_change = float(row['个股-涨跌幅'])
+                
+                pure_code = leader_code[2:] if leader_code[:2] in ['sh', 'sz', 'bj'] else leader_code
+                
+                if 2.0 < leader_change < 19.5 and not any(x in leader_name.upper() for x in ["ST", "*ST", "退"]):
+                    if not any(w["code"] == pure_code for w in watchlist):
+                        watchlist.append({
+                            "code": pure_code,
+                            "name": leader_name,
+                            "reason": f"[{sector_name}] 板块龙头 (盘中领涨 {leader_change:.1f}%)",
+                            "type": "event"
+                        })
+    except Exception as e:
+        pass
+        
+    return jsonify({"status": "success", "data": watchlist})
+
 @sim_trade_bp.route('/info', methods=['GET'])
 def get_info():
     account = load_account()
