@@ -540,13 +540,17 @@
                     <div class="collapse" id="collapseV0">
                         <div class="mt-3">
                             <p class="text-secondary small mb-2">多因子漏斗引擎：从 5000+ 只 A股中过滤 ST/退市/低流动性标的，动态生成主力关注活水池。</p>
-                            <div class="d-flex mb-3">
+                            <div class="d-flex mb-3 align-items-center">
                                 <button class="btn btn-sm btn-outline-info me-2" onclick="startV0Screener(false)">
                                     ⚡ 纯技术算法海选 (无AI)
                                 </button>
-                                <button class="btn btn-sm btn-outline-warning" onclick="startV0Screener(true)">
+                                <button class="btn btn-sm btn-outline-warning me-3" onclick="startV0Screener(true)">
                                     🧠 MiMo 深度定性筛查 (含AI)
                                 </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-secondary" onclick="loadPreviousScreenerStatus(false)">查看缓存(技术)</button>
+                                    <button class="btn btn-sm btn-secondary" onclick="loadPreviousScreenerStatus(true)">查看缓存(AI)</button>
+                                </div>
                             </div>
                             <!-- 进度条 -->
                             <div class="progress mb-3 bg-dark" style="height: 15px; display: none;" id="v0ProgressContainer">
@@ -687,8 +691,26 @@
         initAllCharts();
         setupEvents();
         refreshAll();
+        loadPreviousScreenerStatus(false); // 默认尝试加载技术的缓存
         setInterval(refreshAll, refreshInterval * 1000);
     });
+
+    function loadPreviousScreenerStatus(useAI) {
+        fetch('/api/screener/status?use_ai=' + useAI)
+        .then(r => r.json())
+        .then(res => {
+            if(res.status === 'success' && res.data.status === 'finished') {
+                document.getElementById('v0StatusBadge').className = 'badge bg-success me-2';
+                document.getElementById('v0StatusBadge').innerText = useAI ? '筛选完成(AI缓存)' : '筛选完成(技术缓存)';
+                renderV0Table(res.data.data);
+                document.getElementById('v0NextStep').style.setProperty('display', 'flex', 'important');
+            } else if (res.status === 'idle') {
+                // If user clicks button but it's empty
+                document.getElementById('v0StatusBadge').className = 'badge bg-secondary me-2';
+                document.getElementById('v0StatusBadge').innerText = '无缓存';
+            }
+        }).catch(e => console.error(e));
+    }
 
     function buildStockList() {
         const el = document.getElementById('stockList');
@@ -1712,14 +1734,18 @@ function toggleAutoTrade(checked) {
 
     // V0 Screener Logic
     let v0PollInterval = null;
+    let currentV0UseAI = false;
+    
     function startV0Screener(useAI) {
         if(v0PollInterval) clearInterval(v0PollInterval);
+        currentV0UseAI = useAI;
         
         document.getElementById('v0ProgressContainer').style.display = 'flex';
         document.getElementById('v0ProgressMsg').style.display = 'block';
         document.getElementById('v0StatusBadge').className = 'badge bg-warning text-dark me-2';
         document.getElementById('v0StatusBadge').innerText = '扫描中...';
         document.getElementById('v0Table').style.display = 'none';
+        document.getElementById('v0NextStep').style.setProperty('display', 'none', 'important');
         
         fetch('/api/screener/start', {
             method: 'POST',
@@ -1731,7 +1757,7 @@ function toggleAutoTrade(checked) {
     }
 
     function pollV0Status() {
-        fetch('/api/screener/status')
+        fetch('/api/screener/status?use_ai=' + currentV0UseAI)
         .then(r => r.json())
         .then(res => {
             if(res.status === 'success') {

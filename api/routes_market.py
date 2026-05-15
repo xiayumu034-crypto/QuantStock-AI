@@ -26,7 +26,9 @@ def start_screener():
 
 @market_bp.route('/api/screener/status')
 def get_screener_status():
-    status_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "screener_status.json")
+    use_ai = request.args.get('use_ai', 'false') == 'true'
+    status_file_name = "screener_status_ai.json" if use_ai else "screener_status_tech.json"
+    status_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", status_file_name)
     if os.path.exists(status_file):
         with open(status_file, "r", encoding="utf-8") as f:
             try:

@@ -25,7 +25,7 @@ STATUS_FILE = "data/screener_status.json"
 RESULTS_FILE = "data/screener_results.json"
 MOCK_PROGRESS = "data/screener_progress.json"
 
-def write_status(status, progress, total, message, data=None):
+def write_status(file_path, status, progress, total, message, data=None):
     os.makedirs("data", exist_ok=True)
     state = {
         "status": status,
@@ -34,10 +34,10 @@ def write_status(status, progress, total, message, data=None):
         "message": message,
         "data": data or []
     }
-    with open(STATUS_FILE, "w", encoding="utf-8") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=4)
 
-def fetch_all_spot():
+def fetch_all_spot(status_file):
     print("获取全市场实时行情...")
     try:
         # 首选: 东方财富
@@ -48,7 +48,7 @@ def fetch_all_spot():
         print(f"东方财富源被拦截: {e}")
         try:
             # 备用: 新浪
-            write_status("running", 5, 100, "东方财富被拦截，正在无缝切换至新浪(Sina)备用源，进度保留...")
+            write_status(status_file, "running", 5, 100, "东方财富被拦截，正在无缝切换至新浪(Sina)备用源，进度保留...")
             print("尝试无缝切换至新浪 (Sina) 备用源...")
             df = ak.stock_zh_a_spot()
             return df
@@ -122,6 +122,8 @@ def main():
     parser.add_argument("--limit", type=int, default=0, help="限制分析数量，0表示不限制")
     args = parser.parse_args()
     
+    status_file = "data/screener_status_ai.json" if args.use_ai else "data/screener_status_tech.json"
+    
     # 纯技术海选不设上限，将所有符合条件的活水股送入下一层（V19）
     # AI 模式为了避免接口超时和高昂的Token费用，仅对资金热度前 20 的股票进行深度定性
     if args.limit > 0:
@@ -129,14 +131,14 @@ def main():
     else:
         limit = 20 if args.use_ai else 0 
 
-    write_status("running", 0, 100, "正在连接行情源，获取全市场 5000+ 标的切片...")
+    write_status(status_file, "running", 0, 100, "正在连接行情源，获取全市场 5000+ 标的切片...")
     
-    df_all = fetch_all_spot()
+    df_all = fetch_all_spot(status_file)
     if df_all.empty:
-        write_status("error", 0, 100, "无法连接行情源，网络可能被拦截")
+        write_status(status_file, "error", 0, 100, "无法连接行情源，网络可能被拦截")
         return
         
-    write_status("running", 10, 100, "应用多因子规则引擎(过滤ST、低流动性、一字板)...")
+    write_status(status_file, "running", 10, 100, "应用多因子规则引擎(过滤ST、低流动性、一字板)...")
     time.sleep(1) # 演示延时
     
     df_filtered = apply_rule_filter(df_all)
@@ -152,13 +154,13 @@ def main():
     results = []
     
     if args.use_ai:
-        write_status("running", 20, total, f"启用 MiMo 投研大脑，对 {total} 只标的进行深度防弹网扫描...")
+        write_status(status_file, "running", 20, total, f"启用 MiMo 投研大脑，对 {total} 只标的进行深度防弹网扫描...")
         for i, row in enumerate(candidates):
             code = str(row.get("代码", ""))
             name = str(row.get("名称", ""))
             
             # 每处理一只股票更新进度
-            write_status("running", i+1, total, f"AI 正在解析财报与热点: {name} ({code})")
+            write_status(status_file, "running", i+1, total, f"AI 正在解析财报与热点: {name} ({code})")
             
             # 引入容错和降级
             try:
@@ -177,7 +179,7 @@ def main():
                 print(f"AI error for {code}: {e}")
                 
     else:
-        write_status("running", 50, 100, f"经典算法直接提取 {total} 只活水池标的...")
+        write_status(status_file, "running", 50, 100, f"经典算法直接提取 {total} 只活水池标的...")
         time.sleep(2)
         for row in candidates:
             results.append({
@@ -195,7 +197,7 @@ def main():
     else:
         results = sorted(results, key=lambda x: x.get("change_pct", 0), reverse=True)
         
-    write_status("finished", total, total, f"漏斗筛选完毕！最终幸存 {len(results)} 只标的。", data=results)
+    write_status(status_file, "finished", total, total, f"漏斗筛选完毕！最终幸存 {len(results)} 只标的。", data=results)
     
     # 更新到 stock_names.json，将活水池送入底层 V19 追踪
     if os.path.exists("data/stock_names.json"):
