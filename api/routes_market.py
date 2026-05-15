@@ -194,14 +194,20 @@ def ai_analyze_stock(code):
         api_key, base_url, model = get_llm_client()
         client = OpenAI(api_key=api_key, base_url=base_url)
         
-        prompt = f"""你是一个资深的A股量化分析师。请针对股票代码 {clean_code} 给出简短研判。
-请严格使用以下固定格式输出（不要输出任何其他客套话）：
+        prompt = f"""你是一个资深的A股量化分析师（代号：MiMo-Quant）。
+请结合以下基本面数据，针对股票代码 {clean_code} 给出专业研判：
+- 滚动市盈率(PE): {pe_ratio}
+- 市净率(PB): {pb_ratio}
+- 营收增长率: {rev_growth}
+- 净利润增长率: {np_growth}
+- 财务健康度: {status}
 
+请严格使用以下固定格式输出（不要输出任何其他客套话）：
 动作：[看涨/看跌/震荡]
 支撑：[下方支撑位说明]
 压力：[上方压力位说明]
 开盘：[次日预期开盘说明]
-结论：[一句话结论]"""
+结论：[请给出100-150字左右的深度综合研判，必须结合给出的估值与业绩增长情况，指出该股的价值中枢是否被低估或存在泡沫，并给出极具实战价值的操作建议！不要说废话！]"""
         
         import time
         llm_data = None
@@ -220,13 +226,29 @@ def ai_analyze_stock(code):
                 
                 # 解析文本
                 llm_data = {}
+                current_key = None
                 for line in llm_text.split('\n'):
                     line = line.strip()
-                    if line.startswith('动作：'): llm_data['action'] = line.replace('动作：', '').strip()
-                    elif line.startswith('支撑：'): llm_data['support_level'] = line.replace('支撑：', '').strip()
-                    elif line.startswith('压力：'): llm_data['resistance_level'] = line.replace('压力：', '').strip()
-                    elif line.startswith('开盘：'): llm_data['expected_open'] = line.replace('开盘：', '').strip()
-                    elif line.startswith('结论：'): llm_data['ai_conclusion'] = line.replace('结论：', '').strip()
+                    if not line:
+                        continue
+                    if line.startswith('动作：'):
+                        llm_data['action'] = line.replace('动作：', '').strip()
+                        current_key = 'action'
+                    elif line.startswith('支撑：'):
+                        llm_data['support_level'] = line.replace('支撑：', '').strip()
+                        current_key = 'support_level'
+                    elif line.startswith('压力：'):
+                        llm_data['resistance_level'] = line.replace('压力：', '').strip()
+                        current_key = 'resistance_level'
+                    elif line.startswith('开盘：'):
+                        llm_data['expected_open'] = line.replace('开盘：', '').strip()
+                        current_key = 'expected_open'
+                    elif line.startswith('结论：'):
+                        llm_data['ai_conclusion'] = line.replace('结论：', '').strip()
+                        current_key = 'ai_conclusion'
+                    else:
+                        if current_key == 'ai_conclusion':
+                            llm_data['ai_conclusion'] += "\n" + line
                 
                 if 'action' in llm_data and 'ai_conclusion' in llm_data:
                     break
