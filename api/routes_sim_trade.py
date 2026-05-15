@@ -608,6 +608,12 @@ def sim_step():
         if code not in prices or prices[code]["current"] <= 0:
             continue
             
+        # --- 新增全局黑名单：严禁买入 ST、*ST 和退市股 ---
+        stock_name = prices[code].get("name", "")
+        if any(x in stock_name.upper() for x in ["ST", "*ST", "退"]):
+            logging.info(f"Blacklist filter blocked buying {stock_name} ({code})")
+            continue
+            
         # --- 新增：涨停板校验 (加入盘口档位判断，最准) ---
         is_limited, limit_msg = check_trade_limit(code, prices[code]["current"], prices[code]["yesterday_close"], "buy", ask1_price=prices[code].get("ask1"))
         if is_limited:
