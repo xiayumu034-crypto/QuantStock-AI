@@ -39,7 +39,9 @@ def get_screener_status():
 @market_bp.route('/api/pipeline/start', methods=['POST'])
 def start_pipeline():
     script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "run_pipeline.py")
-    subprocess.Popen(["uv", "run", "python", script_path])
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    subprocess.Popen(["uv", "run", "python", script_path], env=env)
     return jsonify({"status": "success", "message": "量化联合推演流水线已在后台启动"})
 
 @market_bp.route('/api/pipeline/status')

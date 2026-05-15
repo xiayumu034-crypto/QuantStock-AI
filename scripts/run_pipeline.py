@@ -24,7 +24,9 @@ def write_status(status, progress, message):
 
 def run_cmd(cmd, desc):
     print(f"Executing: {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore', env=env)
     if result.returncode != 0:
         print(f"{desc} Failed: {result.stderr}")
         raise Exception(f"{desc} 失败，请查看后台日志")
