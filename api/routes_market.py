@@ -15,14 +15,24 @@ stock_api = StockDataAPI()
 @market_bp.route('/api/screener/start', methods=['POST'])
 def start_screener():
     use_ai = request.json.get('use_ai', False)
+    force_refresh = request.json.get('force_refresh', False)
     script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts", "dynamic_pool_screener.py")
     
     cmd = ["uv", "run", "python", script_path]
     if use_ai:
         cmd.append("--use-ai")
+    if force_refresh:
+        cmd.append("--force-refresh")
         
-    subprocess.Popen(cmd)
-    return jsonify({"status": "success", "message": "全市场漏斗海选已在后台启动"})
+    # 为了解决 Windows gbK 编码在 Popen 中写入带 emoji 的输出时崩溃的问题
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+        
+    try:
+        subprocess.Popen(cmd, env=env)
+        return jsonify({"status": "success", "message": "全市场漏斗海选已在后台启动"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 @market_bp.route('/api/screener/status')
 def get_screener_status():

@@ -37,13 +37,27 @@ def write_status(file_path, status, progress, total, message, data=None):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=4)
 
-def fetch_all_spot(status_file):
+def fetch_all_spot(status_file, force_refresh=False):
+    cache_file = "data/all_spot_cache.csv"
+    today_str = time.strftime("%Y-%m-%d")
+    
+    # 如果不强制刷新，且今天已经有缓存，直接读取
+    if not force_refresh and os.path.exists(cache_file):
+        # 简单判断文件修改时间是否为今天
+        mtime = os.path.getmtime(cache_file)
+        file_date = time.strftime("%Y-%m-%d", time.localtime(mtime))
+        if file_date == today_str:
+            print("使用今天已缓存的全市场行情数据...")
+            write_status(status_file, "running", 5, 100, "加载今日全市场行情缓存...")
+            return pd.read_csv(cache_file, dtype=str)
+            
     print("获取全市场实时行情...")
+    write_status(status_file, "running", 0, 100, "正在连接行情源，获取全市场 5000+ 标的切片...")
+    df = pd.DataFrame()
     try:
         # 首选: 东方财富
         print("尝试连接东方财富 (EM) 行情源...")
         df = ak.stock_zh_a_spot_em()
-        return df
     except Exception as e:
         print(f"东方财富源被拦截: {e}")
         try:
@@ -51,10 +65,14 @@ def fetch_all_spot(status_file):
             write_status(status_file, "running", 5, 100, "东方财富被拦截，正在无缝切换至新浪(Sina)备用源，进度保留...")
             print("尝试无缝切换至新浪 (Sina) 备用源...")
             df = ak.stock_zh_a_spot()
-            return df
         except Exception as e2:
             print(f"新浪源也失败: {e2}")
             return pd.DataFrame()
+            
+    if not df.empty:
+        os.makedirs("data", exist_ok=True)
+        df.to_csv(cache_file, index=False, encoding="utf-8-sig")
+    return df
 
 def apply_rule_filter(df):
     """
@@ -120,6 +138,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--use-ai", action="store_true", help="是否使用AI进行深度定性筛选")
     parser.add_argument("--limit", type=int, default=0, help="限制分析数量，0表示不限制")
+    parser.add_argument("--force-refresh", action="store_true", help="强制重新拉取全市场数据（忽略本地缓存）")
     args = parser.parse_args()
     
     status_file = "data/screener_status_ai.json" if args.use_ai else "data/screener_status_tech.json"
@@ -131,11 +150,9 @@ def main():
     else:
         limit = 20 if args.use_ai else 0 
 
-    write_status(status_file, "running", 0, 100, "正在连接行情源，获取全市场 5000+ 标的切片...")
-    
-    df_all = fetch_all_spot(status_file)
+    df_all = fetch_all_spot(status_file, args.force_refresh)
     if df_all.empty:
-        write_status(status_file, "error", 0, 100, "无法连接行情源，网络可能被拦截")
+        write_status(status_file, "error", 0, 100, "无法连接行情源且无本地缓存，网络可能被拦截")
         return
         
     write_status(status_file, "running", 10, 100, "应用多因子规则引擎(过滤ST、低流动性、一字板)...")
