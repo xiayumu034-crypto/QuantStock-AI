@@ -195,7 +195,7 @@
                 <div class="search-bar position-relative">
                     <div class="d-flex gap-2">
                         <input type="text" class="form-control" id="searchInput" placeholder="🔍 搜索代码/名称/拼音" oninput="handleSearchInput(this)" onkeyup="handleSearchKey(event)" autocomplete="off">
-                        <button class="btn btn-dark" onclick="searchStock()" style="border-radius:20px">查询</button>
+                        <button class="btn btn-dark" onclick="searchStock()" style="border-radius:20px; white-space: nowrap; flex-shrink: 0; min-width: 80px;">查询</button>
                     </div>
                     <div id="searchSuggestions" class="search-suggestions"></div>
                     <div id="searchResults" class="search-results mt-2" style="display:none"></div>
