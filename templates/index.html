@@ -712,12 +712,18 @@
                 document.getElementById('v0StatusBadge').innerText = useAI ? '筛选完成(AI缓存)' : '筛选完成(技术缓存)';
                 renderV0Table(res.data.data);
                 document.getElementById('v0NextStep').style.setProperty('display', 'flex', 'important');
-            } else if (res.status === 'idle') {
-                // If user clicks button but it's empty
+                alert(`成功加载${useAI ? 'AI' : '技术'}雷达缓存数据！`);
+            } else if (res.status === 'success' && res.data.status === 'running') {
+                alert(`后台任务似乎还在运行中或之前被异常中断 (进度: ${res.data.progress}/${res.data.total})，请点击红色的【强制拉取】按钮重新覆盖生成。`);
+            } else {
                 document.getElementById('v0StatusBadge').className = 'badge bg-secondary me-2';
                 document.getElementById('v0StatusBadge').innerText = '无缓存';
+                alert(`未找到完整的${useAI ? 'AI' : '技术'}缓存，请重新运行海选。`);
             }
-        }).catch(e => console.error(e));
+        }).catch(e => {
+            console.error(e);
+            alert('读取缓存失败，网络或后端异常。');
+        });
     }
 
     function buildStockList() {
