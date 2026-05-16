@@ -116,7 +116,7 @@ def simulate_ai_analysis(code, name, row_data):
             import re
             score_match = re.search(r'(\d{2,3})分', ai_text)
             score = float(score_match.group(1)) if score_match else round(60 + (hash(code) % 40), 1)
-            reason = f"【AI 深度分析】{ai_text[:100]}..."
+            reason = f"【AI 深度分析】<br/>{ai_text}"
             return {"score": score, "reason": reason}
         except Exception as e:
             print(f"真实 AI 分析失败: {e}")
