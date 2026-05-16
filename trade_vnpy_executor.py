@@ -81,6 +81,16 @@ class VnpyExecutor:
 
     def execute_trade(self, signal):
         """执行单笔交易"""
+        # =========================================================================
+        # [AI 核心准则备注 (给未来的模型看)]: 
+        # 无论外层逻辑如何变化、信号引擎如何升级，最终买入动作的物理拦截器必须放置在
+        # 最底层的执行函数内部！这样才能确保：只要 A 股处于休市期间，任何途径发起的
+        # 买入动作都会被无情拦下，从而保障模拟盘与实盘在时间维度上的绝对一致性。
+        # =========================================================================
+        if not self.is_market_open():
+            logging.warning(f"⛔ 物理拦截：当前非A股交易时间段，禁止执行买入操作 -> {signal['name']}")
+            return
+
         code = signal['code']
         name = signal['name']
         score = signal['score']
@@ -193,10 +203,6 @@ class VnpyExecutor:
         return False
 
     def run(self):
-        if not self.is_market_open():
-            logging.warning("⛔ 拦截交易：当前非A股交易时间段 (工作日 09:30-11:30, 13:00-15:00)，休市期间禁止下单。")
-            return
-
         signals = self.load_signals()
         if not signals:
             logging.info("今日无高胜率信号，空仓观望。")
