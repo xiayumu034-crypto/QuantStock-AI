@@ -460,7 +460,7 @@ def get_news():
                 df_valid = df[df['名称'].str.len() >= 2]
                 for _, row in df_valid.iterrows():
                     # 避免一些过于常见的词语作为股票名误杀
-                    if row['名称'] not in ["平安", "中信", "万科", "招商"]: 
+                    if row['名称'] not in ["平安", "中信", "万科", "招商", "太平洋", "长城"]: 
                         stock_names[row['名称']] = row['代码']
             except Exception as e:
                 print(f"Error loading stock cache for news: {e}")
