@@ -1466,8 +1466,13 @@ function toggleAutoTrade(checked) {
             const time = news.time || '--:--';
             const title = news.title || '无标题';
             
-            const stockTag = news.related_stocks && news.related_stocks.length > 0 
-                ? `<span class="badge bg-primary ms-1" style="font-size:0.6rem">${news.related_stocks.map(s=>s.code).join(',')}</span>` : '';
+            let stockTagHtml = '';
+            if (news.related_stocks && news.related_stocks.length > 0) {
+                const stock = news.related_stocks[0];
+                const codeWithoutPrefix = stock.code.replace(/^[a-zA-Z]+/, '');
+                stockTagHtml = `<span class="badge bg-primary ms-1" style="font-size:0.6rem; cursor: pointer;" onclick="event.stopPropagation(); buyStockFromNews('${codeWithoutPrefix}', '${stock.name}')">🎯 买入 ${stock.name}</span>`;
+            }
+            
             const isImportant = news.is_important || false;
             const importantBadge = isImportant ? '<span class="badge bg-danger ms-1" style="font-size:0.55rem">重要</span>' : '';
             
@@ -1475,7 +1480,7 @@ function toggleAutoTrade(checked) {
             <div class="news-item ${cls}" style="cursor: pointer;" onclick="window.open('${news.url || '#'}', '_blank')">
                 <div style="font-size:0.8rem;font-weight:600">${icon} ${title}${importantBadge}</div>
                 <div style="font-size:0.65rem;color:#888;display:flex;justify-content:space-between;align-items:center;">
-                    <span>[${source}] ${time}${stockTag}</span>
+                    <span>[${source}] ${time} ${stockTagHtml}</span>
                     <span class="text-primary-emphasis" style="font-size:0.6rem">详情 ></span>
                 </div>
             </div>`;
@@ -1499,6 +1504,16 @@ function toggleAutoTrade(checked) {
     }
     loadNews();
     setInterval(loadNews, 2 * 60 * 1000);
+
+    // 新增：新闻驱动的买入交互
+    function buyStockFromNews(code, name) {
+        if(confirm(`检测到实时新闻驱动，是否立即使用模拟账户买入 [${name}] (${code}) ?`)) {
+            // 设置到顶部的输入框
+            document.getElementById('stockSearch').value = code;
+            selectStock(code);
+            alert('已锁定标的，请在左上角控制面板选择策略或直接点击【执行买入】。');
+        }
+    }
 
     // ========== 市场榜单 logic ==========
     function updateRankings() {
