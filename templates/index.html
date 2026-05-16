@@ -427,105 +427,6 @@
             </div>
         </div>
 
-        <!-- 第四行：主图表 -->
-        <div class="row">
-            <div class="col-md-8">
-                <div class="chart-card" style="height:350px;">
-                    <div class="title">📈 分时走势 + 布林带</div>
-                    <canvas id="priceChart"></canvas>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="chart-card" style="height:350px;">
-                    <div class="title">📊 成交量</div>
-                    <canvas id="volumeChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- 第五行：技术指标图 -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="chart-card" style="height:280px;">
-                    <div class="title">MACD</div>
-                    <canvas id="macdChart"></canvas>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="chart-card" style="height:280px;">
-                    <div class="title">KDJ</div>
-                    <canvas id="kdjChart"></canvas>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="chart-card" style="height:280px;">
-                    <div class="title">RSI</div>
-                    <canvas id="rsiChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="chart-card" style="height:260px;">
-                    <div class="title">CCI (商品通道指数)</div>
-                    <canvas id="cciChart"></canvas>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-card" style="height:260px;">
-                    <div class="title">DMI (趋向指标)</div>
-                    <canvas id="dmiChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- 第六行：股票选择 + 设置 -->
-        <div class="settings-card mb-4">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">监控股票</div>
-                    <div id="stockList"></div>
-                </div>
-                <div class="col-md-3">
-                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">自动刷新</div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
-                        <label class="form-check-label" for="autoRefresh">开启</label>
-                    </div>
-                    <div class="mt-1">
-                        <label class="form-label small">间隔: <span id="intervalValue">3</span>秒</label>
-                        <input type="range" class="form-range" min="1" max="30" value="3" id="refreshInterval">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">刷新频率</div>
-                    <div class="small text-muted">
-                        <div>🟢 实时行情: 3秒</div>
-                        <div>🔵 分时走势: 60秒</div>
-                        <div>🟡 技术指标: 60秒</div>
-                        <div>🔴 ML预测: 5分钟</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 数据表格 -->
-        <div class="chart-card mb-4">
-            <div class="title">📋 实时数据</div>
-            <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-dark">
-                        <tr><th>代码</th><th>名称</th><th>当前价</th><th>涨跌幅</th><th>成交量</th><th>成交额</th><th>更新时间</th></tr>
-                    </thead>
-                    <tbody id="dataTable"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- 个股分析模态框 -->
-    
         <!-- V0 广度雷达 -->
         <div class="row mb-3">
             <div class="col-md-12">
@@ -655,6 +556,106 @@
             </div>
             
         </div>
+
+        <!-- 第四行：主图表 -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="chart-card" style="height:350px;">
+                    <div class="title">📈 分时走势 + 布林带</div>
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-card" style="height:350px;">
+                    <div class="title">📊 成交量</div>
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第五行：技术指标图 -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="chart-card" style="height:280px;">
+                    <div class="title">MACD</div>
+                    <canvas id="macdChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-card" style="height:280px;">
+                    <div class="title">KDJ</div>
+                    <canvas id="kdjChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-card" style="height:280px;">
+                    <div class="title">RSI</div>
+                    <canvas id="rsiChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-card" style="height:260px;">
+                    <div class="title">CCI (商品通道指数)</div>
+                    <canvas id="cciChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card" style="height:260px;">
+                    <div class="title">DMI (趋向指标)</div>
+                    <canvas id="dmiChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第六行：股票选择 + 设置 -->
+        <div class="settings-card mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">监控股票</div>
+                    <div id="stockList"></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">自动刷新</div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                        <label class="form-check-label" for="autoRefresh">开启</label>
+                    </div>
+                    <div class="mt-1">
+                        <label class="form-label small">间隔: <span id="intervalValue">3</span>秒</label>
+                        <input type="range" class="form-range" min="1" max="30" value="3" id="refreshInterval">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="title" style="font-weight:600;margin-bottom:0.5rem">刷新频率</div>
+                    <div class="small text-muted">
+                        <div>🟢 实时行情: 3秒</div>
+                        <div>🔵 分时走势: 60秒</div>
+                        <div>🟡 技术指标: 60秒</div>
+                        <div>🔴 ML预测: 5分钟</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="chart-card mb-4">
+            <div class="title">📋 实时数据</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr><th>代码</th><th>名称</th><th>当前价</th><th>涨跌幅</th><th>成交量</th><th>成交额</th><th>更新时间</th></tr>
+                    </thead>
+                    <tbody id="dataTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个股分析模态框 -->
+    
 <div class="modal fade" id="rankAnalysisModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-white border-secondary">
