@@ -7,7 +7,7 @@ import json
 import subprocess
 import akshare as ak
 from data.market_data import StockDataAPI
-from api.llm_assistant import generate_stock_ai_analysis
+from api.llm_assistant import generate_stock_ai_analysis, generate_news_reasoning
 
 market_bp = Blueprint('market', __name__)
 stock_api = StockDataAPI()
@@ -546,3 +546,13 @@ def get_news():
 @market_bp.route('/api/market_rankings')
 def get_market_rankings():
     return jsonify({"status": "success", "data": stock_api.get_market_rankings()})
+
+@market_bp.route('/api/news/analyze', methods=['POST'])
+def analyze_news_reasoning():
+    data = request.json
+    news_text = data.get('text', '')
+    if not news_text:
+        return jsonify({"status": "error", "message": "无新闻内容"})
+    
+    html_result = generate_news_reasoning(news_text)
+    return jsonify({"status": "success", "data": html_result})

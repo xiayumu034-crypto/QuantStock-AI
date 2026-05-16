@@ -1483,11 +1483,15 @@ function toggleAutoTrade(checked) {
             const isImportant = news.is_important || false;
             const importantBadge = isImportant ? '<span class="badge bg-danger ms-1" style="font-size:0.55rem">重要</span>' : '';
             
+            // Note: need to escape quotes in news title/content for onclick
+            const safeTitle = (title || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            const aiButton = `<span class="badge bg-purple ms-1" style="font-size:0.6rem; cursor: pointer; background-color:#6f42c1" onclick="event.stopPropagation(); analyzeNews('${safeTitle}')">🧠 AI 推演</span>`;
+
             html += `
             <div class="news-item ${cls}" style="cursor: pointer;" onclick="window.open('${news.url || '#'}', '_blank')">
                 <div style="font-size:0.8rem;font-weight:600">${icon} ${title}${importantBadge}</div>
                 <div style="font-size:0.65rem;color:#888;display:flex;justify-content:space-between;align-items:center;">
-                    <span>[${source}] ${time} ${stockTagHtml}</span>
+                    <span>[${source}] ${time} ${stockTagHtml} ${aiButton}</span>
                     <span class="text-primary-emphasis" style="font-size:0.6rem">详情 ></span>
                 </div>
             </div>`;
@@ -1520,6 +1524,35 @@ function toggleAutoTrade(checked) {
             selectStock(code);
             alert('已锁定标的，请在左上角控制面板选择策略或直接点击【执行买入】。');
         }
+    }
+
+    function analyzeNews(newsText) {
+        document.getElementById('rankAnalysisTitle').innerText = '🧠 MiMo 事件驱动多跳推演';
+        document.getElementById('rankAnalysisContent').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-purple" role="status" style="color: #6f42c1;"></div>
+                <div class="mt-3 text-muted" style="font-size: 0.9rem;">MiMo 正在构建事件知识图谱<br/>( 新闻 ➡️ 宏观 ➡️ 板块 ➡️ 龙头 )<br/>请稍候...</div>
+            </div>
+        `;
+        const modal = new bootstrap.Modal(document.getElementById('rankAnalysisModal'));
+        modal.show();
+
+        fetch('/api/news/analyze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text: newsText})
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+                document.getElementById('rankAnalysisContent').innerHTML = res.data;
+            } else {
+                document.getElementById('rankAnalysisContent').innerHTML = `<div class="alert alert-danger">${res.message}</div>`;
+            }
+        })
+        .catch(err => {
+            document.getElementById('rankAnalysisContent').innerHTML = `<div class="alert alert-danger">网络或接口异常</div>`;
+        });
     }
 
     // ========== 市场榜单 logic ==========

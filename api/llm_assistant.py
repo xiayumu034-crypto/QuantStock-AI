@@ -145,3 +145,54 @@ def generate_stock_ai_analysis(code, name, info_dict, is_monster=False):
         
         logging.error(f"Stock AI Analysis failed: {e}")
         return f"<div class='alert alert-danger'>AI 个股分析失败: {str(e)}</div>"
+
+def generate_news_reasoning(news_text):
+    """
+    事件驱动：基于新闻进行多跳图谱推理
+    """
+    api_key, base_url, model = get_llm_client()
+    
+    system_prompt = """你是一位顶尖的量化私募基金经理，精通“事件驱动策略”与多跳逻辑推理。
+你的任务是将一条新闻资讯转化为 A 股市场的交易逻辑。
+请按照“知识图谱多跳推理”的模式，剥丝抽茧地分析：新闻事件 -> 宏观影响 -> 对应的A股板块 -> 可能利好的龙头个股特征。
+
+请严格使用 Markdown 格式，并包含以下模块：
+1. **📌 事件定性**：一句话总结该事件的本质。
+2. **🕸️ 逻辑推演链**：使用箭头（->）展示多跳推理过程（例如：中东局势升级 -> 原油供给担忧 -> 油气板块受益）。
+3. **🎯 关联板块与个股画像**：指出最直接受益的 A 股板块，并描述该板块中哪类股票最容易成为资金龙头（如：盘子小、有叠加概念等），如果能举例 1-2 只大家熟知的行业中军更好。
+"""
+
+    user_prompt = f"请对以下新闻进行深度量化多跳推理：\n【新闻内容】：{news_text}"
+
+    try:
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1024
+        )
+        ai_text = response.choices[0].message.content
+        return markdown.markdown(ai_text, extensions=['extra', 'codehilite'])
+    except Exception as e:
+        error_str = str(e).lower()
+        if "401" in error_str or "invalid_key" in error_str or "unauthorized" in error_str:
+            mock_text = """### 🧠 MiMo 事件驱动推理 (体验模式)
+> **⚠️ 提示**: API Key 无效，以下为离线推理演示。
+
+**1. 📌 事件定性**
+当前宏观事件对特定大宗商品或局部地缘政治产生了强烈刺激。
+
+**2. 🕸️ 逻辑推演链**
+突发事件 -> 供给侧缩减预期 -> 产品涨价 -> A股相关资源类板块营收预期提升。
+
+**3. 🎯 关联板块与个股画像**
+- **核心板块**：资源开采、航运运输。
+- **个股画像**：建议重点关注具有实际产能释放预期、市值在 100-300亿之间、机构资金介入较深的行业中军（如中国海油等逻辑标的）。"""
+            return markdown.markdown(mock_text, extensions=['extra', 'codehilite'])
+            
+        logging.error(f"News Reasoning failed: {e}")
+        return f"<div class='alert alert-danger'>AI 推理引擎罢工了: {str(e)}</div>"
