@@ -1959,12 +1959,32 @@ function toggleAutoTrade(checked) {
                     <td class="${changeColor}">${item.change_pct}%</td>
                     <td>${item.turnover}%</td>
                     <td>${aiScoreHtml}</td>
-                    <td class="text-wrap" style="font-size: 0.8rem; color: #aaa;">${item.logic}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info py-0 px-2" style="font-size: 0.75rem;" onclick="showV0Logic(this)" data-name="${item.name}" data-code="${item.code}" data-logic="${encodeURIComponent(item.logic)}">
+                            <i class="fas fa-file-alt me-1"></i>查看详情
+                        </button>
+                    </td>
                 </tr>`;
             });
             tbody.innerHTML = html;
         }
         document.getElementById('v0Table').style.display = 'table';
+    }
+
+    function showV0Logic(btn) {
+        const name = btn.getAttribute('data-name');
+        const code = btn.getAttribute('data-code');
+        const logicRaw = btn.getAttribute('data-logic');
+        const logicHTML = decodeURIComponent(logicRaw);
+        
+        document.getElementById('rankAnalysisTitle').textContent = `入选逻辑: ${name} (${code})`;
+        document.getElementById('rankAnalysisContent').innerHTML = `
+            <div class="p-3" style="font-size: 0.95rem; line-height: 1.6; color: #e5e7eb;">
+                ${logicHTML}
+            </div>
+        `;
+        const modal = new bootstrap.Modal(document.getElementById('rankAnalysisModal'));
+        modal.show();
     }
     </script>
 

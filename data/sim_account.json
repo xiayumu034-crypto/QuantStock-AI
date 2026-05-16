@@ -10,7 +10,7 @@
             "buy_date": "2026-05-13",
             "buy_time": "2026-05-13 10:22:07",
             "buy_fee": 5.16604,
-            "sl_tp_date": "2026-05-16",
+            "sl_tp_date": "2026-05-17",
             "stop_loss": 36.77,
             "take_profit": 43.99
         },
@@ -22,7 +22,7 @@
             "buy_date": "2026-05-13",
             "buy_time": "2026-05-13 10:22:07",
             "buy_fee": 5.15164,
-            "sl_tp_date": "2026-05-16",
+            "sl_tp_date": "2026-05-17",
             "stop_loss": 67.63,
             "take_profit": 82.08
         },
@@ -34,7 +34,7 @@
             "buy_date": "2026-05-13",
             "buy_time": "2026-05-13 10:22:07",
             "buy_fee": 5.1884,
-            "sl_tp_date": "2026-05-16",
+            "sl_tp_date": "2026-05-17",
             "stop_loss": 29.7,
             "take_profit": 36.95
         },
@@ -48,7 +48,7 @@
             "buy_fee": 5.1992,
             "stop_loss": 6.1,
             "take_profit": 7.0,
-            "sl_tp_date": "2026-05-16"
+            "sl_tp_date": "2026-05-17"
         },
         "300123": {
             "name": "ST亚光",
@@ -60,7 +60,7 @@
             "buy_fee": 5.19929,
             "stop_loss": 4.22,
             "take_profit": 5.91,
-            "sl_tp_date": "2026-05-16"
+            "sl_tp_date": "2026-05-17"
         },
         "300498": {
             "name": "温氏股份",
@@ -68,7 +68,7 @@
             "current_price": 15.08,
             "stop_loss": 15.18,
             "take_profit": 16.41,
-            "sl_tp_date": "2026-05-16",
+            "sl_tp_date": "2026-05-17",
             "cost_price": 15.08,
             "buy_time": "2026-05-16 03:39:25",
             "buy_date": "2026-05-16"
