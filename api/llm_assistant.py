@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import json
+from api.model_adapters import get_model_adapter
 
 def get_llm_client():
     config_file = "data/ai_config.json"
@@ -28,6 +29,7 @@ def get_llm_client():
 
 def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
     api_key, base_url, model = get_llm_client()
+    adapter = get_model_adapter(model)
 
     system_prompt = """你是一位处于内测阶段的顶尖 AI 投资总监（代号：MiMo-Quant）。
 你拥有强大的多维推理能力，精通 A 股市场（T+1、涨跌停板机制），擅长将【量化因子】与【宏观逻辑】和【市场情绪】相融合。
@@ -67,6 +69,8 @@ def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
 
 请基于上述数据，立即生成深度研判报告。"""
 
+    system_prompt = adapter.adjust_system_prompt('portfolio_analysis', system_prompt)
+
     try:
         client = OpenAI(api_key=api_key, base_url=base_url)
         response = client.chat.completions.create(
@@ -79,7 +83,7 @@ def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
             max_tokens=2048
         )
         ai_text = response.choices[0].message.content
-        return markdown.markdown(ai_text, extensions=['extra', 'codehilite'])
+        return adapter.parse_stock_analysis(ai_text)
     except Exception as e:
         error_str = str(e).lower()
         if "401" in error_str or "invalid_key" in error_str or "unauthorized" in error_str:
@@ -102,6 +106,7 @@ def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
 def generate_stock_ai_analysis(code, name, info_dict, is_monster=False):
     """单只股票的AI深度分析（基本面+成妖逻辑）"""
     api_key, base_url, model = get_llm_client()
+    adapter = get_model_adapter(model)
     
     system_prompt = """你是一位顶尖的 A 股游资和基本面分析师双栖专家。
 你的任务是对单只个股进行极其犀利、一针见血的分析。
@@ -124,6 +129,8 @@ def generate_stock_ai_analysis(code, name, info_dict, is_monster=False):
 3. **资金面与博弈逻辑**：结合上述信息，当前市场资金为什么选择它？{monster_req}
 4. **后市推演**：给出简短有力的短线及中线推演。"""
 
+    system_prompt = adapter.adjust_system_prompt('portfolio_analysis', system_prompt)
+
     try:
         client = OpenAI(api_key=api_key, base_url=base_url)
         response = client.chat.completions.create(
@@ -136,7 +143,7 @@ def generate_stock_ai_analysis(code, name, info_dict, is_monster=False):
             max_tokens=2048
         )
         ai_text = response.choices[0].message.content
-        return markdown.markdown(ai_text, extensions=['extra', 'codehilite'])
+        return adapter.parse_stock_analysis(ai_text)
     except Exception as e:
         error_str = str(e).lower()
         if "401" in error_str or "invalid_key" in error_str or "unauthorized" in error_str:
@@ -165,6 +172,7 @@ def generate_news_reasoning(news_text):
     事件驱动：基于新闻进行多跳图谱推理
     """
     api_key, base_url, model = get_llm_client()
+    adapter = get_model_adapter(model)
     
     system_prompt = """你是一位顶尖的量化私募基金经理，精通“事件驱动策略”与多跳逻辑推理。
 你的任务是将一条新闻资讯转化为 A 股市场的交易逻辑。
@@ -177,6 +185,7 @@ def generate_news_reasoning(news_text):
 """
 
     user_prompt = f"请对以下新闻进行深度量化多跳推理：\n【新闻内容】：{news_text}"
+    system_prompt = adapter.adjust_system_prompt('news_reasoning', system_prompt)
 
     try:
         client = OpenAI(api_key=api_key, base_url=base_url)
@@ -190,7 +199,7 @@ def generate_news_reasoning(news_text):
             max_tokens=1024
         )
         ai_text = response.choices[0].message.content
-        return process_graph_markdown(ai_text)
+        return adapter.parse_news_reasoning(ai_text)
     except Exception as e:
         error_str = str(e).lower()
         if "401" in error_str or "invalid_key" in error_str or "unauthorized" in error_str:
@@ -206,32 +215,7 @@ def generate_news_reasoning(news_text):
 **3. 🎯 关联板块与个股画像**
 - **核心板块**：资源开采、航运运输。
 - **个股画像**：建议重点关注具有实际产能释放预期、市值在 100-300亿之间、机构资金介入较深的行业中军（如中国海油等逻辑标的）。"""
-            return process_graph_markdown(mock_text)
+            return adapter.parse_news_reasoning(mock_text)
             
         logging.error(f"News Reasoning failed: {e}")
         return f"<div class='alert alert-danger'>AI 推理引擎罢工了: {str(e)}</div>"
-
-def process_graph_markdown(text):
-    import re
-    # 尝试找到含有多个 -> 或 ➡️ 或 => 的那一行，把它转换成图谱UI
-    lines = text.split('\n')
-    for i, line in enumerate(lines):
-        if '->' in line or '➡️' in line or '=>' in line:
-            # Check if it's the chain line
-            parts = re.split(r'->|➡️|=>', line)
-            if len(parts) >= 3:
-                # 这是一个推理链
-                graph_html = '<div class="reasoning-graph mt-3 mb-3" style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">'
-                for idx, part in enumerate(parts):
-                    clean_part = part.strip().replace('**', '').replace('-', '')
-                    if not clean_part: continue
-                    graph_html += f'<div class="graph-node" style="background:rgba(111,66,193,0.15); border:1px solid #6f42c1; color:#e0c8ff; padding:5px 12px; border-radius:20px; font-weight:bold; font-size:0.9rem;">{clean_part}</div>'
-                    if idx < len(parts) - 1:
-                        graph_html += '<div class="graph-arrow text-muted" style="font-size:1.2rem;">➔</div>'
-                graph_html += '</div>'
-                
-                # 替换原来的行
-                lines[i] = "\n" + graph_html + "\n"
-                
-    new_text = '\n'.join(lines)
-    return markdown.markdown(new_text, extensions=['extra', 'codehilite'])
