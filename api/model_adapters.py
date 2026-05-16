@@ -13,13 +13,24 @@ class BaseModelAdapter:
         return base_prompt
 
     def parse_news_reasoning(self, text):
-        """图谱正则渲染解析器"""
+        """图谱正则渲染解析器 (支持 Mermaid 脑图)"""
+        # 将 markdown 里的 ```mermaid ... ``` 替换为 <div class="mermaid"> ... </div>
+        # 先处理可能的 mermaid 块
+        import re
+        
+        # 匹配 ```mermaid ... ```
+        def mermaid_replacer(match):
+            content = match.group(1).strip()
+            return f'<div class="mermaid" style="background:#1a1a2e; padding:15px; border-radius:10px; margin:15px 0; text-align:center;">\n{content}\n</div>'
+            
+        text = re.sub(r'```mermaid\s+(.*?)\s+```', mermaid_replacer, text, flags=re.DOTALL)
+        
+        # 兜底：如果模型依然输出了 -> 的文字链，保留原有的彩色文字切片处理
         lines = text.split('\n')
         for i, line in enumerate(lines):
-            # 兼容多种箭头符号
-            if '->' in line or '➡️' in line or '=>' in line:
+            # 兼容多种箭头符号 (排除 html 注释等特殊情况)
+            if ('->' in line or '➡️' in line or '=>' in line) and not '<div' in line:
                 parts = re.split(r'->|➡️|=>', line)
-                # 只有分成了至少3部分的，我们才认为它是推演链
                 if len(parts) >= 3:
                     graph_html = '<div class="reasoning-graph mt-3 mb-3" style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">'
                     for idx, part in enumerate(parts):
@@ -29,7 +40,6 @@ class BaseModelAdapter:
                         if idx < len(parts) - 1:
                             graph_html += '<div class="graph-arrow text-muted" style="font-size:1.2rem;">➔</div>'
                     graph_html += '</div>'
-                    # 替换原本枯燥的文本为精美的图谱 UI
                     lines[i] = "\n" + graph_html + "\n"
         new_text = '\n'.join(lines)
         return markdown.markdown(new_text, extensions=['extra', 'codehilite'])
