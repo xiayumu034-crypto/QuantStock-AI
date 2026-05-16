@@ -495,8 +495,23 @@ def get_news():
                         if name in content or name in title:
                             related_stocks.append({"name": name, "code": code})
                             
-                    # --- 过滤逻辑: 既没有提到股票，又不是被官方标记为重要的宏观新闻，直接丢弃 ---
-                    if len(related_stocks) == 0 and item.get('tag') != '1':
+                    # 判断是否为重要新闻 (兼容 tag 为列表或字符串的情况)
+                    is_important = False
+                    item_tag = item.get('tag')
+                    if isinstance(item_tag, list):
+                        for t in item_tag:
+                            if t.get('id') == '1' or t.get('name') in ['A股', '宏观', '重要', '头条']:
+                                is_important = True
+                                break
+                    elif item_tag == '1':
+                        is_important = True
+                        
+                    # 还可以通过 focus 字段或 level 字段判断重要性
+                    if item.get('focus') == '1' or item.get('level') == 1:
+                        is_important = True
+                            
+                    # --- 过滤逻辑: 既没有提到股票，又不是重要新闻，直接丢弃 ---
+                    if len(related_stocks) == 0 and not is_important:
                         continue
                         
                     sentiment = '中性'
@@ -519,7 +534,7 @@ def get_news():
                         'time': item.get('create_time'),
                         'url': doc_url,
                         'source': '新浪财经',
-                        'is_important': True if item.get('tag') == '1' else False,
+                        'is_important': is_important,
                         'sentiment': sentiment,
                         'related_stocks': related_stocks[:3] # 最多显示3个关联股票
                     })
