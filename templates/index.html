@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuantStock-AI v2.2</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <style>
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
@@ -1558,11 +1558,59 @@ function toggleAutoTrade(checked) {
         .then(res => {
             if (res.status === 'success') {
                 document.getElementById('rankAnalysisContent').innerHTML = res.data;
-                try {
-                    if (window.mermaid) {
-                        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                
+                // 渲染 ECharts 树状图
+                if (res.graph_data) {
+                    const container = document.getElementById('echartsTreeContainer');
+                    if (container) {
+                        const myChart = echarts.init(container);
+                        const option = {
+                            tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+                            series: [
+                                {
+                                    type: 'tree',
+                                    data: [res.graph_data],
+                                    top: '1%',
+                                    left: '7%',
+                                    bottom: '1%',
+                                    right: '20%',
+                                    symbolSize: 12,
+                                    label: {
+                                        position: 'left',
+                                        verticalAlign: 'middle',
+                                        align: 'right',
+                                        fontSize: 14,
+                                        color: '#e5e7eb',
+                                        backgroundColor: '#1a1a2e',
+                                        padding: [4, 8],
+                                        borderRadius: 4,
+                                        borderWidth: 1,
+                                        borderColor: '#6f42c1'
+                                    },
+                                    leaves: {
+                                        label: {
+                                            position: 'right',
+                                            verticalAlign: 'middle',
+                                            align: 'left',
+                                            color: '#10b981',
+                                            borderColor: '#10b981'
+                                        }
+                                    },
+                                    emphasis: { focus: 'descendant' },
+                                    expandAndCollapse: true,
+                                    animationDuration: 550,
+                                    animationDurationUpdate: 750,
+                                    lineStyle: {
+                                        color: '#4b5563',
+                                        width: 2,
+                                        curveness: 0.5
+                                    }
+                                }
+                            ]
+                        };
+                        myChart.setOption(option);
                     }
-                } catch(e) { console.error('Mermaid render error:', e); }
+                }
             } else {
                 document.getElementById('rankAnalysisContent').innerHTML = `<div class="alert alert-danger">${res.message}</div>`;
             }

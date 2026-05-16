@@ -13,22 +13,25 @@ class BaseModelAdapter:
         return base_prompt
 
     def parse_news_reasoning(self, text):
-        """图谱正则渲染解析器 (支持 Mermaid 脑图)"""
-        # 将 markdown 里的 ```mermaid ... ``` 替换为 <div class="mermaid"> ... </div>
-        # 先处理可能的 mermaid 块
+        """图谱 JSON 提取与渲染解析器"""
         import re
+        import json
         
-        # 匹配 ```mermaid ... ```
-        def mermaid_replacer(match):
-            content = match.group(1).strip()
-            return f'<div class="mermaid" style="background:#1a1a2e; padding:15px; border-radius:10px; margin:15px 0; text-align:center;">\n{content}\n</div>'
-            
-        text = re.sub(r'```mermaid\s+(.*?)\s+```', mermaid_replacer, text, flags=re.DOTALL)
+        graph_data = None
+        
+        # 尝试提取 JSON
+        json_match = re.search(r'```json\s+(.*?)\s+```', text, flags=re.DOTALL)
+        if json_match:
+            try:
+                graph_data = json.loads(json_match.group(1).strip())
+                # 从 text 中移除该 json 块，用一个特殊的占位符代替
+                text = text.replace(json_match.group(0), '<div id="echartsTreeContainer" style="width: 100%; height: 400px; margin: 15px 0;"></div>')
+            except Exception as e:
+                pass
         
         # 兜底：如果模型依然输出了 -> 的文字链，保留原有的彩色文字切片处理
         lines = text.split('\n')
         for i, line in enumerate(lines):
-            # 兼容多种箭头符号 (排除 html 注释等特殊情况)
             if ('->' in line or '➡️' in line or '=>' in line) and not '<div' in line:
                 parts = re.split(r'->|➡️|=>', line)
                 if len(parts) >= 3:
@@ -41,8 +44,14 @@ class BaseModelAdapter:
                             graph_html += '<div class="graph-arrow text-muted" style="font-size:1.2rem;">➔</div>'
                     graph_html += '</div>'
                     lines[i] = "\n" + graph_html + "\n"
+        
         new_text = '\n'.join(lines)
-        return markdown.markdown(new_text, extensions=['extra', 'codehilite'])
+        html_result = markdown.markdown(new_text, extensions=['extra', 'codehilite'])
+        
+        return {
+            "html": html_result,
+            "graph_data": graph_data
+        }
 
     def parse_stock_analysis(self, text):
         return markdown.markdown(text, extensions=['extra', 'codehilite'])

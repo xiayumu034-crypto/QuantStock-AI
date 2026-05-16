@@ -569,5 +569,7 @@ def analyze_news_reasoning():
     if not news_text:
         return jsonify({"status": "error", "message": "无新闻内容"})
     
-    html_result = generate_news_reasoning(news_text)
-    return jsonify({"status": "success", "data": html_result})
+    result = generate_news_reasoning(news_text)
+    if isinstance(result, dict):
+        return jsonify({"status": "success", "data": result['html'], "graph_data": result.get('graph_data')})
+    return jsonify({"status": "success", "data": result, "graph_data": None})
