@@ -6,10 +6,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import json
+
 def get_llm_client():
+    config_file = "data/ai_config.json"
     api_key = os.getenv("XIAOMI_API_KEY", "")
     base_url = "https://token-plan-cn.xiaomimimo.com/v1"
     model = "mimo-v2.5-pro"
+    
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                api_key = config.get("api_key") or api_key
+                base_url = config.get("base_url") or base_url
+                model = config.get("model") or model
+        except Exception as e:
+            logging.error(f"Failed to load ai_config.json: {e}")
+            
     return api_key, base_url, model
 
 def generate_ai_analysis(portfolio_str, logs_str, hot_sectors_str):
@@ -176,7 +190,7 @@ def generate_news_reasoning(news_text):
             max_tokens=1024
         )
         ai_text = response.choices[0].message.content
-        return markdown.markdown(ai_text, extensions=['extra', 'codehilite'])
+        return process_graph_markdown(ai_text)
     except Exception as e:
         error_str = str(e).lower()
         if "401" in error_str or "invalid_key" in error_str or "unauthorized" in error_str:
@@ -192,7 +206,32 @@ def generate_news_reasoning(news_text):
 **3. 🎯 关联板块与个股画像**
 - **核心板块**：资源开采、航运运输。
 - **个股画像**：建议重点关注具有实际产能释放预期、市值在 100-300亿之间、机构资金介入较深的行业中军（如中国海油等逻辑标的）。"""
-            return markdown.markdown(mock_text, extensions=['extra', 'codehilite'])
+            return process_graph_markdown(mock_text)
             
         logging.error(f"News Reasoning failed: {e}")
         return f"<div class='alert alert-danger'>AI 推理引擎罢工了: {str(e)}</div>"
+
+def process_graph_markdown(text):
+    import re
+    # 尝试找到含有多个 -> 或 ➡️ 或 => 的那一行，把它转换成图谱UI
+    lines = text.split('\n')
+    for i, line in enumerate(lines):
+        if '->' in line or '➡️' in line or '=>' in line:
+            # Check if it's the chain line
+            parts = re.split(r'->|➡️|=>', line)
+            if len(parts) >= 3:
+                # 这是一个推理链
+                graph_html = '<div class="reasoning-graph mt-3 mb-3" style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">'
+                for idx, part in enumerate(parts):
+                    clean_part = part.strip().replace('**', '').replace('-', '')
+                    if not clean_part: continue
+                    graph_html += f'<div class="graph-node" style="background:rgba(111,66,193,0.15); border:1px solid #6f42c1; color:#e0c8ff; padding:5px 12px; border-radius:20px; font-weight:bold; font-size:0.9rem;">{clean_part}</div>'
+                    if idx < len(parts) - 1:
+                        graph_html += '<div class="graph-arrow text-muted" style="font-size:1.2rem;">➔</div>'
+                graph_html += '</div>'
+                
+                # 替换原来的行
+                lines[i] = "\n" + graph_html + "\n"
+                
+    new_text = '\n'.join(lines)
+    return markdown.markdown(new_text, extensions=['extra', 'codehilite'])

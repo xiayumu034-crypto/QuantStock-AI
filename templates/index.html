@@ -181,7 +181,10 @@
                         <span style="color:#00d56b">●</span> 
                         更新: <span id="lastUpdate">--:--:--</span>
                     </div>
-                    <button class="refresh-btn mt-1" onclick="refreshAll()">🔄 刷新</button>
+                    <div>
+                        <button class="refresh-btn mt-1" onclick="openAISettings()">⚙️ 模型设置</button>
+                        <button class="refresh-btn mt-1 ms-2" onclick="refreshAll()">🔄 刷新</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2164,6 +2167,78 @@ function toggleAutoTrade(checked) {
             </div>
         </div>
     </div>
+    <!-- AI 模型设置模态框 -->
+    <div class="modal fade" id="aiSettingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">⚙️ AI 大模型全局配置</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2" style="font-size:0.85rem">
+                        随时切换兼容 OpenAI 接口格式的模型（如 DeepSeek, Kimi, 阿里云等）。无论大模型能力强弱，底层系统均做了容灾兼容。
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">API Base URL</label>
+                        <input type="text" id="aiBaseUrl" class="form-control bg-dark text-white border-secondary" placeholder="例如: https://api.deepseek.com/v1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">API Key</label>
+                        <input type="password" id="aiApiKey" class="form-control bg-dark text-white border-secondary" placeholder="sk-...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Model Name</label>
+                        <input type="text" id="aiModelName" class="form-control bg-dark text-white border-secondary" placeholder="例如: deepseek-chat">
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAISettings()">💾 保存全局配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAISettings() {
+            const modal = new bootstrap.Modal(document.getElementById('aiSettingsModal'));
+            modal.show();
+            // 获取当前设置
+            fetch('/api/settings/ai')
+            .then(r => r.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    document.getElementById('aiBaseUrl').value = res.data.base_url || '';
+                    document.getElementById('aiApiKey').value = res.data.api_key || '';
+                    document.getElementById('aiModelName').value = res.data.model || '';
+                }
+            }).catch(e => console.error(e));
+        }
+
+        function saveAISettings() {
+            const data = {
+                base_url: document.getElementById('aiBaseUrl').value.trim(),
+                api_key: document.getElementById('aiApiKey').value.trim(),
+                model: document.getElementById('aiModelName').value.trim()
+            };
+            fetch('/api/settings/ai', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    alert('大模型配置保存成功！后续的研判将自动切换至新模型。');
+                    bootstrap.Modal.getInstance(document.getElementById('aiSettingsModal')).hide();
+                } else {
+                    alert('保存失败: ' + res.message);
+                }
+            })
+            .catch(e => alert('网络异常'));
+        }
+    </script>
 </body>
 
 </html>
