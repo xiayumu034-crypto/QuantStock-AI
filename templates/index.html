@@ -370,7 +370,8 @@
                         <div class="title mb-0">📡 实时新闻</div>
                         <div>
                             <span class="badge bg-warning" id="newsCount">--</span>
-                            <button class="btn btn-sm btn-outline-secondary ms-2" id="newsToggle" onclick="toggleNewsMode()">全部</button>
+                            <button class="btn btn-sm btn-outline-primary ms-1" onclick="manualRefreshNews()" style="padding: 0.1rem 0.4rem; font-size: 0.75rem;">🔄 手动刷新</button>
+                            <button class="btn btn-sm btn-outline-secondary ms-1" id="newsToggle" onclick="toggleNewsMode()" style="padding: 0.1rem 0.4rem; font-size: 0.75rem;">全部</button>
                         </div>
                     </div>
                     <div id="newsContent" style="max-height:300px; overflow-y:auto;">
@@ -1516,6 +1517,13 @@ function toggleAutoTrade(checked) {
             document.getElementById('newsContent').innerHTML = '<div class="text-muted small">加载失败</div>';
         });
     }
+
+    function manualRefreshNews() {
+        const container = document.getElementById('newsContent');
+        container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm" role="status"></div><div class="mt-2 text-muted" style="font-size:0.75rem">正在全网捕获最新大事件...</div></div>';
+        loadNews();
+    }
+
     loadNews();
     setInterval(loadNews, 2 * 60 * 1000);
 
