@@ -318,3 +318,255 @@ QuantStock-AI ������ 127.0.0.1:5000 | ģʽ: ����(�ȸ���)
 127.0.0.1 - - [13/May/2026 01:21:44] "GET /api/realtime/300201 HTTP/1.1" 200 -
 127.0.0.1 - - [13/May/2026 01:21:44] "GET /api/technical/300201?datalen=100 HTTP/1.1" 200 -
 127.0.0.1 - - [13/May/2026 01:21:44] "GET /api/minute/300201?scale=5&datalen=48 HTTP/1.1" 200 -
+QuantStock-AI 启动于 127.0.0.1:5000 | 模式: 开发(热更新)
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 239-198-914
+ * Detected change in 'C:\\Users\\zephyr\\.qwenpaw\\workspaces\\my_agent_zg\\QuantStock-AI\\scripts\\dynamic_pool_screener.py', reloading
+QuantStock-AI 启动于 127.0.0.1:5000 | 模式: 开发(热更新)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 239-198-914
+127.0.0.1 - - [16/May/2026 16:01:49] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/ml_predict_all?version=v20 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/ml_predict/sz300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/realtime/sz300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/predict/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/screener/status?use_ai=false HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/ml_predict/sz300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/model_report?version=v20 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/minute/300201?scale=5&datalen=48 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/realtime/sz300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/technical/300201?datalen=100 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/market_rankings HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:51] "GET /api/news HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:52] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [16/May/2026 16:01:52] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:01:53] "GET /api/sim/watchlist HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:54] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:55] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:01:57] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:01:58] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:00] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:02:01] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:04] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:06] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:02:07] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:10] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:02:10] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:13] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:02:13] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:16] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:02:16] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:19] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:22] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:02:22] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+127.0.0.1 - - [16/May/2026 16:02:25] "GET /api/realtime/300201 HTTP/1.1" 200 -
+127.0.0.1 - - [16/May/2026 16:02:25] "GET /api/sim/info HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\.venv\lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\zephyr\.qwenpaw\workspaces\my_agent_zg\QuantStock-AI\api\routes_sim_trade.py", line 279, in get_info
+    total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+KeyError: 'cost_price'
+QuantStock-AI 启动于 127.0.0.1:5000 | 模式: 开发(热更新)
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 239-198-914

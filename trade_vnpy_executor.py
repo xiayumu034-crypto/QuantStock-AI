@@ -130,9 +130,11 @@ class VnpyExecutor:
             account['cash'] -= price * vol
             account['holdings'][signal['code']] = {
                 "name": signal['name'],
-                "price": price,
+                "cost_price": price,
+                "current_price": price,
                 "vol": vol,
-                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "buy_date": datetime.now().strftime("%Y-%m-%d"),
+                "buy_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
             account['logs'].insert(0, {
                 "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -178,7 +180,23 @@ class VnpyExecutor:
         return None
 
 
+    def is_market_open(self):
+        now = datetime.now()
+        if now.isoweekday() > 5:  # 周六周日休市
+            return False
+        
+        t = now.time()
+        from datetime import time as dtime
+        # A股交易时间: 09:30-11:30, 13:00-15:00
+        if (dtime(9, 30) <= t <= dtime(11, 30)) or (dtime(13, 0) <= t <= dtime(15, 0)):
+            return True
+        return False
+
     def run(self):
+        if not self.is_market_open():
+            logging.warning("⛔ 拦截交易：当前非A股交易时间段 (工作日 09:30-11:30, 13:00-15:00)，休市期间禁止下单。")
+            return
+
         signals = self.load_signals()
         if not signals:
             logging.info("今日无高胜率信号，空仓观望。")

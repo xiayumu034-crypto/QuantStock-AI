@@ -68,10 +68,9 @@ def fetch_all_spot(status_file, force_refresh=False):
         except Exception as e2:
             print(f"新浪源也失败: {e2}")
             return pd.DataFrame()
-            
+    
     if not df.empty:
-        os.makedirs("data", exist_ok=True)
-        df.to_csv(cache_file, index=False, encoding="utf-8-sig")
+        df.to_csv(cache_file, index=False, encoding="utf-8")
     return df
 
 def apply_rule_filter(df):
@@ -79,30 +78,28 @@ def apply_rule_filter(df):
     基础规则过滤：
     1. 剔除ST、*ST、退市、停牌
     2. 成交额 > 1亿
-    3. 换手率 > 3%
+    3. 涨跌幅筛选
     """
     if df.empty:
         return df
-    
+        
     print(f"过滤前总数: {len(df)}")
     
-    # 剔除 ST / 退
-    df = df[~df['名称'].str.contains("ST|退|S")]
+    # 剔除 ST
+    df = df[~df['名称'].str.contains('ST|退')]
     
-    # 清洗成交额 (万)
+    # 成交额转为数字 ( akshare 返回的成交额单位不一，EM源通常是元)
     df['成交额'] = pd.to_numeric(df['成交额'], errors='coerce').fillna(0)
-    # 过滤成交额 > 1亿 (10000万)
-    df = df[df['成交额'] > 100000000]
+    df = df[df['成交额'] > 100000000] # 1亿
     
-    # 过滤换手率 > 3% (如果存在该列)
+    # 换手率
     if '换手率' in df.columns:
         df['换手率'] = pd.to_numeric(df['换手率'], errors='coerce').fillna(0)
         df = df[df['换手率'] > 3.0]
     else:
-        df['换手率'] = 0.0 # Sina 源没有换手率，暂时置 0
+        df['换手率'] = 0.0
 
-    
-    # 只保留涨幅在 0% ~ 9% 之间的票 (剔除一字跌停和已经涨停难买的)
+    # 只保留涨幅在 0% ~ 9% 之间的票
     df['涨跌幅'] = pd.to_numeric(df['涨跌幅'], errors='coerce').fillna(0)
     df = df[(df['涨跌幅'] > 0) & (df['涨跌幅'] < 9.0)]
     
@@ -111,11 +108,10 @@ def apply_rule_filter(df):
 
 def simulate_ai_analysis(code, name, row_data):
     """
-    模拟 AI 分析逻辑，引入更多动态因子，使得理由不再千篇一律。
+    模拟 AI 分析逻辑，引入更多动态因子。
     """
     if generate_stock_ai_analysis:
         try:
-            # 修正调用参数
             ai_text = generate_stock_ai_analysis(code, name, row_data)
             import re
             score_match = re.search(r'(\d{2,3})分', ai_text)
@@ -125,11 +121,11 @@ def simulate_ai_analysis(code, name, row_data):
         except Exception as e:
             print(f"真实 AI 分析失败: {e}")
             
-    # 模拟AI分析逻辑，作为降级方案
+    # 仿真 AI 分析
     change = float(row_data.get("涨跌幅", 0))
     turnover = float(row_data.get("换手率", 0))
     
-    trend = "强势拉升，多头情绪极度亢奋" if change > 5 else ("稳步走高，处于上升通道中轴" if change > 2 else "窄幅震荡，蓄势待发")
+    trend = "强势拉升，多头情绪极度亢奋" if change > 5 else ("稳步走高，处于上升通道中轴" if change > 2 else "窄幅震震荡，蓄势待发")
     money = "换手极度活跃，主力洗盘迹象明显" if turnover > 10 else ("量能显著放大，资金进场意愿强烈" if turnover > 3 else "资金温和流入，筹码结构趋于稳定")
 
     score = round(65 + (hash(code) % 25) + (change * 0.5), 1)
@@ -142,13 +138,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--use-ai", action="store_true", help="是否使用AI进行深度定性筛选")
     parser.add_argument("--limit", type=int, default=0, help="限制分析数量，0表示不限制")
-    parser.add_argument("--force-refresh", action="store_true", help="强制重新拉取全市场数据（忽略本地缓存）")
+    parser.add_argument("--force-refresh", action="store_true", help="强制重新拉取全市场数据")
     args = parser.parse_args()
     
     status_file = "data/screener_status_ai.json" if args.use_ai else "data/screener_status_tech.json"
     
-    # 纯技术海选不设上限，将所有符合条件的活水股送入下一层（V19）
-    # AI 模式为了避免接口超时和高昂的Token费用，仅对资金热度前 20 的股票进行深度定性
     if args.limit > 0:
         limit = args.limit
     else:
@@ -156,34 +150,27 @@ def main():
 
     df_all = fetch_all_spot(status_file, args.force_refresh)
     if df_all.empty:
-        write_status(status_file, "error", 0, 100, "无法连接行情源且无本地缓存，网络可能被拦截")
+        write_status(status_file, "error", 0, 100, "无法连接行情源且无本地缓存")
         return
         
-    write_status(status_file, "running", 10, 100, "应用多因子规则引擎(过滤ST、低流动性、一字板)...")
-    time.sleep(1) # 演示延时
-    
+    write_status(status_file, "running", 10, 100, "应用多因子规则引擎...")
     df_filtered = apply_rule_filter(df_all)
     
-    # 按成交额降序，如果有 limit 则截断
     df_filtered = df_filtered.sort_values(by='成交额', ascending=False)
     if limit > 0:
         df_filtered = df_filtered.head(limit)
     
     candidates = df_filtered.to_dict('records')
     total = len(candidates)
-    
     results = []
     
     if args.use_ai:
-        write_status(status_file, "running", 20, total, f"启用 MiMo 投研大脑，对 {total} 只标的进行深度防弹网扫描...")
+        write_status(status_file, "running", 20, total, f"启用 AI Brain，对 {total} 只标的进行深度扫描...")
         for i, row in enumerate(candidates):
             code = str(row.get("代码", ""))
             name = str(row.get("名称", ""))
+            write_status(status_file, "running", i+1, total, f"AI 正在解析: {name} ({code})")
             
-            # 每处理一只股票更新进度
-            write_status(status_file, "running", i+1, total, f"AI 正在解析财报与热点: {name} ({code})")
-            
-            # 引入容错和降级
             try:
                 ai_result = simulate_ai_analysis(code, name, row)
                 if ai_result["score"] > 70:
@@ -198,43 +185,28 @@ def main():
                     })
             except Exception as e:
                 print(f"AI error for {code}: {e}")
-                
     else:
-        write_status(status_file, "running", 50, 100, f"经典算法直接提取 {total} 只活水池标的...")
-        time.sleep(2)
+        write_status(status_file, "running", 50, 100, f"经典算法直接提取 {total} 只标的...")
         for row in candidates:
-            price = row.get("最新价", 0)
-            change = row.get("涨跌幅", 0)
-            turnover = row.get("换手率", 0)
+            code = str(row.get("代码", ""))
+            name = str(row.get("名称", ""))
+            change = float(row.get("涨跌幅", 0))
+            turnover = float(row.get("换手率", 0))
             results.append({
-                "code": str(row.get("代码", "")),
-                "name": str(row.get("名称", "")),
-                "price": price,
+                "code": code,
+                "name": name,
+                "price": row.get("最新价", 0),
                 "change_pct": change,
                 "turnover": turnover,
-                "logic": f"技术面特征：今日涨幅 {change}%，换手率 {turnover}%。量价配合良好，属于活跃活水池标的。"
+                "logic": f"【技术海选】{name} ({code}): 今日涨幅 {change}%，成交额居前，换手率 {turnover}%，流动性极佳。"
             })
             
-    # 结果按AI分数或涨幅排序
     if args.use_ai:
         results = sorted(results, key=lambda x: x.get("ai_score", 0), reverse=True)
     else:
         results = sorted(results, key=lambda x: x.get("change_pct", 0), reverse=True)
         
-    write_status(status_file, "finished", total, total, f"漏斗筛选完毕！最终幸存 {len(results)} 只标的。", data=results)
-    
-    # 更新到 stock_names.json，将活水池送入底层 V19 追踪
-    if os.path.exists("data/stock_names.json"):
-        with open("data/stock_names.json", "r", encoding="utf-8") as f:
-            stock_pool = json.load(f)
-            
-        for r in results:
-            prefix = "sh" if r["code"].startswith("6") else "sz"
-            stock_pool[f"{prefix}{r['code']}"] = r["name"]
-            
-        with open("data/stock_names.json", "w", encoding="utf-8") as f:
-            json.dump(stock_pool, f, ensure_ascii=False, indent=4)
-            
+    write_status(status_file, "finished", total, total, f"筛选完毕！共 {len(results)} 只标的。", data=results)
     print(f"筛选完成，存活 {len(results)} 只标的。")
 
 if __name__ == "__main__":

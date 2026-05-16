@@ -276,7 +276,8 @@ def get_info():
     today_str = datetime.now().strftime("%Y-%m-%d")
     
     for code, pos in account["holdings"].items():
-        total_asset += pos["vol"] * pos.get("current_price", pos["cost_price"])
+        cost_price = pos.get("cost_price", pos.get("price", 0))
+        total_asset += pos["vol"] * pos.get("current_price", cost_price)
         
         # 补充计算止盈止损以便前端展示 (引入文件缓存机制，防止频繁调用akshare导致IP被封与闪烁)
         if pos.get("sl_tp_date") != today_str or "stop_loss" not in pos:
