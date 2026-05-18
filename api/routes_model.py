@@ -12,6 +12,25 @@ stock_api = StockDataAPI()
 TRADE_LOGS_FILE = "model_output/trade_logs.json"
 SAMPLE_TRADE_LOGS_FILE = "model_output/sample_trade_logs.json"
 
+@model_bp.route('/api/run_backtest', methods=['POST'])
+def run_backtest():
+    data = request.json
+    start_date = data.get('start_date', '2024-01-01')
+    end_date = data.get('end_date', '2025-01-01')
+    
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backtest_v20_system.py")
+    cwd_path = os.path.dirname(os.path.dirname(__file__))
+    try:
+        # 运行回测脚本，由于抽样了数据，通常耗时在几秒内，这里阻塞等待
+        import sys
+        python_exe = sys.executable
+        subprocess.run([python_exe, script_path, start_date, end_date], check=True, cwd=cwd_path)
+        return jsonify({"status": "success", "message": "回测执行完成"})
+    except subprocess.CalledProcessError as e:
+        return jsonify({"status": "error", "message": f"回测执行失败: {str(e)}"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
 @model_bp.route('/api/backtest_report')
 def get_backtest_report():
     report_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "model_output", "backtest_report_v20.json")
@@ -32,9 +51,22 @@ def get_model_report():
             return jsonify({"status": "error", "message": f"解析评估报告失败: {str(e)}"})
     return jsonify({"status": "error", "message": f"暂无离线模型评估报告，请先运行 evaluate_model.py --version {version}"})
 
+@model_bp.route('/api/signal_quality')
+def get_signal_quality():
+    version = request.args.get('version', 'v19')
+    report_file = f"model_output/signal_quality_{version}.json"
+    if os.path.exists(report_file):
+        try:
+            with open(report_file, 'r', encoding='utf-8') as f:
+                return jsonify({"status": "success", "data": json.load(f)})
+        except Exception as e:
+            return jsonify({"status": "error", "message": f"解析信号质量报告失败: {str(e)}"})
+    return jsonify({"status": "error", "message": "未生成"})
+
 @model_bp.route('/api/predict/<stock_code>')
 def get_prediction(stock_code):
-    result = stock_api.predict_next_5_minutes(stock_code)
+    clean_code = stock_code[-6:]
+    result = stock_api.predict_next_5_minutes(clean_code)
     return jsonify({"status": "success", "data": result})
 
 @model_bp.route('/api/trade_logs')
@@ -250,3 +282,80 @@ def get_ml_predict_all():
         "meta": {"model": meta.get("model_version", f"Qlib {version}"), "stocks": len(results), "sample": is_sample},
         "data": results
     })
+
+# =================================================================================
+# V21 Weekly Swing Module APIs
+# =================================================================================
+
+@model_bp.route('/api/weekly_predict_all', methods=['GET'])
+def get_weekly_predictions():
+    pred_path = "model_output/daily_predictions_v21_weekly.json"
+    if not os.path.exists(pred_path):
+        return jsonify({"status": "error", "message": "暂无 V21 预测结果，请先运行推理脚本或等待生成"})
+    try:
+        with open(pred_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify({"status": "success", "data": data.get("data", {}), "meta": data.get("meta", {})})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@model_bp.route('/api/weekly_model_report', methods=['GET'])
+def get_weekly_model_report():
+    report_path = "model_output/model_report_v21_weekly.json"
+    if not os.path.exists(report_path):
+        return jsonify({"status": "error", "message": "暂无 V21 模型报告"})
+    try:
+        with open(report_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify({"status": "success", "data": data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@model_bp.route('/api/weekly_backtest_report', methods=['GET'])
+def get_weekly_backtest_report():
+    report_path = "model_output/backtest_report_v21_weekly.json"
+    if not os.path.exists(report_path):
+        return jsonify({"status": "error", "message": "暂无 V21 回测报告"})
+    try:
+        with open(report_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify({"status": "success", "data": data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@model_bp.route('/api/weekly_train/start', methods=['POST'])
+def start_weekly_train():
+    status_file = "model_output/v21_train_status.json"
+    try:
+        # Prevent multiple runs
+        if os.path.exists(status_file):
+            with open(status_file, "r", encoding="utf-8") as f:
+                st = json.load(f)
+                if st.get("status") == "running":
+                    return jsonify({"status": "error", "message": "训练任务已在运行中"})
+        
+        # Start async process
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        subprocess.Popen(["uv", "run", "python", "train_weekly_swing_v21.py"], env=env)
+        
+        # Initial status
+        os.makedirs("model_output", exist_ok=True)
+        with open(status_file, "w", encoding="utf-8") as f:
+            json.dump({"status": "running", "progress": 0, "message": "正在启动训练进程..."}, f, ensure_ascii=False)
+            
+        return jsonify({"status": "success", "message": "已在后台启动 V21 训练任务"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@model_bp.route('/api/weekly_train/status', methods=['GET'])
+def get_weekly_train_status():
+    status_file = "model_output/v21_train_status.json"
+    if not os.path.exists(status_file):
+        return jsonify({"status": "success", "data": {"status": "idle", "progress": 0, "message": "尚未启动训练"}})
+    try:
+        with open(status_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify({"status": "success", "data": data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})

@@ -71,6 +71,12 @@ def main():
     start_date = "2024-01-01"
     end_date = "2025-01-01"
     
+    import sys
+    if len(sys.argv) >= 3:
+        start_date = sys.argv[1]
+        end_date = sys.argv[2]
+        print(f"🔧 自定义回测区间: {start_date} 至 {end_date}")
+    
     # 4. Fetch Data (Subsample for speed)
     print(f"📈 正在提取 {start_date} 至 {end_date} 的回测数据...")
     

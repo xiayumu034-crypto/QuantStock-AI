@@ -1,20 +1,31 @@
 import os
 import json
 import logging
+import shutil
 from datetime import datetime
 from flask import Blueprint, jsonify, request
+from filelock import FileLock
 
 sim_trade_bp = Blueprint('sim_trade', __name__)
 
 ACCOUNT_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'sim_account.json')
+ACCOUNT_SAMPLE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'sim_account.sample.json')
+ACCOUNT_LOCK = ACCOUNT_FILE + ".lock"
 INITIAL_CASH = 100000.0
 MAX_POSITIONS = 5
 
 def load_account():
+    if not os.path.exists(ACCOUNT_FILE):
+        if os.path.exists(ACCOUNT_SAMPLE):
+            try:
+                shutil.copy(ACCOUNT_SAMPLE, ACCOUNT_FILE)
+            except Exception as e:
+                logging.error(f"Failed to copy sample account: {e}")
     if os.path.exists(ACCOUNT_FILE):
         try:
-            with open(ACCOUNT_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            with FileLock(ACCOUNT_LOCK, timeout=5):
+                with open(ACCOUNT_FILE, 'r', encoding='utf-8') as f:
+                    return json.load(f)
         except Exception as e:
             logging.error(f"Failed to load account: {e}")
     return {
@@ -26,8 +37,12 @@ def load_account():
 
 def save_account(account):
     os.makedirs(os.path.dirname(ACCOUNT_FILE), exist_ok=True)
-    with open(ACCOUNT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(account, f, ensure_ascii=False, indent=4)
+    try:
+        with FileLock(ACCOUNT_LOCK, timeout=5):
+            with open(ACCOUNT_FILE, 'w', encoding='utf-8') as f:
+                json.dump(account, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        logging.error(f"Failed to save account: {e}")
 
 def check_trade_limit(code, current_price, yesterday_close, action, ask1_price=None, bid1_price=None):
     """
@@ -114,8 +129,8 @@ def calc_dynamic_sl_tp(code):
                 pass
             time.sleep(1)
                 
-        if not df.empty and len(df) >= 40:
-            df = df.tail(40)
+        if not df.empty and len(df) >= 15:
+            df = df.tail(40) if len(df) >= 40 else df
             close_prices = df['收盘'].astype(float).values
             
             # --- Ernie Chan Half-Life 算法 ---
@@ -133,8 +148,20 @@ def calc_dynamic_sl_tp(code):
                 # 如果 slope >= 0 或者趋近于0，说明呈现极强趋势性（非平稳），退化为默认的趋势追踪窗口 10
                 half_life = 10
                 
+            # 防止数据太少导致 half_life 大于数据长度
+            half_life = min(half_life, len(df) - 2)
+                
             # print(f"[{code}] Computed Half-Life: {half_life} days (slope: {slope:.4f})")
             
+            # 获取实时最新价，防止盘中大涨时使用昨收计算出离谱的止损点
+            current_price = close_prices[-1]
+            try:
+                rt_data = api_client.get_realtime_data(symbol)
+                if rt_data and rt_data.get("current", 0) > 0:
+                    current_price = rt_data["current"]
+            except Exception:
+                pass
+                
             # 根据半衰期动态提取数据
             close_series = pd.Series(close_prices)
             high_prices = df['最高'].astype(float)
@@ -148,8 +175,15 @@ def calc_dynamic_sl_tp(code):
             tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
             atr = tr.tail(half_life).mean()
             
-            stop_loss = round(sma_dynamic - 1.2 * atr, 2)
-            take_profit = round(close_prices[-1] + 2.5 * atr, 2)
+            base_stop_loss = sma_dynamic - 1.2 * atr
+            
+            # 【核心风控修复】：针对突然爆发的连板或高弹标的，均线(sma_dynamic)严重滞后。
+            # 如果直接用均线减去ATR，可能导致止损线深达现价的 -20% 甚至 -30%。
+            # 引入硬性风控：单次交易最大回撤容忍度设为 -8% (即给出一根大阴线的洗盘空间，跌破即走)
+            max_drawdown_price = current_price * 0.92
+            
+            stop_loss = round(max(base_stop_loss, max_drawdown_price), 2)
+            take_profit = round(current_price + 2.5 * atr, 2)
             return stop_loss, take_profit
     except Exception as e:
         logging.error(f"Error calculating Half-Life SL/TP for {code}: {e}")
@@ -246,6 +280,43 @@ def get_watchlist():
     except Exception as e:
         pass
         
+    # 3. 获取低位潜伏/洗盘模型 (平盘或下跌的高活跃股票)
+    try:
+        import os
+        import pandas as pd
+        cache_file = "data/all_spot_cache.csv"
+        if os.path.exists(cache_file):
+            df = pd.read_csv(cache_file)
+            df['涨跌幅'] = pd.to_numeric(df['涨跌幅'], errors='coerce')
+            df['成交额'] = pd.to_numeric(df['成交额'], errors='coerce')
+            df['最高'] = pd.to_numeric(df['最高'], errors='coerce')
+            df['最低'] = pd.to_numeric(df['最低'], errors='coerce')
+            df['昨收'] = pd.to_numeric(df['昨收'], errors='coerce')
+            
+            # 计算振幅：(最高 - 最低) / 昨收 * 100
+            df['振幅'] = (df['最高'] - df['最低']) / df['昨收'] * 100
+            
+            # 过滤：涨跌幅在 -4 到 +1 之间，非ST，且剔除单日成交额大于30亿的超大盘股，同时要求成交额大于3亿保证基础流动性
+            mask = (df['涨跌幅'] >= -4.0) & (df['涨跌幅'] <= 1.0) & \
+                   (~df['名称'].str.contains('ST|退|S', na=False)) & \
+                   (df['成交额'] >= 300_000_000) & (df['成交额'] <= 3_000_000_000)
+                   
+            # 按照振幅降序排列，选取振幅极大、换手激烈但是收盘没涨的中小盘股票（主力剧烈洗盘或强力换手）
+            lurking_df = df[mask].sort_values(by='振幅', ascending=False).head(3)
+            for _, row in lurking_df.iterrows():
+                code_str = str(row['代码']).zfill(6)
+                if not any(w["code"] == code_str for w in watchlist):
+                    watchlist.append({
+                        "code": code_str,
+                        "name": str(row['名称']),
+                        "reason": f"【入选逻辑】：量化洗盘/左侧潜伏模型。<br>【动能追踪】：该股当日交投极度活跃（成交额 {(row['成交额']/1e8):.1f}亿），日内振幅高达 {row['振幅']:.1f}%，但最终涨幅仅 {row['涨跌幅']:.2f}%。<br>【交易博弈】：典型的宽幅震荡洗盘特征，中小盘高弹性标的。巨量长影线或宽幅震荡说明主力在水下激烈吸筹洗盘，下方安全垫极厚，绝佳的左侧潜伏点。",
+                        "type": "washout",
+                        "change_pct": float(row['涨跌幅'])
+                    })
+    except Exception as e:
+        import logging
+        logging.error(f"Error getting Washout watchlist: {e}")
+
     return jsonify({"status": "success", "data": watchlist})
 
 @sim_trade_bp.route('/info', methods=['GET'])
@@ -282,12 +353,26 @@ def get_info():
         # 补充计算止盈止损以便前端展示 (引入文件缓存机制，防止频繁调用akshare导致IP被封与闪烁)
         if pos.get("sl_tp_date") != today_str or "stop_loss" not in pos:
             sl, tp = calc_dynamic_sl_tp(code)
+            
             if sl is not None: 
-                pos["stop_loss"] = float(sl)
+                new_sl = float(sl)
+                # 【核心升级】：追踪止损 (Trailing Stop Loss) 机制
+                # 止损线只能随着股价上涨而不断【上移】（锁定利润），绝不能因为股价下跌而【下移】！
+                if "stop_loss" in pos:
+                    pos["stop_loss"] = max(pos.get("stop_loss", 0), new_sl)
+                else:
+                    pos["stop_loss"] = new_sl
                 need_save = True
+                
             if tp is not None: 
-                pos["take_profit"] = float(tp)
+                new_tp = float(tp)
+                # 动态止盈：股票走主升浪时，随着波动率（ATR）放大，让止盈线自动向上推，让利润奔跑
+                if "take_profit" in pos:
+                    pos["take_profit"] = max(pos.get("take_profit", 0), new_tp) if pos.get("current_price", 0) > pos.get("cost_price", 0) else new_tp
+                else:
+                    pos["take_profit"] = new_tp
                 need_save = True
+                
             pos["sl_tp_date"] = today_str
             need_save = True
             
@@ -786,13 +871,15 @@ def execute_v20_signals():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+@sim_trade_bp.route('/analyze')
+def analyze_sim_account():
     account = load_account()
     
     # 提取持仓
     portfolio = f"总资产: {account.get('total_asset', account['cash'])}, 可用资金: {account['cash']}\n"
     if account["holdings"]:
         for code, pos in account["holdings"].items():
-            portfolio += f"- {pos['name']}({code}): {pos['vol']}股, 成本价: {pos['cost_price']}\n"
+            portfolio += f"- {pos['name']}({code}): {pos['vol']}股, 成本价: {pos.get('cost_price', pos.get('price', 0))}\n"
     else:
         portfolio += "当前空仓\n"
         
@@ -801,7 +888,7 @@ def execute_v20_signals():
     if account["logs"]:
         logs_str = ""
         for log in account["logs"][:10]:
-            logs_str += f"- [{log['time']}] {log['action']} {log['name']} {log['vol']}股 @ {log['price']}元 (原因: {log['reason']})\n"
+            logs_str += f"- [{log['time']}] {log['action']} {log['name']} {log['vol']}股 @ {log['price']}元 (原因: {log.get('reason', '')})\n"
             
     # 获取热点
     hot_sectors_str = "暂无数据"

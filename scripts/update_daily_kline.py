@@ -102,7 +102,7 @@ def main():
     
     dump_cmd = [
         "uv", "run", "python", "dump_bin.py", "dump_all",
-        "--csv_path", CSV_DIR,
+        "--data_path", CSV_DIR,
         "--qlib_dir", qlib_dir,
         "--symbol_field_name", "symbol",
         "--date_field_name", "date",

@@ -23,3 +23,11 @@ qlib_source/
 # 忽略生产数据和模型产物
 model_output/*.pkl
 model_output/*.json
+
+# 忽略运行态数据
+server_log.txt
+llm_error.log
+data/screener_status_ai.json
+data/screener_status_tech.json
+data/pipeline_status.json
+model_output/trade_logs.json

@@ -37,11 +37,8 @@ def main():
     
     try:
         # Step 0: 使用 AKShare 更新最新 K 线数据
-        write_status("running", 10, "正在启动 AKShare 行情抓取引擎...")
-        cmd_kline = ["uv", "run", "python", "scripts/update_daily_kline.py"]
-        # 直接运行但将输出丢给控制台，状态由 update_daily_kline.py 自己接管写入
-        # 但为了避免状态文件被争抢覆盖，我们直接 run 并等待，因为 update_daily_kline 也会写 STATUS_FILE
-        # 最好由 update_daily_kline 汇报进度 10 -> 90，然后我们接管 90 -> 100
+        write_status("running", 10, "正在启动 AKShare 行情抓取与 Qlib 编译引擎...")
+        cmd_kline = ["uv", "run", "python", "scripts/daily_ingestion_pipeline.py"]
         run_cmd(cmd_kline, "AKShare 历史 K 线拉取与编译")
         
         # Step 1: 运行 V19 推理

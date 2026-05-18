@@ -16,17 +16,63 @@ class BaseModelAdapter:
         """图谱 JSON 提取与渲染解析器"""
         import re
         import json
+        import ast
         
+        if not text or not text.strip():
+            text = "⚠️ AI 模型未能生成有效的推理内容 (可能触发了内容过滤或模型响应为空)，请尝试更换模型或稍后重试。"
+            
         graph_data = None
         
-        # 尝试提取 JSON
-        json_match = re.search(r'```json\s+(.*?)\s+```', text, flags=re.DOTALL)
+        # 匹配 ```json ... ``` 或 ``` ... ```
+        json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text)
+        json_str = None
+        match_full = None
+        
         if json_match:
+            json_str = json_match.group(1).strip()
+            match_full = json_match.group(0)
+        else:
+            # 兜底：如果完全没有代码块，直接找首尾的 { ... } 且必须包含 "name" 或 "children"
+            bracket_match = re.search(r'(\{[\s\S]*("name"|"children")[\s\S]*\})', text)
+            if bracket_match:
+                json_str = bracket_match.group(1).strip()
+                match_full = bracket_match.group(0)
+                
+        if json_str:
             try:
-                graph_data = json.loads(json_match.group(1).strip())
-                # 从 text 中移除该 json 块，用一个特殊的占位符代替
-                text = text.replace(json_match.group(0), '<div id="echartsTreeContainer" style="width: 100%; height: 400px; margin: 15px 0;"></div>')
+                # 尝试修复尾随逗号问题 (如 {"a": 1,} -> {"a": 1})
+                clean_json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
+                
+                try:
+                    graph_data = json.loads(clean_json_str)
+                except json.JSONDecodeError:
+                    # 如果 json 依然失败，尝试用 ast.literal_eval 解析 Python 字典（处理单引号等情况）
+                    graph_data = ast.literal_eval(clean_json_str)
+                    
+                # 如果弱智模型返回了列表（比如 [{"name": "A"}]），取第一个元素
+                if isinstance(graph_data, list):
+                    if len(graph_data) > 0:
+                        graph_data = graph_data[0]
+                    else:
+                        graph_data = {"name": "事件", "children": []}
+                elif not isinstance(graph_data, dict):
+                    graph_data = None
+                    
+                if graph_data:
+                    # 确保包含 name 字段
+                    if "name" not in graph_data:
+                        if "title" in graph_data:
+                            graph_data["name"] = graph_data.pop("title")
+                        elif "text" in graph_data:
+                            graph_data["name"] = graph_data.pop("text")
+                        else:
+                            graph_data["name"] = "事件驱动推演"
+                            
+                    # 从原文本中替换掉 JSON 数据块，注入 ECharts 容器
+                    text = text.replace(match_full, '<div id="echartsTreeContainer" style="width: 100%; height: 400px; margin: 15px 0;"></div>')
             except Exception as e:
+                import logging
+                logging.error(f"JSON Parse Exception in parse_news_reasoning: {e}")
                 pass
         
         # 兜底：如果模型依然输出了 -> 的文字链，保留原有的彩色文字切片处理

@@ -38,7 +38,18 @@ def start_screener():
 def get_screener_status():
     use_ai = request.args.get('use_ai', 'false') == 'true'
     status_file_name = "screener_status_ai.json" if use_ai else "screener_status_tech.json"
-    status_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", status_file_name)
+    sample_file_name = "screener_status_ai.sample.json" if use_ai else "screener_status_tech.sample.json"
+    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    status_file = os.path.join(data_dir, status_file_name)
+    sample_file = os.path.join(data_dir, sample_file_name)
+    
+    if not os.path.exists(status_file) and os.path.exists(sample_file):
+        import shutil
+        try:
+            shutil.copy(sample_file, status_file)
+        except Exception:
+            pass
+
     if os.path.exists(status_file):
         with open(status_file, "r", encoding="utf-8") as f:
             try:
@@ -288,28 +299,43 @@ def ai_analyze_stock(code):
                 current_key = None
                 for line in llm_text.split('\n'):
                     line = line.strip()
-                    if not line:
+                    # 去除 markdown 加粗
+                    clean_line = line.replace('**', '')
+                    # 容忍数字前缀，例如 "1. 动作："
+                    import re
+                    clean_line = re.sub(r'^\d+\.\s*', '', clean_line)
+                    
+                    if not clean_line:
                         continue
-                    if line.startswith('动作：'):
-                        llm_data['action'] = line.replace('动作：', '').strip()
+                    if clean_line.startswith('动作：') or clean_line.startswith('动作:'):
+                        llm_data['action'] = clean_line.split('：', 1)[-1].split(':', 1)[-1].strip()
                         current_key = 'action'
-                    elif line.startswith('支撑：'):
-                        llm_data['support_level'] = line.replace('支撑：', '').strip()
+                    elif clean_line.startswith('支撑：') or clean_line.startswith('支撑:'):
+                        llm_data['support_level'] = clean_line.split('：', 1)[-1].split(':', 1)[-1].strip()
                         current_key = 'support_level'
-                    elif line.startswith('压力：'):
-                        llm_data['resistance_level'] = line.replace('压力：', '').strip()
+                    elif clean_line.startswith('压力：') or clean_line.startswith('压力:'):
+                        llm_data['resistance_level'] = clean_line.split('：', 1)[-1].split(':', 1)[-1].strip()
                         current_key = 'resistance_level'
-                    elif line.startswith('开盘：'):
-                        llm_data['expected_open'] = line.replace('开盘：', '').strip()
+                    elif clean_line.startswith('开盘：') or clean_line.startswith('开盘:'):
+                        llm_data['expected_open'] = clean_line.split('：', 1)[-1].split(':', 1)[-1].strip()
                         current_key = 'expected_open'
-                    elif line.startswith('结论：'):
-                        llm_data['ai_conclusion'] = line.replace('结论：', '').strip()
+                    elif clean_line.startswith('结论：') or clean_line.startswith('结论:'):
+                        llm_data['ai_conclusion'] = clean_line.split('：', 1)[-1].split(':', 1)[-1].strip()
                         current_key = 'ai_conclusion'
                     else:
                         if current_key == 'ai_conclusion':
                             llm_data['ai_conclusion'] += "\n" + line
                 
-                if 'action' in llm_data and 'ai_conclusion' in llm_data:
+                if 'action' not in llm_data:
+                    llm_data['action'] = "震荡"
+                if 'support_level' not in llm_data:
+                    llm_data['support_level'] = "动态支撑"
+                if 'resistance_level' not in llm_data:
+                    llm_data['resistance_level'] = "动态压力"
+                if 'expected_open' not in llm_data:
+                    llm_data['expected_open'] = "平开"
+                
+                if 'ai_conclusion' in llm_data:
                     break
                 else:
                     raise ValueError(f"Failed to parse required fields. Raw text: {repr(llm_text)}")

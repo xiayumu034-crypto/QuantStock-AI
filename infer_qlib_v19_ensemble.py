@@ -43,7 +43,11 @@ def main():
         models = pickle.load(f)
     
     with open(features_path, 'r', encoding='utf-8') as f:
-        feature_cols = json.load(f)
+        feature_data = json.load(f)
+        if isinstance(feature_data, dict):
+            feature_cols = list(feature_data.keys())
+        else:
+            feature_cols = feature_data
 
     print(f"[Infer v19 Ensemble] 正在提取最新特征数据...")
     end_date = pd.Timestamp.now().strftime("%Y-%m-%d")

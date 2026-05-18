@@ -167,8 +167,24 @@
             color: #e5e7eb !important;
         }
     </style>
+
+    <style>
+    @keyframes toastFadeIn {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes toastFadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(50px); }
+    }
+    </style>
 </head>
+
 <body>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
     <!-- 顶部导航 -->
     <div class="top-bar">
         <div class="container-fluid px-4">
@@ -322,7 +338,7 @@
                                 <th>当前价</th>
                                 <th>涨跌幅</th>
                                 <th>成交量</th>
-                                <th>1日预测</th>
+                                <th>胜率预测</th>
                                 <th>信号</th>
                                 <th>操作</th>
                             </tr>
@@ -499,6 +515,53 @@
             </div>
         </div>
 
+        <!-- V21 Weekly Swing Pool -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card bg-dark text-white border-secondary">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fs-5">📆 一周波段池</span>
+                            <span class="ms-3 badge bg-info" id="v21TrainStatus">空闲</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshWeeklyPool()">刷新</button>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewWeeklyReport()">模型报告</button>
+                            <button class="btn btn-sm btn-outline-success" onclick="viewWeeklyBacktest()">回测报告</button>
+                            <button class="btn btn-sm btn-warning" onclick="startWeeklyTrain()">启动训练</button>
+                        </div>
+                    </div>
+                    <!-- Progress Bar for V21 -->
+                    <div class="progress bg-dark" style="height: 4px; display: none; border-radius: 0;" id="v21ProgressContainer">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" id="v21ProgressBar" role="progressbar" style="width: 0%;"></div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0 text-white">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>代码</th>
+                                        <th>名称</th>
+                                        <th>胜率 (win_prob)</th>
+                                        <th>预期5日收益</th>
+                                        <th>Meta Score</th>
+                                        <th>止盈</th>
+                                        <th>止损</th>
+                                        <th>最长持有</th>
+                                        <th>信号</th>
+                                        <th>理由</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="weeklySwingTable">
+                                    <tr><td colspan="10" class="text-center opacity-50 py-3">点击"刷新"加载 V21 波段池，或点击"启动训练"进行计算</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 最底部：ML预测信号 -->
         <div class="row mb-3">
             <div class="col-md-12">
@@ -538,6 +601,25 @@
                     
                     <div class="collapse" id="collapseML">
                         <div class="mt-2 pt-2 border-top border-white-10">
+                            <!-- 模型信号质量展示 -->
+                            <div class="row mb-3 px-2 py-2 mx-1 rounded" style="background: rgba(0,0,0,0.2); font-size: 0.85rem;">
+                                <div class="col-md-2 col-6 mb-1">
+                                    <span class="opacity-75">IC:</span> <span id="metric-ic" class="fw-bold">--</span>
+                                </div>
+                                <div class="col-md-2 col-6 mb-1">
+                                    <span class="opacity-75">Rank IC:</span> <span id="metric-rank-ic" class="fw-bold">--</span>
+                                </div>
+                                <div class="col-md-2 col-6 mb-1">
+                                    <span class="opacity-75">ICIR:</span> <span id="metric-icir" class="fw-bold">--</span>
+                                </div>
+                                <div class="col-md-3 col-6 mb-1">
+                                    <span class="opacity-75">Top-Bottom 收益:</span> <span id="metric-tb-ret" class="fw-bold">--</span>
+                                </div>
+                                <div class="col-md-3 col-6 mb-1">
+                                    <span class="opacity-75">成本后收益:</span> <span id="metric-after-cost" class="fw-bold">--</span>
+                                </div>
+                            </div>
+
                             <!-- 信号分页状态 -->
                             <div class="d-flex justify-content-end mb-2">
                                 <div class="pagination-info small opacity-75" id="mlPaginationInfo">第 1 / 1 页</div>
@@ -662,7 +744,7 @@
     <!-- 个股分析模态框 -->
     
 <div class="modal fade" id="rankAnalysisModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content bg-dark text-white border-secondary">
                 <div class="modal-header border-secondary">
                     <h5 class="modal-title" id="rankAnalysisTitle">个股分析</h5>
@@ -705,7 +787,12 @@
         setupEvents();
         refreshAll();
         loadPreviousScreenerStatus(false); // 默认尝试加载技术的缓存
+        refreshWeeklyPool();
+        pollTrainStatus();
         setInterval(refreshAll, refreshInterval * 1000);
+        
+        // 初始加载信号质量
+        loadSignalQuality(document.getElementById('modelVersionSelect').value || 'v20');
     });
 
     function loadPreviousScreenerStatus(useAI) {
@@ -717,17 +804,17 @@
                 document.getElementById('v0StatusBadge').innerText = useAI ? '筛选完成(AI缓存)' : '筛选完成(技术缓存)';
                 renderV0Table(res.data.data);
                 document.getElementById('v0NextStep').style.setProperty('display', 'flex', 'important');
-                alert(`成功加载${useAI ? 'AI' : '技术'}雷达缓存数据！`);
+                showToast(`成功加载${useAI ? 'AI' : '技术'}雷达缓存数据！`);
             } else if (res.status === 'success' && res.data.status === 'running') {
-                alert(`后台任务似乎还在运行中或之前被异常中断 (进度: ${res.data.progress}/${res.data.total})，请点击红色的【强制拉取】按钮重新覆盖生成。`);
+                showToast(`后台任务似乎还在运行中或之前被异常中断 (进度: ${res.data.progress}/${res.data.total})，请点击红色的【强制拉取】按钮重新覆盖生成。`);
             } else {
                 document.getElementById('v0StatusBadge').className = 'badge bg-secondary me-2';
                 document.getElementById('v0StatusBadge').innerText = '无缓存';
-                alert(`未找到完整的${useAI ? 'AI' : '技术'}缓存，请重新运行海选。`);
+                showToast(`未找到完整的${useAI ? 'AI' : '技术'}缓存，请重新运行海选。`);
             }
         }).catch(e => {
             console.error(e);
-            alert('读取缓存失败，网络或后端异常。');
+            showToast('读取缓存失败，网络或后端异常。');
         });
     }
 
@@ -1051,13 +1138,85 @@
         }
         document.getElementById('mlSignalContent').innerHTML = '<div class="col text-center text-white-50">切换模型并重新加载中...</div>';
         loadMLSignals();
+        loadSignalQuality(ver);
+    }
+    
+    function loadSignalQuality(ver) {
+        fetch(`/api/signal_quality?version=${ver}`)
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success' && res.data && res.data.metrics) {
+                const m = res.data.metrics;
+                const fmt = (val) => {
+                    if (val === undefined || val === null) return '--';
+                    return typeof val === 'number' ? val.toFixed(4) : val;
+                };
+                const fmtPct = (val) => {
+                    if (val === undefined || val === null) return '--';
+                    return typeof val === 'number' ? (val * 100).toFixed(2) + '%' : val;
+                };
+                
+                document.getElementById('metric-ic').innerText = fmt(m.ic_mean);
+                document.getElementById('metric-rank-ic').innerText = fmt(m.rank_ic_mean);
+                document.getElementById('metric-icir').innerText = fmt(m.icir);
+                
+                const tbRetEl = document.getElementById('metric-tb-ret');
+                tbRetEl.innerText = fmtPct(m.long_short_return);
+                tbRetEl.className = m.long_short_return > 0 ? "fw-bold text-success" : "fw-bold text-danger";
+                
+                const acRetEl = document.getElementById('metric-after-cost');
+                acRetEl.innerText = fmtPct(m.return_after_cost);
+                acRetEl.className = m.return_after_cost > 0 ? "fw-bold text-success" : "fw-bold text-danger";
+            } else {
+                ['metric-ic', 'metric-rank-ic', 'metric-icir', 'metric-tb-ret', 'metric-after-cost'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.innerText = '未生成';
+                    el.className = 'fw-bold text-muted';
+                });
+            }
+        })
+        .catch(err => {
+            console.error("Failed to load signal quality:", err);
+            ['metric-ic', 'metric-rank-ic', 'metric-icir', 'metric-tb-ret', 'metric-after-cost'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.innerText = '错误';
+                    el.className = 'fw-bold text-danger';
+            });
+        });
     }
 
     let backtestChart = null;
     function showBacktestReport() {
         const modal = new bootstrap.Modal(document.getElementById('backtestModal'));
         modal.show();
+        loadBacktestData();
+    }
+
+    function runBacktest() {
+        const startDate = document.getElementById('btStartDate').value;
+        const endDate = document.getElementById('btEndDate').value;
+        document.getElementById('backtestStats').innerHTML = '<div class="text-warning spinner-border spinner-border-sm" role="status"></div> 正在运行回测，请稍候 (可能需要几十秒)...';
         
+        fetch('/api/run_backtest', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({start_date: startDate, end_date: endDate})
+        })
+        .then(r => r.json())
+        .then(res => {
+            if(res.status === 'success') {
+                document.getElementById('btChartTitle').innerText = `累计收益率对冲曲线 (${startDate} 至 ${endDate})`;
+                loadBacktestData();
+            } else {
+                document.getElementById('backtestStats').innerHTML = `<div class="text-danger">${res.message}</div>`;
+            }
+        })
+        .catch(err => {
+            document.getElementById('backtestStats').innerHTML = `<div class="text-danger">请求失败: ${err}</div>`;
+        });
+    }
+
+    function loadBacktestData() {
         fetch('/api/backtest_report')
         .then(r => r.json())
         .then(res => {
@@ -1130,16 +1289,16 @@
             btn.disabled = false;
             btn.innerText = oldText;
             if(d.status === 'success') {
-                alert('V20 信号执行成功！\n' + d.message);
+                showToast('V20 信号执行成功！\n' + d.message);
                 loadSimAccount(); // 刷新账户
             } else {
-                alert('执行失败：' + d.message);
+                showToast('执行失败：' + d.message);
             }
         })
         .catch(e => {
             btn.disabled = false;
             btn.innerText = oldText;
-            alert('请求异常：' + e.message);
+            showToast('请求异常：' + e.message);
         });
     }
 
@@ -1270,8 +1429,15 @@
                     if (data.status === 'success' && data.data.length > 0) {
                         let html = '';
                         data.data.forEach(item => {
-                            const icon = item.type === 'ml' ? '🤖' : '🔥';
-                            const color = item.type === 'ml' ? '#a7f3d0' : '#fca5a5';
+                            let icon = '🔥';
+                            let color = '#fca5a5';
+                            if (item.type === 'ml') {
+                                icon = '🤖';
+                                color = '#a7f3d0';
+                            } else if (item.type === 'washout') {
+                                icon = '💧';
+                                color = '#93c5fd';
+                            }
                             const changePct = item.change_pct || 0;
                             const pctColor = changePct >= 0 ? '#ef4444' : '#10b981';
                             const pctStr = changePct > 0 ? `+${changePct.toFixed(2)}%` : `${changePct.toFixed(2)}%`;
@@ -1329,7 +1495,7 @@ function toggleAutoTrade(checked) {
             if (d.status === 'success') {
                 // success
             } else if (d.status === 'skip') {
-                alert('提示: ' + d.msg);
+                showToast('提示: ' + d.msg);
             }
             loadSimAccount(); // 强制刷新状态
         })
@@ -1354,11 +1520,11 @@ function toggleAutoTrade(checked) {
                 allTradeLogs = d.data;
                 filterTradeLogs();
             } else {
-                alert('获取记录失败');
+                showToast('获取记录失败');
             }
             new bootstrap.Modal(document.getElementById('tradeLogModal')).show();
         }).catch(e => {
-            alert('获取记录失败');
+            showToast('获取记录失败');
         });
     }
 
@@ -1469,7 +1635,7 @@ function toggleAutoTrade(checked) {
         filtered = filtered.slice(0, limit);
         
         let html = '';
-        filtered.forEach(news => {
+        filtered.forEach((news, index) => {
             // 鲁棒性检查：如果字段缺失给出默认值
             const sentiment = news.sentiment || '中性';
             const icon = sentiment === '利好' ? '🟢' : (sentiment === '利空' ? '🔴' : '⚪');
@@ -1488,9 +1654,8 @@ function toggleAutoTrade(checked) {
             const isImportant = news.is_important || false;
             const importantBadge = isImportant ? '<span class="badge bg-danger ms-1" style="font-size:0.55rem">重要</span>' : '';
             
-            // Note: need to escape quotes in news title/content for onclick
-            const safeTitle = (title || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-            const aiButton = `<span class="badge bg-purple ms-1" style="font-size:0.6rem; cursor: pointer; background-color:#6f42c1" onclick="event.stopPropagation(); analyzeNews('${safeTitle}')">🧠 AI 推演</span>`;
+            // 为了安全，不在 onclick 传超大文本，而是传 index
+            const aiButton = `<span class="badge bg-purple ms-1" style="font-size:0.6rem; cursor: pointer; background-color:#6f42c1" onclick="event.stopPropagation(); analyzeNewsByIndex(${index})">🧠 AI 推演</span>`;
 
             html += `
             <div class="news-item ${cls}" style="cursor: pointer;" onclick="window.open('${news.url || '#'}', '_blank')">
@@ -1530,11 +1695,23 @@ function toggleAutoTrade(checked) {
 
     // 新增：新闻驱动的买入交互
     function buyStockFromNews(code, name) {
-        if(confirm(`检测到实时新闻驱动，是否立即使用模拟账户买入 [${name}] (${code}) ?`)) {
-            // 设置到顶部的输入框
-            document.getElementById('stockSearch').value = code;
-            selectStock(code);
-            alert('已锁定标的，请在左上角控制面板选择策略或直接点击【执行买入】。');
+        // 设置到顶部的输入框
+        document.getElementById('stockSearch').value = code;
+        selectStock(code);
+        showToast('已锁定标的，请在左上角控制面板选择策略或直接点击【执行买入】。');
+    }
+
+    function analyzeNewsByIndex(index) {
+        let newsModeFiltered = newsMode === 'important' 
+            ? allNewsData.filter(n => n.is_important || n.is_important === undefined)
+            : allNewsData;
+        const limit = newsMode === 'important' ? 15 : 30;
+        newsModeFiltered = newsModeFiltered.slice(0, limit);
+        
+        if (index >= 0 && index < newsModeFiltered.length) {
+            const newsItem = newsModeFiltered[index];
+            const textToAnalyze = newsItem.content || newsItem.title || "无内容";
+            analyzeNews(textToAnalyze);
         }
     }
 
@@ -1565,15 +1742,22 @@ function toggleAutoTrade(checked) {
                     if (container) {
                         const myChart = echarts.init(container);
                         const option = {
-                            tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+                            tooltip: { 
+                                trigger: 'item', 
+                                triggerOn: 'mousemove',
+                                confine: true,
+                                enterable: true,
+                                extraCssText: 'max-width: 300px; white-space: normal; word-break: break-all;'
+                            },
                             series: [
                                 {
                                     type: 'tree',
+                                    roam: true,
                                     data: [res.graph_data],
-                                    top: '1%',
-                                    left: '7%',
-                                    bottom: '1%',
-                                    right: '20%',
+                                    top: '5%',
+                                    left: '25%',
+                                    bottom: '5%',
+                                    right: '25%',
                                     symbolSize: 12,
                                     label: {
                                         position: 'left',
@@ -1711,7 +1895,7 @@ function toggleAutoTrade(checked) {
     }
     
     function addCustomStock(code, name, market) {
-        if (customStocks.find(s => s.code === code)) { alert('已在自选中'); return; }
+        if (customStocks.find(s => s.code === code)) { showToast('已在自选中'); return; }
         customStocks.push({ code, name, market: market || (code.startsWith('6') ? 'sh' : 'sz') });
         localStorage.setItem('customStocks', JSON.stringify(customStocks));
         updateCustomStocksUI();
@@ -1724,6 +1908,7 @@ function toggleAutoTrade(checked) {
         customStocks = customStocks.filter(s => s.code !== code);
         localStorage.setItem('customStocks', JSON.stringify(customStocks));
         updateCustomStocksUI();
+        showToast(`已从自选中移除 ${code}`);
     }
     
     function toggleWatchlistPanel() {
@@ -1802,9 +1987,9 @@ function toggleAutoTrade(checked) {
         const row = document.getElementById(`watchlist-${code}`);
         if (!row) return;
         
-        const pred = data.predicted_return || 0;
+        const up_prob = data.up_probability || (data.meta_score ? data.meta_score * 100 : 0);
         const signal = data.signal || '中性';
-        const predClass = pred >= 0 ? 'positive' : 'negative';
+        const predClass = up_prob >= 50 ? 'positive' : 'negative';
         
         // 颜色映射逻辑
         let signalClass = 'signal-neutral';
@@ -1812,7 +1997,12 @@ function toggleAutoTrade(checked) {
         else if (signal === '看跌') signalClass = 'signal-bearish';
         
         row.querySelector('.watchlist-pred').className = `watchlist-pred ${predClass}`;
-        row.querySelector('.watchlist-pred').textContent = `${pred >= 0 ? '+' : ''}${(pred*100).toFixed(1)}%`;
+        if (up_prob > 0) {
+            row.querySelector('.watchlist-pred').textContent = `${up_prob.toFixed(1)}%`;
+        } else {
+            const pred = data.predicted_return || 0;
+            row.querySelector('.watchlist-pred').textContent = `${pred >= 0 ? '+' : ''}${(pred*100).toFixed(1)}%`;
+        }
         row.querySelector('.watchlist-signal').innerHTML = `<span class="signal-tag ${signalClass}">${signal}</span>`;
     }
     
@@ -2195,8 +2385,14 @@ function toggleAutoTrade(checked) {
     <div class="modal fade" id="backtestModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content bg-dark text-white border-secondary">
-                <div class="modal-header border-secondary">
+                <div class="modal-header border-secondary d-flex justify-content-between align-items-center">
                     <h5 class="modal-title">📈 V19 vs V20 历史对冲验证报告</h5>
+                    <div class="d-flex align-items-center me-3" style="gap: 10px;">
+                        <input type="date" id="btStartDate" class="form-control form-control-sm bg-dark text-white border-secondary" value="2024-01-01" style="max-width: 130px;">
+                        <span class="text-white-50">至</span>
+                        <input type="date" id="btEndDate" class="form-control form-control-sm bg-dark text-white border-secondary" value="2025-01-01" style="max-width: 130px;">
+                        <button class="btn btn-sm btn-primary" onclick="runBacktest()">▶ 重新运行</button>
+                    </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -2217,7 +2413,7 @@ function toggleAutoTrade(checked) {
                         <div class="col-md-8">
                             <div class="card bg-black border-secondary">
                                 <div class="card-body p-3">
-                                    <h6 class="text-white-50 mb-3">累计收益率对冲曲线 (2024-2025)</h6>
+                                    <h6 class="text-white-50 mb-3" id="btChartTitle">累计收益率对冲曲线 (2024-2025)</h6>
                                     <div style="height: 350px;">
                                         <canvas id="backtestChart"></canvas>
                                     </div>
@@ -2292,15 +2488,173 @@ function toggleAutoTrade(checked) {
             .then(r => r.json())
             .then(res => {
                 if(res.status === 'success') {
-                    alert('大模型配置保存成功！后续的研判将自动切换至新模型。');
+                    showToast('大模型配置保存成功！后续的研判将自动切换至新模型。');
                     bootstrap.Modal.getInstance(document.getElementById('aiSettingsModal')).hide();
                 } else {
-                    alert('保存失败: ' + res.message);
+                    showToast('保存失败: ' + res.message);
                 }
             })
-            .catch(e => alert('网络异常'));
+            .catch(e => showToast('网络异常'));
         }
-    </script>
+        // ================= V21 Weekly Swing Logic =================
+        function refreshWeeklyPool() {
+            const tbody = document.getElementById('weeklySwingTable');
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center opacity-50 py-3">加载中...</td></tr>';
+            fetch('/api/weekly_predict_all')
+                .then(r => r.json())
+                .then(res => {
+                    if(res.status === 'success') {
+                        let html = '';
+                        for(const [code, info] of Object.entries(res.data)) {
+                            if(info.name.includes('ST') || info.name.includes('退')) continue;
+                            const signalClass = info.signal.includes('看涨') ? 'text-danger' : 'text-success';
+                            html += `
+                                <tr>
+                                    <td>${info.code}</td>
+                                    <td>${info.name}</td>
+                                    <td>${(info.win_prob * 100).toFixed(1)}%</td>
+                                    <td class="text-danger">+${(info.expected_5d_return * 100).toFixed(2)}%</td>
+                                    <td>${info.meta_score.toFixed(3)}</td>
+                                    <td class="text-danger">+${info.take_profit_pct}%</td>
+                                    <td class="text-success">${info.stop_loss_pct}%</td>
+                                    <td>${info.max_holding_days} 天</td>
+                                    <td class="${signalClass} fw-bold">${info.signal}</td>
+                                    <td class="small opacity-75">${info.reason_factors}</td>
+                                </tr>
+                            `;
+                        }
+                        if(html === '') html = '<tr><td colspan="10" class="text-center opacity-50 py-3">符合条件的标的为空</td></tr>';
+                        tbody.innerHTML = html;
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-3">${res.message}</td></tr>`;
+                    }
+                })
+                .catch(e => {
+                    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-3">网络错误</td></tr>`;
+                });
+        }
+
+        function viewWeeklyReport() {
+            fetch('/api/weekly_model_report')
+                .then(r => r.json())
+                .then(res => {
+                    if(res.status === 'success') {
+                        showToast(JSON.stringify(res.data, null, 2));
+                    } else {
+                        showToast(res.message);
+                    }
+                });
+        }
+
+        function viewWeeklyBacktest() {
+            fetch('/api/weekly_backtest_report')
+                .then(r => r.json())
+                .then(res => {
+                    if(res.status === 'success') {
+                        showToast(JSON.stringify(res.data, null, 2));
+                    } else {
+                        showToast(res.message);
+                    }
+                });
+        }
+
+        let trainPollInterval = null;
+        function startWeeklyTrain() {
+            if (!confirm("确定要启动 V21 模型训练吗？这可能需要几分钟。")) return;
+            document.getElementById('v21ProgressContainer').style.display = 'flex';
+            document.getElementById('v21ProgressBar').style.width = '0%';
+            document.getElementById('v21ProgressBar').className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+            fetch('/api/weekly_train/start', { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    showToast(res.message);
+                    if(res.status === 'success' || res.message.includes('运行中')) {
+                        if(trainPollInterval) clearInterval(trainPollInterval);
+                        trainPollInterval = setInterval(pollTrainStatus, 2000);
+                        // Also do an immediate poll so UI updates instantly
+                        pollTrainStatus();
+                    } else {
+                        document.getElementById('v21ProgressContainer').style.display = 'none';
+                    }
+                }).catch(() => {
+                    document.getElementById('v21ProgressContainer').style.display = 'none';
+                });
+        }
+
+        function pollTrainStatus() {
+            fetch('/api/weekly_train/status')
+                .then(r => r.json())
+                .then(res => {
+                    if(res.status === 'success') {
+                        const s = res.data.status;
+                        const p = res.data.progress;
+                        const el = document.getElementById('v21TrainStatus');
+                        el.textContent = `${s === 'running' ? '训练中 ' + p + '%' : s}`;
+                        
+                        const pContainer = document.getElementById('v21ProgressContainer');
+                        const pBar = document.getElementById('v21ProgressBar');
+                        
+                        if(s === 'running') {
+                            pContainer.style.display = 'flex';
+                            pBar.style.width = p + '%';
+                            pBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-warning';
+                        } else if(s === 'success' || s === 'finished') {
+                            pContainer.style.display = 'flex';
+                            pBar.style.width = '100%';
+                            pBar.className = 'progress-bar bg-success';
+                            setTimeout(() => { pContainer.style.display = 'none'; }, 2000);
+                            clearInterval(trainPollInterval);
+                        } else if(s === 'error') {
+                            pContainer.style.display = 'flex';
+                            pBar.style.width = '100%';
+                            pBar.className = 'progress-bar bg-danger';
+                            setTimeout(() => { pContainer.style.display = 'none'; }, 3000);
+                            clearInterval(trainPollInterval);
+                        } else if(s === 'idle') {
+                            pContainer.style.display = 'none';
+                        }
+                    }
+                });
+        }
+    
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = 'bg-dark text-white border border-secondary rounded shadow';
+            toast.style.minWidth = '300px';
+            toast.style.maxWidth = '500px';
+            toast.style.animation = 'toastFadeIn 0.3s ease-in-out';
+            toast.style.padding = '15px';
+            toast.style.pointerEvents = 'auto'; // allow text selection
+            
+            let displayMsg = message;
+            if (typeof message === 'object') {
+                displayMsg = JSON.stringify(message, null, 2);
+            }
+            
+            // Format like the browser alert
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = `
+                <div style="font-weight: 500; font-size: 1rem; margin-bottom: 8px;">127.0.0.1:5000 显示</div>
+                <div style="white-space: pre-wrap; font-size: 0.9rem; color: #e9ecef; max-height: 400px; overflow-y: auto;">${displayMsg}</div>
+            `;
+            toast.appendChild(msgDiv);
+            
+            container.appendChild(toast);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if(toast.parentNode) {
+                    toast.style.animation = 'toastFadeOut 0.3s ease-in-out forwards';
+                    setTimeout(() => {
+                        if(toast.parentNode) toast.remove();
+                    }, 300);
+                }
+            }, 3000);
+        }
+</script>
 </body>
 
 </html>

@@ -101,9 +101,46 @@ class VnpyExecutor:
             # 调用模拟交易 API 或直接修改 sim_account.json
             self._execute_sim_trade(signal)
         elif self.mode == 'live' and self.main_engine:
-            # TODO: 实现 vn.py 实盘下单逻辑
-            logging.info(f"🚀 [实盘预警] 正在通过 vn.py 发送买入指令: {code}")
-            pass
+            logging.info(f"🚀 [实盘预警] 正在通过 vn.py 发送买入指令: {signal['code']}")
+            try:
+                from vnpy.trader.object import OrderRequest
+                from vnpy.trader.constant import Exchange, Direction, Offset, OrderType
+                
+                # Determine exchange from prefix
+                prefix = signal['code'][:2].lower()
+                if prefix == 'sh':
+                    exchange = Exchange.SSE
+                elif prefix == 'sz':
+                    exchange = Exchange.SZSE
+                elif prefix == 'bj':
+                    exchange = Exchange.BSE
+                else:
+                    # fallback
+                    exchange = Exchange.SSE if str(signal['code']).startswith('6') else Exchange.SZSE
+                    
+                clean_code = signal['code'][-6:]
+                
+                price = self._get_latest_price(signal['code'])
+                if not price or price <= 0:
+                    logging.warning(f"无法获取 {signal['name']} ({signal['code']}) 的有效价格，跳过实盘下单。")
+                    return
+                    
+                req = OrderRequest(
+                    symbol=clean_code,
+                    exchange=exchange,
+                    direction=Direction.LONG,
+                    type=OrderType.LIMIT,
+                    volume=100, # 默认先打1手测试
+                    price=price,
+                    offset=Offset.OPEN,
+                    reference=f"V20_{signal['score']:.2f}"
+                )
+                
+                # 'CTP' is the gateway name for CtpGateway
+                vt_orderid = self.main_engine.send_order(req, "CTP")
+                logging.info(f"✅ vn.py 实盘委托已发送: {signal['name']}, 委托号: {vt_orderid}")
+            except Exception as e:
+                logging.error(f"❌ vn.py 实盘下单失败: {e}")
 
     def _execute_sim_trade(self, signal):
         """内部模拟交易逻辑"""

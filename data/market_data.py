@@ -21,8 +21,12 @@ class StockDataAPI:
 
     def get_realtime_data(self, stock_code):
         """获取实时行情数据"""
-        prefix = 'sh' if stock_code.startswith('6') else 'sz'
-        url = f"http://hq.sinajs.cn/list={prefix}{stock_code}"
+        pure_code = stock_code[2:] if stock_code[:2].isalpha() else stock_code
+        prefix = 'sh' if pure_code.startswith(('6', '8', '9')) else 'sz'
+        if stock_code[:2].lower() in ['sh', 'sz', 'bj']:
+            prefix = stock_code[:2].lower()
+            
+        url = f"http://hq.sinajs.cn/list={prefix}{pure_code}"
         try:
             response = requests.get(url, headers=self.headers, timeout=5)
             if response.status_code == 200:
@@ -60,9 +64,11 @@ class StockDataAPI:
 
     def get_daily_history(self, stock_code):
         """获取日线历史数据（带自动回退机制：东财 -> 新浪）"""
+        pure_code = stock_code[2:] if stock_code[:2].isalpha() else stock_code
+        
         try:
             # 1. 尝试东财接口 (ak.stock_zh_a_hist)
-            df = ak.stock_zh_a_hist(symbol=stock_code, period="daily")
+            df = ak.stock_zh_a_hist(symbol=pure_code, period="daily")
             if not df.empty:
                 return df
         except Exception as e:
@@ -70,9 +76,9 @@ class StockDataAPI:
             
         try:
             # 2. 尝试新浪接口 (ak.stock_zh_a_daily)
-            prefix = 'sh' if stock_code.startswith(('6', '8', '9')) else 'sz'
+            prefix = 'sh' if pure_code.startswith(('6', '8', '9')) else 'sz'
             start_date = (datetime.datetime.now() - datetime.timedelta(days=180)).strftime("%Y%m%d")
-            df = ak.stock_zh_a_daily(symbol=prefix+stock_code, start_date=start_date)
+            df = ak.stock_zh_a_daily(symbol=prefix+pure_code, start_date=start_date)
             if not df.empty:
                 # 重命名列以兼容原有逻辑
                 df = df.rename(columns={
@@ -92,9 +98,13 @@ class StockDataAPI:
 
     def get_minute_data(self, stock_code, scale=5, datalen=200):
         """获取分时K线数据"""
-        prefix = 'sh' if stock_code.startswith('6') else 'sz'
+        pure_code = stock_code[2:] if stock_code[:2].isalpha() else stock_code
+        prefix = 'sh' if pure_code.startswith(('6', '8', '9')) else 'sz'
+        if stock_code[:2].lower() in ['sh', 'sz', 'bj']:
+            prefix = stock_code[:2].lower()
+            
         url = "http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData"
-        params = {"symbol": f"{prefix}{stock_code}", "scale": str(scale), "ma": "no", "datalen": str(datalen)}
+        params = {"symbol": f"{prefix}{pure_code}", "scale": str(scale), "ma": "no", "datalen": str(datalen)}
         try:
             response = requests.get(url, params=params, headers=self.headers, timeout=10)
             if response.status_code == 200:
@@ -336,6 +346,23 @@ class StockDataAPI:
 
         # VOL_RATIO
         vol_ratio = volumes[-1] / np.mean(volumes[-10:]) if len(volumes) >= 10 else 1.0
+
+        # SMA5
+        sma5 = np.mean(closes[-5:]) if len(closes) >= 5 else current
+
+        # RSI
+        delta = closes_s.diff()
+        gain = delta.where(delta > 0, 0).rolling(14).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+        rs = gain / loss
+        rsi_series = 100 - (100 / (1 + rs))
+        rsi = float(rsi_series.iloc[-1]) if not pd.isna(rsi_series.iloc[-1]) else 50.0
+
+        # MACD DIF
+        ema12 = closes_s.ewm(span=12, adjust=False).mean()
+        ema26 = closes_s.ewm(span=26, adjust=False).mean()
+        dif_series = ema12 - ema26
+        dif = float(dif_series.iloc[-1]) if not pd.isna(dif_series.iloc[-1]) else 0.0
 
         up_prob = min(max(50 + strength * 10, 5), 95)
         down_prob = 100 - up_prob
