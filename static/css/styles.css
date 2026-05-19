@@ -1,0 +1,163 @@
+body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        
+        /* 顶部导航 */
+        .top-bar { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 0.8rem 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .top-bar h4 { margin: 0; font-size: 1.1rem; }
+        .top-bar .status { font-size: 0.8rem; opacity: 0.8; }
+        
+        /* 搜索栏 */
+        .search-bar {  border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .search-bar input { border-radius: 20px; border: 2px solid #e0e0e0; padding: 0.5rem 1rem; }
+        .search-bar input:focus { border-color: #1a1a2e; outline: none; }
+        .search-results { position: absolute;  border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 50; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        
+        /* 核心指标卡 */
+        .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .metric-card {  border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+        .metric-card .label { font-size: 0.8rem; color: #888; margin-bottom: 0.3rem; }
+        .metric-card .value { font-size: 1.8rem; font-weight: 700; }
+        .metric-card .sub { font-size: 0.75rem; color: #999; margin-top: 0.3rem; }
+        
+        /* ML信号卡 */
+        .ml-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; padding: 1.5rem; color: white; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(102,126,234,0.4); }
+        .ml-card .title { font-size: 0.9rem; opacity: 0.9; margin-bottom: 1rem; }
+        .ml-stock { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 1rem; text-align: center; backdrop-filter: blur(10px); }
+        .ml-stock .name { font-size: 0.9rem; font-weight: 600; }
+        .ml-stock .pred { font-size: 1.6rem; font-weight: 700; margin: 0.3rem 0; }
+        .ml-stock .meta { font-size: 0.7rem; opacity: 0.8; }
+        .ml-stock .badge { font-size: 0.7rem; }
+        
+        /* 搜索建议下拉列表 */
+        .search-suggestions { 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            background: #111827; border: 1px solid #1f2937; 
+            border-radius: 8px; z-index: 9999; 
+            max-height: 250px; overflow-y: auto; display: none;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+        }
+        .suggestion-item { 
+            padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #1f2937;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .suggestion-item:hover { background: #1f2937; }
+        .suggestion-item .s-code { color: #9ca3af; font-size: 0.8rem; }
+        .suggestion-item .s-type { font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
+        
+        /* 迷你预览卡片 */
+        .ml-preview-card { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); flex: 1; }
+        .ml-preview-card .p-name { font-weight: 600; margin-right: 0.5rem; }
+        .ml-preview-card .p-pred { color: #fff; font-weight: bold; }
+        
+        .collapse-icon { transition: transform 0.3s; font-size: 0.8rem; }
+        [aria-expanded="false"] .collapse-icon { transform: rotate(-90deg); }
+        
+        /* 隐藏滚动条但保留功能 (可选) */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        
+        /* 技术面评估 */
+        .tech-card {  border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .tech-card .title { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; color: #333; }
+        .signal-tag { display: inline-block; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; margin: 3px; }
+        .signal-bullish { background: #ffe0e0; color: #c62828; }
+        .signal-bearish { background: #d4edda; color: #1b5e20; }
+        .signal-neutral { background: #e9ecef; color: #555; }
+        .indicator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .indicator-item { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 8px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); }
+        .indicator-item .name { font-size: 0.7rem; color: #9ca3af; }
+        .indicator-item .value { font-size: 1rem; font-weight: 600; color: #f3f4f6; }
+        .indicator-item .desc { font-size: 0.65rem; color: #6b7280; }
+        
+        /* 新闻卡 */
+        .news-card {  border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .news-item { padding: 0.6rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid #ddd; background: rgba(255, 255, 255, 0.05); color: #e0e0e0; }
+        .news-item.positive { border-left-color: #ff4d4f; }
+        .news-item.negative { border-left-color: #00e676; }
+        
+        /* 图表区 */
+        .chart-card {  border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .chart-card .title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #555; }
+        
+        /* 底部设置 */
+        .settings-card {  border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .stock-chip { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; margin: 3px; cursor: pointer; transition: all 0.2s; }
+        .stock-chip:hover { transform: scale(1.05); }
+        .stock-chip.active { background: #1a1a2e; color: white; }
+        .stock-chip:not(.active) { background: #e9ecef; color: #333; }
+        
+        .btn-xs { padding: 0.1rem 0.4rem; font-size: 0.7rem; border-radius: 0.2rem; }
+        
+        .positive { color: #ff4b4b; }
+        .negative { color: #00d56b; }
+        .refresh-btn { background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.85rem; }
+        
+        /* 进度条 */
+        .prob-bar { height: 24px; border-radius: 12px; overflow: hidden; display: flex; background: #e9ecef; }
+        .prob-bar .up { background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+        .prob-bar .down { background: linear-gradient(90deg, #00d56b, #00b894); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+        
+        /* 自选监控面板 */
+        #watchlistPanel { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #1f2937; background: #111827; }
+        #watchlistPanel .card-header { background: #111827; border-bottom: 1px solid #1f2937; }
+        #watchlistTable tr:hover { background-color: #f5f5f5; }
+        .watchlist-price { font-weight: 600; }
+        .watchlist-pred { font-weight: 700; }
+body, html { background-color: #0b0f19 !important; color: #e5e7eb !important; }
+        .card, .box, .list-group-item { background-color: #111827 !important; border-color: #1f2937 !important; color: #e5e7eb !important; }
+        .top-bar { background: linear-gradient(135deg, #0b0f19, #111827) !important; }
+        .text-white { color: #e5e7eb !important; }
+        .table { color: #e5e7eb !important; }
+        .text-muted { color: #9ca3af !important; }
+
+/* 终极暗黑模式覆盖 (穿透 Bootstrap) */
+        body, html { background-color: #0b0f19 !important; color: #e5e7eb !important; }
+        .card, .card-body, .card-header, .card-footer, .list-group-item, .box { background-color: #111827 !important; border-color: #1f2937 !important; color: #e5e7eb !important; }
+        table, .table, th, td { color: #e5e7eb !important; border-color: #1f2937 !important; background-color: transparent !important; }
+        .text-muted, .text-secondary { color: #9ca3af !important; }
+
+/* 终极强制暗黑模式 (穿透所有组件) */
+        html, body { background-color: #0b0f19 !important; color: #e5e7eb !important; }
+        * { border-color: #1f2937 !important; }
+        .card, .card-body, .card-header, .container-fluid, .modal-content, .bg-white, .bg-light, .list-group-item, table, th, td, .form-control { background-color: #111827 !important; color: #e5e7eb !important; box-shadow: none !important; }
+        canvas { background-color: transparent !important; }
+        .text-dark { color: #e5e7eb !important; }
+        .text-muted, .text-secondary { color: #9ca3af !important; }
+        .table-hover>tbody>tr:hover>* { color: #fff !important; background-color: rgba(255,255,255,0.05) !important; }
+
+.card-header {
+            background-color: #111827 !important;
+            color: #e5e7eb !important;
+            border-bottom: 1px solid #1f2937 !important;
+        }
+
+#watchlistPanel, #watchlistPanel .card-header, #watchlistPanel .card-body {
+            background-color: #111827 !important;
+            color: #e5e7eb !important;
+            border-color: #1f2937 !important;
+        }
+        #watchlistPanel .btn-outline-secondary {
+            color: #e5e7eb !important;
+            border-color: #374151 !important;
+        }
+        #watchlistPanel .btn-sm {
+            color: #e5e7eb !important;
+        }
+
+@keyframes toastFadeIn {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes toastFadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(50px); }
+    }
+
+body, html, .bg-white, .bg-light, .card, .card-body, .card-header, .list-group-item, table, .table, th, td {
+            background-color: #111827 !important;
+            color: #e5e7eb !important;
+            border-color: #1f2937 !important;
+            box-shadow: none !important;
+        }
+        .text-dark, .text-black, .text-muted { color: #e5e7eb !important; }
+        canvas { background-color: transparent !important; }
+        div[class*="bg-"] { background-color: #111827 !important; }

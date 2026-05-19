@@ -14,35 +14,39 @@ ACCOUNT_LOCK = ACCOUNT_FILE + ".lock"
 INITIAL_CASH = 100000.0
 MAX_POSITIONS = 5
 
-def load_account():
-    if not os.path.exists(ACCOUNT_FILE):
-        if os.path.exists(ACCOUNT_SAMPLE):
-            try:
-                shutil.copy(ACCOUNT_SAMPLE, ACCOUNT_FILE)
-            except Exception as e:
-                logging.error(f"Failed to copy sample account: {e}")
-    if os.path.exists(ACCOUNT_FILE):
-        try:
-            with FileLock(ACCOUNT_LOCK, timeout=5):
-                with open(ACCOUNT_FILE, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-        except Exception as e:
-            logging.error(f"Failed to load account: {e}")
-    return {
-        "cash": INITIAL_CASH,
-        "holdings": {},
-        "logs": [],
-        "auto_trade": False
-    }
+def get_account_path(account_id="default"):
+    if account_id == "default":
+        return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'sim_account.json')
+    else:
+        safe_id = "".join([c for c in account_id if c.isalnum() or c in ('_', '-')])
+        return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', f'sim_account_{safe_id}.json')
 
-def save_account(account):
-    os.makedirs(os.path.dirname(ACCOUNT_FILE), exist_ok=True)
+def load_account(account_id="default"):
+    path = get_account_path(account_id)
+    lock_path = path + ".lock"
+    if not os.path.exists(path):
+        if account_id == "default" and os.path.exists(ACCOUNT_SAMPLE):
+            shutil.copy(ACCOUNT_SAMPLE, path)
+        else:
+            return {"cash": INITIAL_CASH, "holdings": {}, "logs": [], "auto_trade": False}
     try:
-        with FileLock(ACCOUNT_LOCK, timeout=5):
-            with open(ACCOUNT_FILE, 'w', encoding='utf-8') as f:
+        with FileLock(lock_path, timeout=5):
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        logging.error(f"Failed to load account {account_id}: {e}")
+    return {"cash": INITIAL_CASH, "holdings": {}, "logs": [], "auto_trade": False}
+
+def save_account(account, account_id="default"):
+    path = get_account_path(account_id)
+    lock_path = path + ".lock"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        with FileLock(lock_path, timeout=5):
+            with open(path, 'w', encoding='utf-8') as f:
                 json.dump(account, f, ensure_ascii=False, indent=4)
     except Exception as e:
-        logging.error(f"Failed to save account: {e}")
+        logging.error(f"Failed to save account {account_id}: {e}")
 
 def check_trade_limit(code, current_price, yesterday_close, action, ask1_price=None, bid1_price=None):
     """
@@ -321,7 +325,7 @@ def get_watchlist():
 
 @sim_trade_bp.route('/info', methods=['GET'])
 def get_info():
-    account = load_account()
+    account = load_account(request.args.get('account_id', 'default'))
     
     # 获取持仓的最新实时价格，以计算最新净资产
     if account["holdings"]:
@@ -377,7 +381,7 @@ def get_info():
             need_save = True
             
     if need_save:
-        save_account(account)
+        save_account(account, request.args.get('account_id', 'default'))
     
     account["total_asset"] = float(total_asset)
     return jsonify({"status": "success", "data": account})
@@ -385,7 +389,7 @@ def get_info():
 @sim_trade_bp.route('/logs', methods=['GET'])
 def get_logs():
     date_filter = request.args.get('date') # YYYY-MM-DD
-    account = load_account()
+    account = load_account(request.args.get('account_id', 'default'))
     logs = account.get("logs", [])
     holdings = account.get("holdings", {})
     now = datetime.now()
@@ -449,7 +453,7 @@ def ai_advice():
         client = XiaomiLLMClient()
         
         # 准备上下文
-        account = load_account()
+        account = load_account(request.args.get('account_id', 'default'))
         holdings = [f"{v['name']}({k})" for k, v in account['holdings'].items()]
         market_ctx = f"账户净资产: {account.get('total_asset', 100000):.0f}, 当前持仓: {', '.join(holdings) if holdings else '空仓'}"
         
@@ -468,15 +472,23 @@ def ai_advice():
 @sim_trade_bp.route('/toggle_auto', methods=['POST'])
 def toggle_auto():
     data = request.json
-    account = load_account()
+    account = load_account(request.args.get('account_id', 'default'))
     account["auto_trade"] = bool(data.get("auto_trade", False))
-    save_account(account)
+    save_account(account, request.args.get('account_id', 'default'))
     return jsonify({"status": "success", "auto_trade": account["auto_trade"]})
 
 @sim_trade_bp.route('/step', methods=['POST'])
 def sim_step():
+    account_id = request.args.get('account_id', 'default')
+    account = load_account(account_id)
+    if account.get('strategy_type') == 'youzi_douyin_a':
+        from api.strategies import run_youzi_douyin_a_step
+        from data.market_data import StockDataAPI
+        actions = run_youzi_douyin_a_step(account, StockDataAPI(), datetime.now().strftime('%Y-%m-%d'), datetime.now().strftime('%H:%M'), False)
+        save_account(account, account_id)
+        return jsonify({'status': 'success', 'data': account, 'actions': actions})
     """Execute one step of AI auto trading (sell bad, buy good)"""
-    account = load_account()
+    account = load_account(request.args.get('account_id', 'default'))
     
     # 兼容非 JSON 请求或空请求体
     data = request.get_json(silent=True) or {}
@@ -837,7 +849,7 @@ def sim_step():
                 log_trade(account, "buy", code, name, buy_price, vol, fee, reason)
                 actions_taken.append(f"买入 {name}({code})")
 
-    save_account(account)
+    save_account(account, request.args.get('account_id', 'default'))
     
     msg = f"已执行 {len(actions_taken)} 项交易动作。" if actions_taken else "市场环境稳健，维持当前持仓。"
     if is_market_risky:
@@ -873,7 +885,7 @@ def execute_v20_signals():
 
 @sim_trade_bp.route('/analyze')
 def analyze_sim_account():
-    account = load_account()
+    account = load_account(request.args.get('account_id', 'default'))
     
     # 提取持仓
     portfolio = f"总资产: {account.get('total_asset', account['cash'])}, 可用资金: {account['cash']}\n"
@@ -907,4 +919,15 @@ def analyze_sim_account():
     from api.llm_assistant import generate_ai_analysis
     report_html = generate_ai_analysis(portfolio, logs_str, hot_sectors_str)
     
+
+@sim_trade_bp.route('/accounts', methods=['GET'])
+def list_accounts():
+    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+    accounts = []
+    for f in os.listdir(data_dir):
+        if f.startswith('sim_account') and f.endswith('.json') and '.sample' not in f:
+            acc_id = f.replace('sim_account_', '').replace('sim_account.json', 'default').replace('.json', '')
+            accounts.append(acc_id)
+    return jsonify({'status': 'success', 'accounts': accounts})
+
     return jsonify({"status": "success", "html": report_html})

@@ -96,6 +96,28 @@ class StockDataAPI:
             
         return pd.DataFrame()
 
+    def get_market_breadth(self):
+        """获取全市场涨跌分布（用于游资大佬择时）"""
+        try:
+            import akshare as ak
+            df = ak.stock_zh_a_spot_em()
+            if df.empty:
+                return None
+            # 过滤掉涨跌幅为 None 的行
+            df = df.dropna(subset=['涨跌幅'])
+            up_count = len(df[df['涨跌幅'] > 0])
+            down_count = len(df[df['涨跌幅'] < 0])
+            stay_count = len(df[df['涨跌幅'] == 0])
+            return {
+                "up": up_count,
+                "down": down_count,
+                "stay": stay_count,
+                "total": up_count + down_count + stay_count
+            }
+        except Exception as e:
+            print(f"Error fetching market breadth: {e}")
+            return None
+
     def get_minute_data(self, stock_code, scale=5, datalen=200):
         """获取分时K线数据"""
         pure_code = stock_code[2:] if stock_code[:2].isalpha() else stock_code
