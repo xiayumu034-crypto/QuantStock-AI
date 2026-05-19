@@ -11,8 +11,8 @@
             "buy_time": "2026-05-19 09:47:00",
             "buy_fee": 5.187,
             "stop_loss": 17.14,
-            "take_profit": 21.91,
-            "sl_tp_date": "2026-05-19"
+            "take_profit": 21.94,
+            "sl_tp_date": "2026-05-20"
         },
         "300244": {
             "name": "迪安诊断",
@@ -23,8 +23,8 @@
             "buy_time": "2026-05-19 09:47:00",
             "buy_fee": 5.1922,
             "stop_loss": 18.03,
-            "take_profit": 21.52,
-            "sl_tp_date": "2026-05-19"
+            "take_profit": 21.28,
+            "sl_tp_date": "2026-05-20"
         },
         "300442": {
             "name": "润泽科技",
@@ -34,9 +34,9 @@
             "buy_date": "2026-05-19",
             "buy_time": "2026-05-19 09:47:00",
             "buy_fee": 5.19378,
-            "stop_loss": 89.38,
-            "take_profit": 119.51,
-            "sl_tp_date": "2026-05-19"
+            "stop_loss": 90.46,
+            "take_profit": 120.92,
+            "sl_tp_date": "2026-05-20"
         },
         "688187": {
             "name": "时代电气",
@@ -46,9 +46,9 @@
             "buy_date": "2026-05-19",
             "buy_time": "2026-05-19 09:47:00",
             "buy_fee": 5.15996,
-            "stop_loss": 50.11,
-            "take_profit": 65.31,
-            "sl_tp_date": "2026-05-19"
+            "stop_loss": 50.46,
+            "take_profit": 67.59,
+            "sl_tp_date": "2026-05-20"
         },
         "600482": {
             "name": "中国动力",
@@ -59,8 +59,8 @@
             "buy_time": "2026-05-19 09:47:00",
             "buy_fee": 5.1796,
             "stop_loss": 35.03,
-            "take_profit": 41.86,
-            "sl_tp_date": "2026-05-19"
+            "take_profit": 43.6,
+            "sl_tp_date": "2026-05-20"
         }
     },
     "logs": [

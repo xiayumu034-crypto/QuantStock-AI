@@ -133,12 +133,16 @@
         function refreshWeeklyPool() {
             const tbody = document.getElementById('weeklySwingTable');
             tbody.innerHTML = '<tr><td colspan="10" class="text-center opacity-50 py-3">加载中...</td></tr>';
-            fetch('/api/weekly_predict_all')
+            fetch(`/api/weekly_predict_all?t=${new Date().getTime()}`)
                 .then(r => r.json())
                 .then(res => {
                     if(res.status === 'success') {
                         let html = '';
-                        for(const [code, info] of Object.entries(res.data)) {
+                        // Convert to array and sort by win_prob descending
+                        const stocks = Object.values(res.data);
+                        stocks.sort((a, b) => b.win_prob - a.win_prob);
+                        
+                        for(const info of stocks) {
                             if(info.name.includes('ST') || info.name.includes('退')) continue;
                             const signalClass = info.signal.includes('看涨') ? 'text-danger' : 'text-success';
                             html += `

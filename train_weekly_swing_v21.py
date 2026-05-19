@@ -31,7 +31,7 @@ def compute_triple_barrier(row):
             
     # If no barrier hit, check final close return
     c5 = row.get('C5', 0)
-    if c5 > 0.005:  # Cover basic costs
+    if c5 >= 0.04:  # Strict swing rule: at least 4% gain if held to end
         return 1
     return 0
 
