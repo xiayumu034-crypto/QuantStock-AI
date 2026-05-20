@@ -648,18 +648,27 @@ function loadSimAccount() {
                         const sl = h.stop_loss ? h.stop_loss.toFixed(2) : '--';
                         const tp = h.take_profit ? h.take_profit.toFixed(2) : '--';
                         
+                        
+                        let tBadge = '';
+                        if (h.auto_t && h.auto_t.enabled) {
+                            tBadge = `<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem; cursor:pointer;" onclick="openTModal('${k}', '${h.name}')" title="做T跟踪中">做T中</span>`;
+                        } else {
+                            tBadge = `<span class="badge bg-secondary ms-1" style="font-size:0.6rem; cursor:pointer; opacity:0.6;" onclick="openTModal('${k}', '${h.name}')">做T</span>`;
+                        }
+                        
                         holdingsHtml += `<div class="mb-1 pb-1" style="border-bottom: 1px dashed rgba(255,255,255,0.1);">
-                            <div class="d-flex justify-content-between">
-                                <span>${h.name}(${k})</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div><span>${h.name}(${k})</span> ${tBadge}</div>
                                 <span>${h.vol}股</span>
                                 <span style="color:${color}">${pl > 0 ? '+' : ''}${pl.toFixed(2)}%</span>
                             </div>
                             <div class="d-flex justify-content-between mt-1" style="font-size: 0.8rem; opacity: 0.8;">
                                 <span><span style="color:#10b981">止损: ${sl}</span></span>
                                 <span><span style="color:#ef4444">止盈: ${tp}</span></span>
-                                <span>当前: ${h.current_price.toFixed(2)}</span>
+                                <span>当前: ${h.current_price ? h.current_price.toFixed(2) : '--'}</span>
                             </div>
                         </div>`;
+
                     });
                 }
                 document.getElementById('simHoldings').innerHTML = holdingsHtml;
@@ -1660,6 +1669,8 @@ function viewWeeklyReport() {
 
 
 document.addEventListener('DOMContentLoaded', function() {
+    
+
     console.log("QUANT_APP v4.1 BOOTING...");
     
     const init = () => {
@@ -1693,3 +1704,47 @@ document.addEventListener('DOMContentLoaded', function() {
         if (autoRefresh && typeof refreshAll === 'function') refreshAll();
     }, refreshInterval * 1000);
 });
+
+
+// --- 全局函数：做T控制 ---
+window.openTModal = function(code, name) {
+    document.getElementById('tModalTitle').innerText = name + ' (' + code + ') AI智能做T';
+    document.getElementById('tModalCode').value = code;
+    
+    fetch(`/api/sim/info?account_id=${currentAccountId}`).then(r => r.json()).then(d => {
+        if(d.status === 'success' && d.data.holdings[code]) {
+            const auto_t = d.data.holdings[code].auto_t || {};
+            document.getElementById('tEnabled').checked = !!auto_t.enabled;
+            // 隐藏那些手动的输入框，让用户知道是AI全自动的
+            const modal = new bootstrap.Modal(document.getElementById('autoTModal'));
+            modal.show();
+        }
+    });
+};
+
+window.saveAutoT = function() {
+    const code = document.getElementById('tModalCode').value;
+    const data = {
+        account_id: currentAccountId,
+        code: code,
+        auto_t: {
+            enabled: document.getElementById('tEnabled').checked,
+            mode: 'ai_dynamic', // 告诉后端用 AI 动态模式
+            trade_vol: parseInt(document.getElementById('tTradeVol').value || 100)
+        }
+    };
+    
+    fetch('/api/sim/config_t', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(r => r.json()).then(d => {
+        if(d.status === 'success') {
+            showToast(d.msg || '保存成功');
+            bootstrap.Modal.getInstance(document.getElementById('autoTModal')).hide();
+            loadSimAccount();
+        } else {
+            showToast('保存失败: ' + d.msg);
+        }
+    }).catch(e => showToast('网络异常: ' + e));
+};

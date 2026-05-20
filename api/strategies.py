@@ -52,7 +52,7 @@ def run_youzi_douyin_a_step(account, api_client, today_str, time_str, is_manual=
                 price = rt['current'] if rt else h['cost_price']
                 limited, _ = check_trade_limit(code, price, rt.get('yesterday_close'), 'sell', bid1_price=rt.get('bid1'))
                 if not limited:
-                    vol = h['volume']
+                    vol = h['vol']
                     fee = price * vol * 0.0013
                     pnl = (price - h['cost_price']) * vol - fee
                     account['cash'] += (price * vol - fee)
@@ -152,10 +152,78 @@ def run_youzi_douyin_a_step(account, api_client, today_str, time_str, is_manual=
                         fee = curr * vol * 0.0003
                         account['cash'] -= (curr * vol + fee)
                         account['holdings'][code] = {
-                            "name": rt['name'], "cost_price": curr, "volume": vol, "buy_time": today_str,
+                            "name": rt['name'], "cost_price": curr, "vol": vol, "buy_time": today_str,
                             "high_price": curr # 记录初始最高价
                         }
                         log_trade(account, 'buy', code, rt['name'], curr, vol, fee, reason=f"极简买入:站在均线({round(vwap,2)})之上且在时间窗口内")
                         actions.append(f"买入 {code} {rt['name']}")
                         break # 严格纪律，每次扫描最多成交一个
+    return actions
+
+
+def run_auto_t_engine(account, api_client, today_str, time_str):
+    actions = []
+    # 避开早盘前10分钟极度波动期和尾盘最后5分钟
+    if not ('09:40' <= time_str <= '14:55'): return actions
+    
+    for code, h in list(account['holdings'].items()):
+        auto_t = h.get('auto_t', {})
+        if not auto_t.get('enabled'): continue
+        
+        rt = api_client.get_realtime_data(code)
+        if not rt: continue
+        
+        curr = rt['current']
+        vwap = rt.get('vwap', curr)
+        open_p = rt.get('open', curr)
+        yesterday_close = rt.get('yesterday_close', curr)
+        
+        # 如果获取不到 VWAP，自己估算一个(粗略)
+        if vwap <= 0 or vwap == curr:
+            vwap = (curr + open_p + rt.get('high', curr) + rt.get('low', curr)) / 4.0
+            
+        change_pct = (curr - yesterday_close) / yesterday_close
+        
+        # T+1 可售股数检查
+        today_buys = sum([log['vol'] for log in account.get('logs', []) 
+                          if log['code'] == code and log['action'] == 'buy' and log['time'].startswith(today_str)])
+        sellable_vol = h['vol'] - today_buys
+        
+        # 冷却检查: 距离上次做T至少偏离 1.5%
+        last_p = h.get('t_last_action_price', h['cost_price'])
+        trade_vol = auto_t.get('trade_vol', 100)
+        
+        # --- AI 动态做 T 逻辑 ---
+        
+        # 1. 动态低吸 (Buy)
+        # 条件: 现价在均线(VWAP)下方超过 1.5%，且出现急跌(比如比开盘价低 2% 以上)
+        # 且距离上次操作价格跌了 1.5%
+        if curr < vwap * 0.985 and curr < open_p * 0.98 and curr <= last_p * 0.985:
+            if account['cash'] >= curr * trade_vol:
+                limited, _ = check_trade_limit(code, curr, yesterday_close, 'buy', ask1_price=rt.get('ask1'))
+                if not limited:
+                    fee = curr * trade_vol * 0.0003
+                    account['cash'] -= (curr * trade_vol + fee)
+                    h['vol'] += trade_vol
+                    h['t_last_action_price'] = curr
+                    h['cost_price'] = (h['cost_price'] * (h['vol'] - trade_vol) + curr * trade_vol + fee) / h['vol']
+                    log_trade(account, 'buy', code, h.get('name'), curr, trade_vol, fee, reason=f"AI动态做T: 偏离均线低吸(现价{curr} / 均线{vwap:.2f})")
+                    actions.append(f"AI做T买入 {code}")
+                    
+        # 2. 动态高抛 (Sell)
+        # 条件: 现价在均线(VWAP)上方超过 1.5%，且出现急拉(比如比开盘价高 2% 以上)
+        # 且距离上次操作价格涨了 1.5%
+        elif curr > vwap * 1.015 and curr > open_p * 1.02 and curr >= last_p * 1.015:
+            if sellable_vol >= trade_vol:
+                limited, _ = check_trade_limit(code, curr, yesterday_close, 'sell', bid1_price=rt.get('bid1'))
+                if not limited:
+                    fee = curr * trade_vol * 0.0013
+                    account['cash'] += (curr * trade_vol - fee)
+                    h['vol'] -= trade_vol
+                    h['t_last_action_price'] = curr
+                    pnl = (curr - h['cost_price']) * trade_vol - fee
+                    log_trade(account, 'sell', code, h.get('name'), curr, trade_vol, fee, reason=f"AI动态做T: 偏离均线高抛(现价{curr} / 均线{vwap:.2f})", pnl=pnl)
+                    actions.append(f"AI做T卖出 {code}")
+                    if h['vol'] <= 0:
+                        del account['holdings'][code]
     return actions

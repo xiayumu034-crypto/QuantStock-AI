@@ -1,1 +1,33 @@
-{"cash": 100000.0, "holdings": {}, "logs": [], "auto_trade": true, "strategy_type": "youzi_douyin_a"}
+{
+    "cash": 80452.1374,
+    "holdings": {
+        "300442": {
+            "name": "润泽科技",
+            "cost_price": 97.71,
+            "buy_time": "2026-05-20",
+            "high_price": 97.71,
+            "vol": 200.0,
+            "current_price": 97.45,
+            "stop_loss": 89.56,
+            "take_profit": 119.94,
+            "sl_tp_date": "2026-05-20"
+        }
+    },
+    "logs": [
+        {
+            "time": "2026-05-20 10:26:31",
+            "action": "buy",
+            "code": "300442",
+            "name": "润泽科技",
+            "price": 97.71,
+            "vol": 200.0,
+            "amount": 19542.0,
+            "fee": 5.86,
+            "reason": "极简买入:站在均线(96.82)之上且在时间窗口内",
+            "pnl": null,
+            "duration": null
+        }
+    ],
+    "auto_trade": true,
+    "strategy_type": "youzi_douyin_a"
+}

@@ -27,6 +27,39 @@
 
 <body>
 
+    
+    <!-- Auto T Modal -->
+    <div class="modal fade" id="autoTModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">🤖 <span id="tModalTitle">AI 智能动态做T</span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="tModalCode">
+                    <div class="alert alert-info bg-dark border-info text-info p-2" style="font-size: 0.85rem;">
+                        <i class="bi bi-info-circle"></i> <b>AI 动态高抛低吸模式</b><br>
+                        无需手动设置死板的涨跌幅。AI 将实时监控盘口，利用 <b>VWAP (分时均线)</b> 和 <b>量价背离</b> 算法，自动在日内寻找最佳的低吸买点与高抛卖点，动态降低持仓成本。
+                    </div>
+                    <div class="form-check form-switch mb-3 mt-3">
+                        <input class="form-check-input" type="checkbox" id="tEnabled" style="transform: scale(1.2); margin-left: -2em;">
+                        <label class="form-check-label ms-3 text-warning fw-bold">授权 AI 盯盘并自动执行 T+0</label>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label small text-muted">单笔 T+0 交易股数 (须 100 整数倍)</label>
+                            <input type="number" id="tTradeVol" class="form-control form-control-sm bg-dark text-white border-secondary" value="100" step="100">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary d-flex justify-content-between">
+                    <span class="small text-muted">A股规则：当天低吸的份额需次日卖出</span>
+                    <button type="button" class="btn btn-warning text-dark fw-bold" onclick="saveAutoT()">💾 保存授权</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Toast Container -->
     <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 

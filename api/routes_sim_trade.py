@@ -611,6 +611,17 @@ def sim_step():
 
     actions_taken = []
 
+    # --- 全局优先级：独立持仓做T引擎 (Auto-T) ---
+    try:
+        from api.strategies import run_auto_t_engine
+        t_actions = run_auto_t_engine(account, api_client, today_str, time_str)
+        if t_actions:
+            actions_taken.extend(t_actions)
+    except Exception as e:
+        import logging
+        logging.error(f"Auto-T Engine Error: {e}")
+    
+
     # 4. 卖出逻辑
     codes_to_sell = []
     
@@ -919,6 +930,7 @@ def analyze_sim_account():
     from api.llm_assistant import generate_ai_analysis
     report_html = generate_ai_analysis(portfolio, logs_str, hot_sectors_str)
     
+    return jsonify({"status": "success", "html": report_html})
 
 @sim_trade_bp.route('/accounts', methods=['GET'])
 def list_accounts():
@@ -930,4 +942,17 @@ def list_accounts():
             accounts.append(acc_id)
     return jsonify({'status': 'success', 'accounts': accounts})
 
-    return jsonify({"status": "success", "html": report_html})
+
+@sim_trade_bp.route('/config_t', methods=['POST'])
+def config_t():
+    data = request.json
+    acc_id = data.get('account_id', 'default')
+    code = data.get('code')
+    auto_t = data.get('auto_t', {})
+    
+    account = load_account(acc_id)
+    if code in account['holdings']:
+        account['holdings'][code]['auto_t'] = auto_t
+        save_account(account, acc_id)
+        return jsonify({"status": "success", "msg": "日内做T配置已保存"})
+    return jsonify({"status": "error", "msg": "未持有该股票"})
